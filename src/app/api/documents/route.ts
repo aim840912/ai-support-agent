@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/db";
+import { processDocument } from "@/lib/rag/process-document";
 
 const ALLOWED_TYPES = ["application/pdf", "text/plain", "text/markdown"];
 const MAX_SIZE = 10 * 1024 * 1024; // 10 MB
@@ -70,43 +71,5 @@ export async function POST(request: Request) {
   );
 
   return NextResponse.json(document, { status: 201 });
-}
-
-// Stub: replaced in Task 6 with full RAG pipeline
-async function processDocument(
-  documentId: string,
-  buffer: Buffer,
-  filename: string,
-  orgId: string
-) {
-  try {
-    const ext = filename.split(".").pop()?.toLowerCase() ?? "";
-    let text = "";
-
-    if (ext === "pdf") {
-      // Use require() for pdf-parse (CJS-only module)
-      // eslint-disable-next-line @typescript-eslint/no-require-imports
-      const pdfParse = require("pdf-parse");
-      const parsed = await pdfParse(buffer);
-      text = parsed.text;
-    } else {
-      text = buffer.toString("utf-8");
-    }
-
-    // Stub: just mark as ready with 0 chunks (Task 6 adds real embeddings)
-    await prisma.document.update({
-      where: { id: documentId },
-      data: {
-        status: "ready",
-        chunkCount: text.length > 0 ? 1 : 0,
-      },
-    });
-  } catch (err) {
-    await prisma.document.update({
-      where: { id: documentId },
-      data: { status: "error" },
-    });
-    throw err;
-  }
 }
 
