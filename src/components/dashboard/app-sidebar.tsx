@@ -74,9 +74,9 @@ export function AppSidebar({ userEmail }: { userEmail?: string }) {
                 <SidebarMenuItem key={item.href}>
                   <SidebarMenuButton
                     asChild
-                    isActive={pathname === item.href}
+                    isActive={pathname === item.href || pathname.startsWith(item.href + "/")}
                     className={cn(
-                      pathname === item.href && "bg-zinc-100 font-medium"
+                      (pathname === item.href || pathname.startsWith(item.href + "/")) && "bg-zinc-100 font-medium"
                     )}
                   >
                     <Link href={item.href}>

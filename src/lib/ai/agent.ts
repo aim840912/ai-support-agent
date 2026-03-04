@@ -1,5 +1,6 @@
 import { ToolLoopAgent, stepCountIs, simulateReadableStream } from "ai";
 import { MockLanguageModelV3 } from "ai/test";
+import { createGroq } from "@ai-sdk/groq";
 import { isLlmMockMode } from "@/lib/mock-mode";
 import {
   getOrderStatus,
@@ -58,13 +59,7 @@ function getModel() {
     });
   }
 
-  // TODO: Replace with real provider when API key is available
-  // Example:
-  // import { createGroq } from '@ai-sdk/groq'
-  // return createGroq()('llama-3.1-70b-versatile')
-  throw new Error(
-    "No LLM provider configured. Set GROQ_API_KEY or implement getModel()."
-  );
+  return createGroq()("llama-3.3-70b-versatile");
 }
 
 /**

@@ -1,12 +1,21 @@
 import { auth } from "@/auth";
 import { prisma } from "@/lib/db";
-import { ConversationList } from "@/components/dashboard/conversation-list";
+import { NextRequest } from "next/server";
 
-export default async function ConversationsPage() {
+export async function GET(request: NextRequest) {
   const session = await auth();
+  if (!session?.user?.orgId) {
+    return new Response("Unauthorized", { status: 401 });
+  }
+
+  const { orgId } = session.user;
+  const source = request.nextUrl.searchParams.get("source");
 
   const sessions = await prisma.chatSession.findMany({
-    where: { orgId: session?.user?.orgId },
+    where: {
+      orgId,
+      ...(source ? { source } : {}),
+    },
     orderBy: { createdAt: "desc" },
     include: {
       _count: { select: { messages: true } },
@@ -18,7 +27,8 @@ export default async function ConversationsPage() {
     },
   });
 
-  const serialized = sessions.map((s) => ({
+  // Serialize dates for client consumption
+  const data = sessions.map((s) => ({
     id: s.id,
     source: s.source,
     visitorId: s.visitorId,
@@ -28,16 +38,5 @@ export default async function ConversationsPage() {
     firstMessage: s.messages[0]?.content ?? null,
   }));
 
-  return (
-    <div>
-      <h1 className="text-2xl font-semibold text-zinc-900">Conversations</h1>
-      <p className="mt-1 text-sm text-zinc-500">
-        View all customer conversations
-      </p>
-
-      <div className="mt-8">
-        <ConversationList sessions={serialized} />
-      </div>
-    </div>
-  );
+  return Response.json(data);
 }
