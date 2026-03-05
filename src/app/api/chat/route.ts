@@ -1,4 +1,5 @@
 import { auth } from "@/auth";
+import { prisma } from "@/lib/db";
 import { createChatStream } from "@/lib/chat/create-chat-stream";
 import type { UIMessage } from "ai";
 
@@ -10,12 +11,6 @@ export async function POST(request: Request) {
   }
 
   const { id: userId, orgId } = session.user;
-
-  // Fetch plan for tool gating and limit checks
-  const org = await import("@/lib/db").then(({ prisma }) =>
-    prisma.organization.findUnique({ where: { id: orgId }, select: { plan: true } })
-  );
-  const plan = org?.plan ?? "free";
 
   let body: { messages: UIMessage[]; sessionId?: string };
   try {
@@ -29,6 +24,13 @@ export async function POST(request: Request) {
   if (!Array.isArray(messages) || messages.length === 0) {
     return new Response("messages array is required", { status: 400 });
   }
+
+  // Fetch plan for tool gating and limit checks
+  const org = await prisma.organization.findUnique({
+    where: { id: orgId },
+    select: { plan: true },
+  });
+  const plan = org?.plan ?? "free";
 
   return createChatStream({
     orgId,

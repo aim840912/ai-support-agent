@@ -33,8 +33,9 @@ export async function createChatStream({
   let resolvedSessionId = sessionId;
 
   if (!resolvedSessionId) {
-    // Check conversation limit before creating a new session
-    const convLimit = await checkConversationLimit(orgId);
+    // Check conversation limit before creating a new session.
+    // Pass plan so the check can skip an extra org DB fetch.
+    const convLimit = await checkConversationLimit(orgId, plan);
     if (!convLimit.allowed) {
       return new Response(
         JSON.stringify({ error: convLimit.reason, code: "CONVERSATION_LIMIT" }),
@@ -57,8 +58,9 @@ export async function createChatStream({
       console.error("[createChatStream] Failed to create ChatSession:", e);
     }
   } else {
-    // Existing session — check message limit
-    const msgLimit = await checkMessageLimit(orgId, resolvedSessionId);
+    // Existing session — check message limit.
+    // Pass plan so the check can skip an extra org DB fetch.
+    const msgLimit = await checkMessageLimit(orgId, resolvedSessionId, plan);
     if (!msgLimit.allowed) {
       return new Response(
         JSON.stringify({ error: msgLimit.reason, code: "MESSAGE_LIMIT" }),

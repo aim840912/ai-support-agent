@@ -15,11 +15,11 @@ import { authConfig } from "./auth.config";
 function buildAdapter() {
   const adapter = PrismaAdapter(prisma);
 
-  const originalCreateUser = adapter.createUser!.bind(adapter);
-
+  // Override createUser so OAuth sign-ups auto-create an Organization.
+  // We use tx.user.create directly (instead of delegating to the original
+  // adapter method) because we need to inject orgId, which the base adapter
+  // does not know about.
   adapter.createUser = async (data) => {
-    // Check if org already exists for this email domain (nice-to-have)
-    // For now: always create a new personal org on first OAuth sign-in
     return prisma.$transaction(async (tx) => {
       const org = await tx.organization.create({
         data: {
@@ -27,9 +27,7 @@ function buildAdapter() {
         },
       });
 
-      // Call the original adapter createUser with the orgId injected
-      // PrismaAdapter expects the Prisma User shape — we add orgId here
-      const user = await tx.user.create({
+      return tx.user.create({
         data: {
           email: data.email!,
           name: data.name ?? null,
@@ -39,14 +37,8 @@ function buildAdapter() {
           role: "owner",
         },
       });
-
-      return user;
     });
   };
-
-  // Silence TypeScript — originalCreateUser is captured but the override above
-  // replaces it; keeping this reference prevents the "unused variable" lint error.
-  void originalCreateUser;
 
   return adapter;
 }

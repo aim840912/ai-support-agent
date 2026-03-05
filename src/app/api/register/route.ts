@@ -3,6 +3,7 @@ import bcrypt from "bcryptjs";
 import { z } from "zod";
 import { prisma } from "@/lib/db";
 import { sendVerificationEmail } from "@/lib/email/send-verification";
+import { isResendConfigured } from "@/lib/mock-mode";
 
 const registerSchema = z.object({
   email: z.string().email(),
@@ -45,11 +46,16 @@ export async function POST(request: Request) {
       });
     });
 
-    // Send verification email (fire-and-forget — don't block registration response)
-    const emailSent = !!(process.env.RESEND_API_KEY || true); // always show "check email" UI
+    // Send verification email (fire-and-forget — don't block registration response).
+    // In dev (no RESEND_API_KEY), sendVerificationEmail logs the link to console.
+    // We always show the "check email" UI so the flow is consistent across environments.
+    const emailSent = true;
     sendVerificationEmail(email, name).catch((err) =>
       console.error("[register] Failed to send verification email:", err)
     );
+    if (!isResendConfigured()) {
+      console.info("[register] Dev mode: verification link logged above (no email sent)");
+    }
 
     return NextResponse.json(
       { message: "Account created", userId: user.id, emailSent },

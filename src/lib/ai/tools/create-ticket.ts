@@ -1,6 +1,50 @@
 import { tool } from "ai";
 import { z } from "zod";
 import { prisma } from "@/lib/db";
+import { Prisma } from "@prisma/client";
+
+/**
+ * Attempts to create a ticket with a sequential ticket number.
+ *
+ * Race condition mitigation: `count` and `create` are not atomic, so two
+ * concurrent requests can get the same count and collide on the unique
+ * `ticketNumber` constraint. We retry up to 5 times, incrementing the offset
+ * on each conflict, to safely resolve the collision.
+ */
+async function createTicketWithUniqueNumber(data: {
+  subject: string;
+  description: string;
+  priority: string;
+  status: string;
+  orgId: string;
+  orderId: string | null;
+}) {
+  const MAX_ATTEMPTS = 5;
+
+  for (let attempt = 0; attempt < MAX_ATTEMPTS; attempt++) {
+    const count = await prisma.ticket.count({ where: { orgId: data.orgId } });
+    const ticketNumber = `TKT-${1000 + count + 1 + attempt}`;
+
+    try {
+      return await prisma.ticket.create({
+        data: { ...data, ticketNumber },
+      });
+    } catch (err) {
+      // P2002 = unique constraint violation — retry with next number
+      if (
+        err instanceof Prisma.PrismaClientKnownRequestError &&
+        err.code === "P2002"
+      ) {
+        continue;
+      }
+      throw err;
+    }
+  }
+
+  throw new Error(
+    `Failed to generate a unique ticket number after ${MAX_ATTEMPTS} attempts`
+  );
+}
 
 /**
  * Factory that creates a createTicket tool scoped to the given org.
@@ -39,20 +83,13 @@ export function createCreateTicketTool(orgId: string) {
         resolvedOrderId = order?.id ?? null;
       }
 
-      // Generate sequential ticket number within this org
-      const ticketCount = await prisma.ticket.count({ where: { orgId } });
-      const ticketNumber = `TKT-${1000 + ticketCount + 1}`;
-
-      const ticket = await prisma.ticket.create({
-        data: {
-          ticketNumber,
-          subject,
-          description,
-          priority,
-          status: "open",
-          orgId,
-          orderId: resolvedOrderId,
-        },
+      const ticket = await createTicketWithUniqueNumber({
+        subject,
+        description,
+        priority,
+        status: "open",
+        orgId,
+        orderId: resolvedOrderId,
       });
 
       const slaHours =
