@@ -51,11 +51,17 @@ export async function POST(request: Request) {
     }
   }
 
-  // Fetch plan for tool gating and limit checks
-  const org = await prisma.organization.findUnique({
-    where: { id: orgId },
-    select: { plan: true },
-  });
+  // Fetch plan + custom system prompt in parallel
+  const [org, agentSettings] = await Promise.all([
+    prisma.organization.findUnique({
+      where: { id: orgId },
+      select: { plan: true },
+    }),
+    prisma.agentSettings.findUnique({
+      where: { orgId },
+      select: { systemPrompt: true },
+    }),
+  ]);
   const plan = org?.plan ?? "free";
 
   return createChatStream({
@@ -65,5 +71,6 @@ export async function POST(request: Request) {
     userId,
     source: "dashboard",
     plan,
+    customSystemPrompt: agentSettings?.systemPrompt ?? null,
   });
 }

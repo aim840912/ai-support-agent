@@ -2295,6 +2295,7 @@ export namespace Prisma {
     id: string | null
     name: string | null
     apiKey: string | null
+    apiKeyHash: string | null
     plan: string | null
     createdAt: Date | null
   }
@@ -2303,6 +2304,7 @@ export namespace Prisma {
     id: string | null
     name: string | null
     apiKey: string | null
+    apiKeyHash: string | null
     plan: string | null
     createdAt: Date | null
   }
@@ -2311,6 +2313,7 @@ export namespace Prisma {
     id: number
     name: number
     apiKey: number
+    apiKeyHash: number
     plan: number
     settings: number
     createdAt: number
@@ -2322,6 +2325,7 @@ export namespace Prisma {
     id?: true
     name?: true
     apiKey?: true
+    apiKeyHash?: true
     plan?: true
     createdAt?: true
   }
@@ -2330,6 +2334,7 @@ export namespace Prisma {
     id?: true
     name?: true
     apiKey?: true
+    apiKeyHash?: true
     plan?: true
     createdAt?: true
   }
@@ -2338,6 +2343,7 @@ export namespace Prisma {
     id?: true
     name?: true
     apiKey?: true
+    apiKeyHash?: true
     plan?: true
     settings?: true
     createdAt?: true
@@ -2420,6 +2426,7 @@ export namespace Prisma {
     id: string
     name: string
     apiKey: string
+    apiKeyHash: string | null
     plan: string
     settings: JsonValue | null
     createdAt: Date
@@ -2446,6 +2453,7 @@ export namespace Prisma {
     id?: boolean
     name?: boolean
     apiKey?: boolean
+    apiKeyHash?: boolean
     plan?: boolean
     settings?: boolean
     createdAt?: boolean
@@ -2463,6 +2471,7 @@ export namespace Prisma {
     id?: boolean
     name?: boolean
     apiKey?: boolean
+    apiKeyHash?: boolean
     plan?: boolean
     settings?: boolean
     createdAt?: boolean
@@ -2472,6 +2481,7 @@ export namespace Prisma {
     id?: boolean
     name?: boolean
     apiKey?: boolean
+    apiKeyHash?: boolean
     plan?: boolean
     settings?: boolean
     createdAt?: boolean
@@ -2481,12 +2491,13 @@ export namespace Prisma {
     id?: boolean
     name?: boolean
     apiKey?: boolean
+    apiKeyHash?: boolean
     plan?: boolean
     settings?: boolean
     createdAt?: boolean
   }
 
-  export type OrganizationOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "name" | "apiKey" | "plan" | "settings" | "createdAt", ExtArgs["result"]["organization"]>
+  export type OrganizationOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "name" | "apiKey" | "apiKeyHash" | "plan" | "settings" | "createdAt", ExtArgs["result"]["organization"]>
   export type OrganizationInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     users?: boolean | Organization$usersArgs<ExtArgs>
     documents?: boolean | Organization$documentsArgs<ExtArgs>
@@ -2515,6 +2526,7 @@ export namespace Prisma {
       id: string
       name: string
       apiKey: string
+      apiKeyHash: string | null
       plan: string
       settings: Prisma.JsonValue | null
       createdAt: Date
@@ -2951,6 +2963,7 @@ export namespace Prisma {
     readonly id: FieldRef<"Organization", 'String'>
     readonly name: FieldRef<"Organization", 'String'>
     readonly apiKey: FieldRef<"Organization", 'String'>
+    readonly apiKeyHash: FieldRef<"Organization", 'String'>
     readonly plan: FieldRef<"Organization", 'String'>
     readonly settings: FieldRef<"Organization", 'Json'>
     readonly createdAt: FieldRef<"Organization", 'DateTime'>
@@ -17784,6 +17797,7 @@ export namespace Prisma {
     id: 'id',
     name: 'name',
     apiKey: 'apiKey',
+    apiKeyHash: 'apiKeyHash',
     plan: 'plan',
     settings: 'settings',
     createdAt: 'createdAt'
@@ -18085,6 +18099,7 @@ export namespace Prisma {
     id?: StringFilter<"Organization"> | string
     name?: StringFilter<"Organization"> | string
     apiKey?: StringFilter<"Organization"> | string
+    apiKeyHash?: StringNullableFilter<"Organization"> | string | null
     plan?: StringFilter<"Organization"> | string
     settings?: JsonNullableFilter<"Organization">
     createdAt?: DateTimeFilter<"Organization"> | Date | string
@@ -18101,6 +18116,7 @@ export namespace Prisma {
     id?: SortOrder
     name?: SortOrder
     apiKey?: SortOrder
+    apiKeyHash?: SortOrderInput | SortOrder
     plan?: SortOrder
     settings?: SortOrderInput | SortOrder
     createdAt?: SortOrder
@@ -18116,6 +18132,7 @@ export namespace Prisma {
   export type OrganizationWhereUniqueInput = Prisma.AtLeast<{
     id?: string
     apiKey?: string
+    apiKeyHash?: string
     AND?: OrganizationWhereInput | OrganizationWhereInput[]
     OR?: OrganizationWhereInput[]
     NOT?: OrganizationWhereInput | OrganizationWhereInput[]
@@ -18130,12 +18147,13 @@ export namespace Prisma {
     products?: ProductListRelationFilter
     orders?: OrderListRelationFilter
     tickets?: TicketListRelationFilter
-  }, "id" | "apiKey">
+  }, "id" | "apiKey" | "apiKeyHash">
 
   export type OrganizationOrderByWithAggregationInput = {
     id?: SortOrder
     name?: SortOrder
     apiKey?: SortOrder
+    apiKeyHash?: SortOrderInput | SortOrder
     plan?: SortOrder
     settings?: SortOrderInput | SortOrder
     createdAt?: SortOrder
@@ -18151,6 +18169,7 @@ export namespace Prisma {
     id?: StringWithAggregatesFilter<"Organization"> | string
     name?: StringWithAggregatesFilter<"Organization"> | string
     apiKey?: StringWithAggregatesFilter<"Organization"> | string
+    apiKeyHash?: StringNullableWithAggregatesFilter<"Organization"> | string | null
     plan?: StringWithAggregatesFilter<"Organization"> | string
     settings?: JsonNullableWithAggregatesFilter<"Organization">
     createdAt?: DateTimeWithAggregatesFilter<"Organization"> | Date | string
@@ -19030,7 +19049,8 @@ export namespace Prisma {
   export type OrganizationCreateInput = {
     id?: string
     name: string
-    apiKey?: string
+    apiKey: string
+    apiKeyHash?: string | null
     plan?: string
     settings?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: Date | string
@@ -19046,7 +19066,8 @@ export namespace Prisma {
   export type OrganizationUncheckedCreateInput = {
     id?: string
     name: string
-    apiKey?: string
+    apiKey: string
+    apiKeyHash?: string | null
     plan?: string
     settings?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: Date | string
@@ -19063,6 +19084,7 @@ export namespace Prisma {
     id?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
     apiKey?: StringFieldUpdateOperationsInput | string
+    apiKeyHash?: NullableStringFieldUpdateOperationsInput | string | null
     plan?: StringFieldUpdateOperationsInput | string
     settings?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -19079,6 +19101,7 @@ export namespace Prisma {
     id?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
     apiKey?: StringFieldUpdateOperationsInput | string
+    apiKeyHash?: NullableStringFieldUpdateOperationsInput | string | null
     plan?: StringFieldUpdateOperationsInput | string
     settings?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -19094,7 +19117,8 @@ export namespace Prisma {
   export type OrganizationCreateManyInput = {
     id?: string
     name: string
-    apiKey?: string
+    apiKey: string
+    apiKeyHash?: string | null
     plan?: string
     settings?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: Date | string
@@ -19104,6 +19128,7 @@ export namespace Prisma {
     id?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
     apiKey?: StringFieldUpdateOperationsInput | string
+    apiKeyHash?: NullableStringFieldUpdateOperationsInput | string | null
     plan?: StringFieldUpdateOperationsInput | string
     settings?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -19113,6 +19138,7 @@ export namespace Prisma {
     id?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
     apiKey?: StringFieldUpdateOperationsInput | string
+    apiKeyHash?: NullableStringFieldUpdateOperationsInput | string | null
     plan?: StringFieldUpdateOperationsInput | string
     settings?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -20021,6 +20047,21 @@ export namespace Prisma {
     mode?: QueryMode
     not?: NestedStringFilter<$PrismaModel> | string
   }
+
+  export type StringNullableFilter<$PrismaModel = never> = {
+    equals?: string | StringFieldRefInput<$PrismaModel> | null
+    in?: string[] | ListStringFieldRefInput<$PrismaModel> | null
+    notIn?: string[] | ListStringFieldRefInput<$PrismaModel> | null
+    lt?: string | StringFieldRefInput<$PrismaModel>
+    lte?: string | StringFieldRefInput<$PrismaModel>
+    gt?: string | StringFieldRefInput<$PrismaModel>
+    gte?: string | StringFieldRefInput<$PrismaModel>
+    contains?: string | StringFieldRefInput<$PrismaModel>
+    startsWith?: string | StringFieldRefInput<$PrismaModel>
+    endsWith?: string | StringFieldRefInput<$PrismaModel>
+    mode?: QueryMode
+    not?: NestedStringNullableFilter<$PrismaModel> | string | null
+  }
   export type JsonNullableFilter<$PrismaModel = never> =
     | PatchUndefined<
         Either<Required<JsonNullableFilterBase<$PrismaModel>>, Exclude<keyof Required<JsonNullableFilterBase<$PrismaModel>>, 'path'>>,
@@ -20130,6 +20171,7 @@ export namespace Prisma {
     id?: SortOrder
     name?: SortOrder
     apiKey?: SortOrder
+    apiKeyHash?: SortOrder
     plan?: SortOrder
     settings?: SortOrder
     createdAt?: SortOrder
@@ -20139,6 +20181,7 @@ export namespace Prisma {
     id?: SortOrder
     name?: SortOrder
     apiKey?: SortOrder
+    apiKeyHash?: SortOrder
     plan?: SortOrder
     createdAt?: SortOrder
   }
@@ -20147,6 +20190,7 @@ export namespace Prisma {
     id?: SortOrder
     name?: SortOrder
     apiKey?: SortOrder
+    apiKeyHash?: SortOrder
     plan?: SortOrder
     createdAt?: SortOrder
   }
@@ -20167,6 +20211,24 @@ export namespace Prisma {
     _count?: NestedIntFilter<$PrismaModel>
     _min?: NestedStringFilter<$PrismaModel>
     _max?: NestedStringFilter<$PrismaModel>
+  }
+
+  export type StringNullableWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: string | StringFieldRefInput<$PrismaModel> | null
+    in?: string[] | ListStringFieldRefInput<$PrismaModel> | null
+    notIn?: string[] | ListStringFieldRefInput<$PrismaModel> | null
+    lt?: string | StringFieldRefInput<$PrismaModel>
+    lte?: string | StringFieldRefInput<$PrismaModel>
+    gt?: string | StringFieldRefInput<$PrismaModel>
+    gte?: string | StringFieldRefInput<$PrismaModel>
+    contains?: string | StringFieldRefInput<$PrismaModel>
+    startsWith?: string | StringFieldRefInput<$PrismaModel>
+    endsWith?: string | StringFieldRefInput<$PrismaModel>
+    mode?: QueryMode
+    not?: NestedStringNullableWithAggregatesFilter<$PrismaModel> | string | null
+    _count?: NestedIntNullableFilter<$PrismaModel>
+    _min?: NestedStringNullableFilter<$PrismaModel>
+    _max?: NestedStringNullableFilter<$PrismaModel>
   }
   export type JsonNullableWithAggregatesFilter<$PrismaModel = never> =
     | PatchUndefined<
@@ -20218,21 +20280,6 @@ export namespace Prisma {
     gt?: Date | string | DateTimeFieldRefInput<$PrismaModel>
     gte?: Date | string | DateTimeFieldRefInput<$PrismaModel>
     not?: NestedDateTimeNullableFilter<$PrismaModel> | Date | string | null
-  }
-
-  export type StringNullableFilter<$PrismaModel = never> = {
-    equals?: string | StringFieldRefInput<$PrismaModel> | null
-    in?: string[] | ListStringFieldRefInput<$PrismaModel> | null
-    notIn?: string[] | ListStringFieldRefInput<$PrismaModel> | null
-    lt?: string | StringFieldRefInput<$PrismaModel>
-    lte?: string | StringFieldRefInput<$PrismaModel>
-    gt?: string | StringFieldRefInput<$PrismaModel>
-    gte?: string | StringFieldRefInput<$PrismaModel>
-    contains?: string | StringFieldRefInput<$PrismaModel>
-    startsWith?: string | StringFieldRefInput<$PrismaModel>
-    endsWith?: string | StringFieldRefInput<$PrismaModel>
-    mode?: QueryMode
-    not?: NestedStringNullableFilter<$PrismaModel> | string | null
   }
 
   export type OrganizationScalarRelationFilter = {
@@ -20308,24 +20355,6 @@ export namespace Prisma {
     _count?: NestedIntNullableFilter<$PrismaModel>
     _min?: NestedDateTimeNullableFilter<$PrismaModel>
     _max?: NestedDateTimeNullableFilter<$PrismaModel>
-  }
-
-  export type StringNullableWithAggregatesFilter<$PrismaModel = never> = {
-    equals?: string | StringFieldRefInput<$PrismaModel> | null
-    in?: string[] | ListStringFieldRefInput<$PrismaModel> | null
-    notIn?: string[] | ListStringFieldRefInput<$PrismaModel> | null
-    lt?: string | StringFieldRefInput<$PrismaModel>
-    lte?: string | StringFieldRefInput<$PrismaModel>
-    gt?: string | StringFieldRefInput<$PrismaModel>
-    gte?: string | StringFieldRefInput<$PrismaModel>
-    contains?: string | StringFieldRefInput<$PrismaModel>
-    startsWith?: string | StringFieldRefInput<$PrismaModel>
-    endsWith?: string | StringFieldRefInput<$PrismaModel>
-    mode?: QueryMode
-    not?: NestedStringNullableWithAggregatesFilter<$PrismaModel> | string | null
-    _count?: NestedIntNullableFilter<$PrismaModel>
-    _min?: NestedStringNullableFilter<$PrismaModel>
-    _max?: NestedStringNullableFilter<$PrismaModel>
   }
 
   export type IntFilter<$PrismaModel = never> = {
@@ -20973,6 +21002,10 @@ export namespace Prisma {
     set?: string
   }
 
+  export type NullableStringFieldUpdateOperationsInput = {
+    set?: string | null
+  }
+
   export type DateTimeFieldUpdateOperationsInput = {
     set?: Date | string
   }
@@ -21201,10 +21234,6 @@ export namespace Prisma {
 
   export type NullableDateTimeFieldUpdateOperationsInput = {
     set?: Date | string | null
-  }
-
-  export type NullableStringFieldUpdateOperationsInput = {
-    set?: string | null
   }
 
   export type OrganizationUpdateOneRequiredWithoutUsersNestedInput = {
@@ -21692,6 +21721,20 @@ export namespace Prisma {
     not?: NestedStringFilter<$PrismaModel> | string
   }
 
+  export type NestedStringNullableFilter<$PrismaModel = never> = {
+    equals?: string | StringFieldRefInput<$PrismaModel> | null
+    in?: string[] | ListStringFieldRefInput<$PrismaModel> | null
+    notIn?: string[] | ListStringFieldRefInput<$PrismaModel> | null
+    lt?: string | StringFieldRefInput<$PrismaModel>
+    lte?: string | StringFieldRefInput<$PrismaModel>
+    gt?: string | StringFieldRefInput<$PrismaModel>
+    gte?: string | StringFieldRefInput<$PrismaModel>
+    contains?: string | StringFieldRefInput<$PrismaModel>
+    startsWith?: string | StringFieldRefInput<$PrismaModel>
+    endsWith?: string | StringFieldRefInput<$PrismaModel>
+    not?: NestedStringNullableFilter<$PrismaModel> | string | null
+  }
+
   export type NestedDateTimeFilter<$PrismaModel = never> = {
     equals?: Date | string | DateTimeFieldRefInput<$PrismaModel>
     in?: Date[] | string[] | ListDateTimeFieldRefInput<$PrismaModel>
@@ -21729,6 +21772,23 @@ export namespace Prisma {
     gt?: number | IntFieldRefInput<$PrismaModel>
     gte?: number | IntFieldRefInput<$PrismaModel>
     not?: NestedIntFilter<$PrismaModel> | number
+  }
+
+  export type NestedStringNullableWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: string | StringFieldRefInput<$PrismaModel> | null
+    in?: string[] | ListStringFieldRefInput<$PrismaModel> | null
+    notIn?: string[] | ListStringFieldRefInput<$PrismaModel> | null
+    lt?: string | StringFieldRefInput<$PrismaModel>
+    lte?: string | StringFieldRefInput<$PrismaModel>
+    gt?: string | StringFieldRefInput<$PrismaModel>
+    gte?: string | StringFieldRefInput<$PrismaModel>
+    contains?: string | StringFieldRefInput<$PrismaModel>
+    startsWith?: string | StringFieldRefInput<$PrismaModel>
+    endsWith?: string | StringFieldRefInput<$PrismaModel>
+    not?: NestedStringNullableWithAggregatesFilter<$PrismaModel> | string | null
+    _count?: NestedIntNullableFilter<$PrismaModel>
+    _min?: NestedStringNullableFilter<$PrismaModel>
+    _max?: NestedStringNullableFilter<$PrismaModel>
   }
 
   export type NestedIntNullableFilter<$PrismaModel = never> = {
@@ -21790,20 +21850,6 @@ export namespace Prisma {
     not?: NestedDateTimeNullableFilter<$PrismaModel> | Date | string | null
   }
 
-  export type NestedStringNullableFilter<$PrismaModel = never> = {
-    equals?: string | StringFieldRefInput<$PrismaModel> | null
-    in?: string[] | ListStringFieldRefInput<$PrismaModel> | null
-    notIn?: string[] | ListStringFieldRefInput<$PrismaModel> | null
-    lt?: string | StringFieldRefInput<$PrismaModel>
-    lte?: string | StringFieldRefInput<$PrismaModel>
-    gt?: string | StringFieldRefInput<$PrismaModel>
-    gte?: string | StringFieldRefInput<$PrismaModel>
-    contains?: string | StringFieldRefInput<$PrismaModel>
-    startsWith?: string | StringFieldRefInput<$PrismaModel>
-    endsWith?: string | StringFieldRefInput<$PrismaModel>
-    not?: NestedStringNullableFilter<$PrismaModel> | string | null
-  }
-
   export type NestedDateTimeNullableWithAggregatesFilter<$PrismaModel = never> = {
     equals?: Date | string | DateTimeFieldRefInput<$PrismaModel> | null
     in?: Date[] | string[] | ListDateTimeFieldRefInput<$PrismaModel> | null
@@ -21816,23 +21862,6 @@ export namespace Prisma {
     _count?: NestedIntNullableFilter<$PrismaModel>
     _min?: NestedDateTimeNullableFilter<$PrismaModel>
     _max?: NestedDateTimeNullableFilter<$PrismaModel>
-  }
-
-  export type NestedStringNullableWithAggregatesFilter<$PrismaModel = never> = {
-    equals?: string | StringFieldRefInput<$PrismaModel> | null
-    in?: string[] | ListStringFieldRefInput<$PrismaModel> | null
-    notIn?: string[] | ListStringFieldRefInput<$PrismaModel> | null
-    lt?: string | StringFieldRefInput<$PrismaModel>
-    lte?: string | StringFieldRefInput<$PrismaModel>
-    gt?: string | StringFieldRefInput<$PrismaModel>
-    gte?: string | StringFieldRefInput<$PrismaModel>
-    contains?: string | StringFieldRefInput<$PrismaModel>
-    startsWith?: string | StringFieldRefInput<$PrismaModel>
-    endsWith?: string | StringFieldRefInput<$PrismaModel>
-    not?: NestedStringNullableWithAggregatesFilter<$PrismaModel> | string | null
-    _count?: NestedIntNullableFilter<$PrismaModel>
-    _min?: NestedStringNullableFilter<$PrismaModel>
-    _max?: NestedStringNullableFilter<$PrismaModel>
   }
 
   export type NestedIntWithAggregatesFilter<$PrismaModel = never> = {
@@ -22330,7 +22359,8 @@ export namespace Prisma {
   export type OrganizationCreateWithoutUsersInput = {
     id?: string
     name: string
-    apiKey?: string
+    apiKey: string
+    apiKeyHash?: string | null
     plan?: string
     settings?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: Date | string
@@ -22345,7 +22375,8 @@ export namespace Prisma {
   export type OrganizationUncheckedCreateWithoutUsersInput = {
     id?: string
     name: string
-    apiKey?: string
+    apiKey: string
+    apiKeyHash?: string | null
     plan?: string
     settings?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: Date | string
@@ -22437,6 +22468,7 @@ export namespace Prisma {
     id?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
     apiKey?: StringFieldUpdateOperationsInput | string
+    apiKeyHash?: NullableStringFieldUpdateOperationsInput | string | null
     plan?: StringFieldUpdateOperationsInput | string
     settings?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -22452,6 +22484,7 @@ export namespace Prisma {
     id?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
     apiKey?: StringFieldUpdateOperationsInput | string
+    apiKeyHash?: NullableStringFieldUpdateOperationsInput | string | null
     plan?: StringFieldUpdateOperationsInput | string
     settings?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -22526,7 +22559,8 @@ export namespace Prisma {
   export type OrganizationCreateWithoutDocumentsInput = {
     id?: string
     name: string
-    apiKey?: string
+    apiKey: string
+    apiKeyHash?: string | null
     plan?: string
     settings?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: Date | string
@@ -22541,7 +22575,8 @@ export namespace Prisma {
   export type OrganizationUncheckedCreateWithoutDocumentsInput = {
     id?: string
     name: string
-    apiKey?: string
+    apiKey: string
+    apiKeyHash?: string | null
     plan?: string
     settings?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: Date | string
@@ -22573,6 +22608,7 @@ export namespace Prisma {
     id?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
     apiKey?: StringFieldUpdateOperationsInput | string
+    apiKeyHash?: NullableStringFieldUpdateOperationsInput | string | null
     plan?: StringFieldUpdateOperationsInput | string
     settings?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -22588,6 +22624,7 @@ export namespace Prisma {
     id?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
     apiKey?: StringFieldUpdateOperationsInput | string
+    apiKeyHash?: NullableStringFieldUpdateOperationsInput | string | null
     plan?: StringFieldUpdateOperationsInput | string
     settings?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -22674,7 +22711,8 @@ export namespace Prisma {
   export type OrganizationCreateWithoutChatSessionsInput = {
     id?: string
     name: string
-    apiKey?: string
+    apiKey: string
+    apiKeyHash?: string | null
     plan?: string
     settings?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: Date | string
@@ -22689,7 +22727,8 @@ export namespace Prisma {
   export type OrganizationUncheckedCreateWithoutChatSessionsInput = {
     id?: string
     name: string
-    apiKey?: string
+    apiKey: string
+    apiKeyHash?: string | null
     plan?: string
     settings?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: Date | string
@@ -22749,6 +22788,7 @@ export namespace Prisma {
     id?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
     apiKey?: StringFieldUpdateOperationsInput | string
+    apiKeyHash?: NullableStringFieldUpdateOperationsInput | string | null
     plan?: StringFieldUpdateOperationsInput | string
     settings?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -22764,6 +22804,7 @@ export namespace Prisma {
     id?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
     apiKey?: StringFieldUpdateOperationsInput | string
+    apiKeyHash?: NullableStringFieldUpdateOperationsInput | string | null
     plan?: StringFieldUpdateOperationsInput | string
     settings?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -22859,7 +22900,8 @@ export namespace Prisma {
   export type OrganizationCreateWithoutAgentSettingsInput = {
     id?: string
     name: string
-    apiKey?: string
+    apiKey: string
+    apiKeyHash?: string | null
     plan?: string
     settings?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: Date | string
@@ -22874,7 +22916,8 @@ export namespace Prisma {
   export type OrganizationUncheckedCreateWithoutAgentSettingsInput = {
     id?: string
     name: string
-    apiKey?: string
+    apiKey: string
+    apiKeyHash?: string | null
     plan?: string
     settings?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: Date | string
@@ -22906,6 +22949,7 @@ export namespace Prisma {
     id?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
     apiKey?: StringFieldUpdateOperationsInput | string
+    apiKeyHash?: NullableStringFieldUpdateOperationsInput | string | null
     plan?: StringFieldUpdateOperationsInput | string
     settings?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -22921,6 +22965,7 @@ export namespace Prisma {
     id?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
     apiKey?: StringFieldUpdateOperationsInput | string
+    apiKeyHash?: NullableStringFieldUpdateOperationsInput | string | null
     plan?: StringFieldUpdateOperationsInput | string
     settings?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -23071,7 +23116,8 @@ export namespace Prisma {
   export type OrganizationCreateWithoutProductsInput = {
     id?: string
     name: string
-    apiKey?: string
+    apiKey: string
+    apiKeyHash?: string | null
     plan?: string
     settings?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: Date | string
@@ -23086,7 +23132,8 @@ export namespace Prisma {
   export type OrganizationUncheckedCreateWithoutProductsInput = {
     id?: string
     name: string
-    apiKey?: string
+    apiKey: string
+    apiKeyHash?: string | null
     plan?: string
     settings?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: Date | string
@@ -23142,6 +23189,7 @@ export namespace Prisma {
     id?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
     apiKey?: StringFieldUpdateOperationsInput | string
+    apiKeyHash?: NullableStringFieldUpdateOperationsInput | string | null
     plan?: StringFieldUpdateOperationsInput | string
     settings?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -23157,6 +23205,7 @@ export namespace Prisma {
     id?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
     apiKey?: StringFieldUpdateOperationsInput | string
+    apiKeyHash?: NullableStringFieldUpdateOperationsInput | string | null
     plan?: StringFieldUpdateOperationsInput | string
     settings?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -23198,7 +23247,8 @@ export namespace Prisma {
   export type OrganizationCreateWithoutOrdersInput = {
     id?: string
     name: string
-    apiKey?: string
+    apiKey: string
+    apiKeyHash?: string | null
     plan?: string
     settings?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: Date | string
@@ -23213,7 +23263,8 @@ export namespace Prisma {
   export type OrganizationUncheckedCreateWithoutOrdersInput = {
     id?: string
     name: string
-    apiKey?: string
+    apiKey: string
+    apiKeyHash?: string | null
     plan?: string
     settings?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: Date | string
@@ -23301,6 +23352,7 @@ export namespace Prisma {
     id?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
     apiKey?: StringFieldUpdateOperationsInput | string
+    apiKeyHash?: NullableStringFieldUpdateOperationsInput | string | null
     plan?: StringFieldUpdateOperationsInput | string
     settings?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -23316,6 +23368,7 @@ export namespace Prisma {
     id?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
     apiKey?: StringFieldUpdateOperationsInput | string
+    apiKeyHash?: NullableStringFieldUpdateOperationsInput | string | null
     plan?: StringFieldUpdateOperationsInput | string
     settings?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -23525,7 +23578,8 @@ export namespace Prisma {
   export type OrganizationCreateWithoutTicketsInput = {
     id?: string
     name: string
-    apiKey?: string
+    apiKey: string
+    apiKeyHash?: string | null
     plan?: string
     settings?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: Date | string
@@ -23540,7 +23594,8 @@ export namespace Prisma {
   export type OrganizationUncheckedCreateWithoutTicketsInput = {
     id?: string
     name: string
-    apiKey?: string
+    apiKey: string
+    apiKeyHash?: string | null
     plan?: string
     settings?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: Date | string
@@ -23609,6 +23664,7 @@ export namespace Prisma {
     id?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
     apiKey?: StringFieldUpdateOperationsInput | string
+    apiKeyHash?: NullableStringFieldUpdateOperationsInput | string | null
     plan?: StringFieldUpdateOperationsInput | string
     settings?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -23624,6 +23680,7 @@ export namespace Prisma {
     id?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
     apiKey?: StringFieldUpdateOperationsInput | string
+    apiKeyHash?: NullableStringFieldUpdateOperationsInput | string | null
     plan?: StringFieldUpdateOperationsInput | string
     settings?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string

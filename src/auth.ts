@@ -2,7 +2,7 @@ import NextAuth from "next-auth";
 import { PrismaAdapter } from "@auth/prisma-adapter";
 import { prisma } from "@/lib/db";
 import { authConfig } from "./auth.config";
-import { generateApiKey } from "@/lib/api-key";
+import { generateApiKey, hashApiKey } from "@/lib/api-key";
 
 /**
  * Build a PrismaAdapter that auto-creates an Organization for OAuth sign-ups.
@@ -22,10 +22,12 @@ function buildAdapter() {
   // does not know about.
   adapter.createUser = async (data) => {
     return prisma.$transaction(async (tx) => {
+      const rawApiKey = generateApiKey();
       const org = await tx.organization.create({
         data: {
           name: (data.name ?? data.email?.split("@")[0] ?? "My Organization") + "'s Org",
-          apiKey: generateApiKey(),
+          apiKey: rawApiKey,
+          apiKeyHash: hashApiKey(rawApiKey),
         },
       });
 
@@ -34,7 +36,11 @@ function buildAdapter() {
           email: data.email!,
           name: data.name ?? null,
           image: (data as { image?: string }).image ?? null,
-          emailVerified: data.emailVerified ?? null,
+          // OAuth providers are trusted identity sources — treat their users
+          // as already verified. Without this, GitHub OAuth (which doesn't
+          // always return email_verified) could leave users with null
+          // emailVerified and unable to access gated features.
+          emailVerified: data.emailVerified ?? new Date(),
           orgId: org.id,
           role: "owner",
         },

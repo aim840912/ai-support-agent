@@ -1,5 +1,6 @@
 import { auth } from "@/auth";
 import { prisma } from "@/lib/db";
+import { redirect } from "next/navigation";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { AgentSettingsForm } from "@/components/dashboard/agent-settings-form";
 import { OrgInfoCard } from "@/components/dashboard/org-info-card";
@@ -8,7 +9,11 @@ import { getOrgUsage } from "@/lib/plan/check-plan-limit";
 
 export default async function SettingsPage() {
   const session = await auth();
-  const orgId = session?.user?.orgId ?? "";
+  // Explicit guard — don't silently fall back to empty orgId and query with "".
+  // Middleware should have already redirected, but defense-in-depth requires
+  // this Server Component to enforce auth independently.
+  if (!session?.user?.orgId) redirect("/login");
+  const orgId = session.user.orgId;
 
   // Fetch org (name + apiKey) and agent settings in parallel.
   // Pass org.plan to getOrgUsage so it can skip a redundant DB round-trip.

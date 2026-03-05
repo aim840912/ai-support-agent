@@ -6,7 +6,7 @@ import { sendVerificationEmail } from "@/lib/email/send-verification";
 import { isResendConfigured } from "@/lib/mock-mode";
 import { createRateLimiter, checkRateLimit, getClientIp, rateLimitResponse } from "@/lib/rate-limit";
 import { passwordSchema } from "@/lib/validation";
-import { generateApiKey } from "@/lib/api-key";
+import { generateApiKey, hashApiKey } from "@/lib/api-key";
 
 // 5 registration attempts per IP per 15 minutes
 const registerLimiter = createRateLimiter({ limit: 5, window: "15m" });
@@ -46,8 +46,9 @@ export async function POST(request: Request) {
     // Create org then user in a transaction (return value unused — userId intentionally
     // excluded from response to prevent internal ID leakage)
     await prisma.$transaction(async (tx) => {
+      const rawApiKey = generateApiKey();
       const org = await tx.organization.create({
-        data: { name: orgName, apiKey: generateApiKey() },
+        data: { name: orgName, apiKey: rawApiKey, apiKeyHash: hashApiKey(rawApiKey) },
       });
 
       return tx.user.create({

@@ -67,6 +67,20 @@ const ChartContainer = React.forwardRef<
 })
 ChartContainer.displayName = "Chart"
 
+/**
+ * Guard against CSS injection via dangerouslySetInnerHTML.
+ * Currently all color values are hardcoded constants, but if they ever come
+ * from user input or a database field this sanitizer prevents arbitrary CSS.
+ * Allows: hex (#rgb / #rrggbb / #rrggbbaa), rgb(), rgba(), hsl(), hsla(),
+ *         CSS named colors (letters only), and CSS custom-property references.
+ */
+function sanitizeCssColor(color: string): string {
+  const trimmed = color.trim()
+  const safe =
+    /^(#[0-9a-fA-F]{3,8}|rgba?\(\s*[\d.]+,\s*[\d.]+,\s*[\d.]+(?:,\s*[\d.]+)?\s*\)|hsla?\(\s*[\d.]+,\s*[\d.]+%,\s*[\d.]+%(?:,\s*[\d.]+)?\s*\)|var\(--[\w-]+\)|[a-zA-Z]{1,30})$/
+  return safe.test(trimmed) ? trimmed : "transparent"
+}
+
 const ChartStyle = ({ id, config }: { id: string; config: ChartConfig }) => {
   const colorConfig = Object.entries(config).filter(
     ([, config]) => config.theme || config.color
@@ -88,7 +102,7 @@ ${colorConfig
     const color =
       itemConfig.theme?.[theme as keyof typeof itemConfig.theme] ||
       itemConfig.color
-    return color ? `  --color-${key}: ${color};` : null
+    return color ? `  --color-${key}: ${sanitizeCssColor(color)};` : null
   })
   .join("\n")}
 }

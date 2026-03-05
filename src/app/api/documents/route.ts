@@ -11,6 +11,29 @@ const documentsLimiter = createRateLimiter({ limit: 10, window: "1h" });
 const ALLOWED_TYPES = ["application/pdf", "text/plain", "text/markdown"];
 const MAX_SIZE = 10 * 1024 * 1024; // 10 MB
 
+/**
+ * Verify file content matches its declared MIME type using magic bytes.
+ *
+ * Why: `file.type` comes from the multipart Content-Type header, which the
+ * client controls. An attacker can set `Content-Type: application/pdf` while
+ * uploading arbitrary content (HTML, XML, scripts) to poison the knowledge base.
+ *
+ * We avoid adding a full `file-type` dependency and instead check the signatures
+ * that matter for our allowed types:
+ *   - PDF  → first 4 bytes are "%PDF"
+ *   - TXT/MD → no null bytes in first 512 bytes (binary content indicator)
+ */
+function verifyMagicBytes(buffer: Buffer, declaredType: string): boolean {
+  if (declaredType === "application/pdf") {
+    return buffer.length >= 4 && buffer.slice(0, 4).toString("ascii") === "%PDF";
+  }
+  if (declaredType === "text/plain" || declaredType === "text/markdown") {
+    // Binary files contain null bytes; text files do not.
+    return !buffer.subarray(0, 512).includes(0x00);
+  }
+  return false;
+}
+
 export async function GET() {
   const session = await auth();
   if (!session?.user) {
@@ -73,6 +96,15 @@ export async function POST(request: Request) {
   }
 
   const buffer = Buffer.from(await file.arrayBuffer());
+
+  // Verify actual file content matches declared MIME type.
+  // This catches files whose Content-Type was spoofed by the client.
+  if (!verifyMagicBytes(buffer, file.type)) {
+    return NextResponse.json(
+      { error: "File content does not match its declared type" },
+      { status: 400 }
+    );
+  }
 
   // Create document record first (status: processing)
   const document = await prisma.document.create({

@@ -134,6 +134,19 @@ export function rateLimitResponse(reset: number): Response {
 /**
  * Extract the client IP from standard proxy headers.
  * Falls back to "unknown" when no IP is detectable.
+ *
+ * SECURITY NOTE — IP spoofing risk:
+ * `x-forwarded-for` is set by the client and can be forged unless your
+ * deployment sits behind a trusted reverse proxy that overwrites the header.
+ *
+ * Mitigations by platform:
+ *   • Vercel:  use `x-vercel-forwarded-for` (set by Vercel's infrastructure,
+ *              not passable by clients). Switch to that header when deploying
+ *              on Vercel to prevent rate-limit bypass via spoofed IPs.
+ *   • Other:   configure your reverse proxy to strip / overwrite the header
+ *              before it reaches the app, then trust only the proxy-set value.
+ *
+ * TODO: switch to `x-vercel-forwarded-for` before production deployment on Vercel.
  */
 export function getClientIp(request: Request): string {
   return (

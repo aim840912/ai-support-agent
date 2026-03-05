@@ -28,7 +28,9 @@ function getVisitorId(): string {
   try {
     const existing = localStorage.getItem(key);
     if (existing) return existing;
-    const id = `visitor_${Date.now()}_${Math.random().toString(36).slice(2)}`;
+    // crypto.randomUUID() is cryptographically secure (CSPRNG).
+    // Math.random() is not — it's predictable and could allow session fixation.
+    const id = `visitor_${crypto.randomUUID().replace(/-/g, "")}`;
     localStorage.setItem(key, id);
     return id;
   } catch {

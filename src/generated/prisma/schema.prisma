@@ -8,12 +8,15 @@ datasource db {
 }
 
 model Organization {
-  id        String   @id @default(cuid())
-  name      String
-  apiKey    String   @unique @default(cuid())
-  plan      String   @default("free") // free | pro
-  settings  Json? // { theme, welcomeMessage, ... }
-  createdAt DateTime @default(now())
+  id         String   @id @default(cuid())
+  name       String
+  apiKey     String   @unique // Raw key — kept for display/embed snippet in settings UI
+  apiKeyHash String?  @unique // sha256(apiKey) — used for widget authentication lookups.
+  // Nullable during migration; populated for all new orgs.
+  // Run: pnpm prisma migrate deploy (see migrations/add_api_key_hash)
+  plan       String   @default("free") // free | pro
+  settings   Json? // { theme, welcomeMessage, ... }
+  createdAt  DateTime @default(now())
 
   users         User[]
   documents     Document[]

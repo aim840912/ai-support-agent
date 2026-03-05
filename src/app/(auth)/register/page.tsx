@@ -159,11 +159,11 @@ export default function RegisterPage() {
             type="password"
             autoComplete="new-password"
             required
-            minLength={6}
+            minLength={8}
             value={form.password}
             onChange={update("password")}
             className="w-full rounded-lg border border-zinc-300 px-3 py-2 text-sm focus:border-zinc-500 focus:outline-none focus:ring-1 focus:ring-zinc-500"
-            placeholder="Min. 6 characters"
+            placeholder="Min. 8 chars, upper, lower & number"
           />
         </div>
 

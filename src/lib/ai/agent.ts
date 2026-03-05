@@ -8,7 +8,7 @@ import {
   createCreateTicketTool,
   createSearchKnowledgeBaseTool,
 } from "./tools";
-import { DEFAULT_SYSTEM_PROMPT } from "./prompts";
+import { buildSystemPrompt } from "./prompts";
 import { getPlanLimits } from "@/lib/plan/limits";
 
 /**
@@ -66,12 +66,16 @@ function getModel() {
 /**
  * Creates a configured ToolLoopAgent for customer support.
  *
- * @param orgId - Organization ID for knowledge base and data scoping
- * @param plan  - Organization plan ("free" | "pro") for tool gating
+ * @param orgId             - Organization ID for knowledge base and data scoping
+ * @param plan              - Organization plan ("free" | "pro") for tool gating
+ * @param customSystemPrompt - Optional org-specific instructions injected
+ *                             between base behaviour and security rules.
+ *                             Security rules always come last and cannot be
+ *                             overridden — see buildSystemPrompt() in prompts.ts.
  */
 // Return type intentionally inferred — ToolLoopAgent<never, {tools}, never> is caller-dependent
 // eslint-disable-next-line @typescript-eslint/explicit-function-return-type
-export function createSupportAgent(orgId: string, plan = "free") {
+export function createSupportAgent(orgId: string, plan = "free", customSystemPrompt?: string | null) {
   const limits = getPlanLimits(plan);
   const allowed = new Set(limits.enabledTools);
 
@@ -89,7 +93,7 @@ export function createSupportAgent(orgId: string, plan = "free") {
 
   return new ToolLoopAgent({
     model: getModel(),
-    instructions: DEFAULT_SYSTEM_PROMPT,
+    instructions: buildSystemPrompt(customSystemPrompt),
     tools,
     stopWhen: stepCountIs(10),
   });

@@ -1,4 +1,5 @@
 import { prisma } from "@/lib/db";
+import { hashApiKey } from "@/lib/api-key";
 import { createChatStream } from "@/lib/chat/create-chat-stream";
 import type { UIMessage } from "ai";
 import { createRateLimiter, checkRateLimit, getClientIp, rateLimitResponse } from "@/lib/rate-limit";
@@ -16,10 +17,24 @@ export async function POST(request: Request) {
     return new Response("Missing x-api-key header", { status: 401 });
   }
 
-  // Resolve organization from API key
-  const org = await prisma.organization.findUnique({
-    where: { apiKey },
-    select: { id: true, plan: true },
+  // Resolve organization via SHA-256 hash of the incoming API key.
+  // Hashing prevents SQL-injection attacks from obtaining usable plaintext keys
+  // (attacker retrieves hash, not the original key).
+  // Fallback to plaintext lookup for orgs created before the hash migration —
+  // remove the fallback once all records have been backfilled.
+  const keyHash = hashApiKey(apiKey);
+  const org = await prisma.organization.findFirst({
+    where: {
+      OR: [
+        { apiKeyHash: keyHash },  // preferred — hash-based lookup
+        { apiKeyHash: null, apiKey: apiKey },  // migration fallback for pre-hash orgs
+      ],
+    },
+    select: {
+      id: true,
+      plan: true,
+      agentSettings: { select: { systemPrompt: true } },
+    },
   });
 
   if (!org) {
@@ -73,5 +88,6 @@ export async function POST(request: Request) {
     visitorId,
     source: "widget",
     plan,
+    customSystemPrompt: org.agentSettings?.systemPrompt ?? null,
   });
 }

@@ -25,6 +25,8 @@ export async function sendPasswordResetEmail(
       html: resetPasswordTemplate({ userName, resetUrl }),
     });
   } else {
-    console.log(`[Email - dev] Password reset link for ${email}: ${resetUrl}`);
+    const tokenPreview = `${token.slice(0, 8)}...`;
+    console.log(`[Email - dev] Password reset for ${email} — token: ${tokenPreview}`);
+    console.log(`[Email - dev] Full URL: ${resetUrl}`);
   }
 }

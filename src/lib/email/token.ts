@@ -27,5 +27,14 @@ export async function createAndStoreToken(
 
 /** Resolves the base URL for constructing email links. */
 export function getBaseUrl(): string {
-  return process.env.AUTH_URL ?? "http://localhost:3000";
+  const url = process.env.AUTH_URL;
+  if (!url && process.env.NODE_ENV === "production") {
+    // Warn loudly — email verification and password-reset links will point to
+    // localhost:3000, making them unclickable for real users.
+    console.warn(
+      "[email] AUTH_URL is not set in production. Email links will use " +
+        "http://localhost:3000 as base URL — set AUTH_URL to your deployment URL."
+    );
+  }
+  return url ?? "http://localhost:3000";
 }

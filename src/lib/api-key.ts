@@ -1,4 +1,4 @@
-import { randomBytes } from "crypto";
+import { randomBytes, createHash } from "crypto";
 
 /**
  * Generate a cryptographically secure API key for widget authentication.
@@ -15,4 +15,26 @@ import { randomBytes } from "crypto";
  */
 export function generateApiKey(): string {
   return `sk_${randomBytes(32).toString("base64url")}`;
+}
+
+/**
+ * Compute the SHA-256 hash of a raw API key.
+ *
+ * Store this in Organization.apiKeyHash instead of using the raw key for
+ * authentication lookups. If the database is compromised (SQL injection,
+ * backup leak, insider access), the attacker obtains hashes — which cannot
+ * be used directly to call the widget API.
+ *
+ * Usage:
+ *   // At creation time:
+ *   const raw = generateApiKey();
+ *   const hash = hashApiKey(raw);
+ *   await prisma.organization.create({ data: { apiKey: raw, apiKeyHash: hash, ... } });
+ *
+ *   // At auth time (widget/chat route):
+ *   const hash = hashApiKey(incomingKey);
+ *   const org = await prisma.organization.findFirst({ where: { apiKeyHash: hash } });
+ */
+export function hashApiKey(rawKey: string): string {
+  return createHash("sha256").update(rawKey).digest("hex");
 }

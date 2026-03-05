@@ -12,6 +12,8 @@ type CreateChatStreamOptions = {
   visitorId?: string;
   source?: "dashboard" | "widget" | "api";
   plan?: string;
+  /** Org-specific AI instructions — injected safely before security rules. */
+  customSystemPrompt?: string | null;
 };
 
 /**
@@ -28,6 +30,7 @@ export async function createChatStream({
   visitorId,
   source = "dashboard",
   plan = "free",
+  customSystemPrompt,
 }: CreateChatStreamOptions): Promise<Response> {
   // Find or create a ChatSession
   let resolvedSessionId = sessionId;
@@ -83,7 +86,7 @@ export async function createChatStream({
     }
   }
 
-  const agent = createSupportAgent(orgId, plan);
+  const agent = createSupportAgent(orgId, plan, customSystemPrompt);
 
   return createAgentUIStreamResponse({
     agent,

@@ -124,6 +124,7 @@ exports.Prisma.OrganizationScalarFieldEnum = {
   id: 'id',
   name: 'name',
   apiKey: 'apiKey',
+  apiKeyHash: 'apiKeyHash',
   plan: 'plan',
   settings: 'settings',
   createdAt: 'createdAt'

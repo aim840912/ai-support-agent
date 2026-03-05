@@ -24,6 +24,11 @@ export async function sendVerificationEmail(
       html: verifyEmailTemplate({ userName, verifyUrl }),
     });
   } else {
-    console.log(`[Email - dev] Verify email link for ${email}: ${verifyUrl}`);
+    // Truncate token in log — avoid full token appearing in log aggregation
+    // systems where it could be treated as a secret. Token prefix is enough
+    // for local debugging (copy-paste the full URL from the console isn't needed).
+    const tokenPreview = `${token.slice(0, 8)}...`;
+    console.log(`[Email - dev] Verify email for ${email} — token: ${tokenPreview}`);
+    console.log(`[Email - dev] Full URL: ${verifyUrl}`);
   }
 }
