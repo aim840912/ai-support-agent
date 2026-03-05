@@ -2,15 +2,25 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 import { prisma } from "@/lib/db";
 import { sendPasswordResetEmail } from "@/lib/email/send-password-reset";
+import { createRateLimiter, checkRateLimit, getClientIp, rateLimitResponse } from "@/lib/rate-limit";
+
+// 3 password reset requests per IP per 15 minutes
+const forgotPasswordLimiter = createRateLimiter({ limit: 3, window: "15m" });
 
 const schema = z.object({
   email: z.string().email(),
 });
 
 export async function POST(request: Request) {
+  // Rate limit by IP + email to prevent both IP rotation and email enumeration
+  const ip = getClientIp(request);
+
   try {
     const body = await request.json();
     const { email } = schema.parse(body);
+
+    const rl = await checkRateLimit(forgotPasswordLimiter, `forgot:${ip}:${email}`);
+    if (!rl.success) return rateLimitResponse(rl.reset);
 
     // Always return 200 to prevent email enumeration
     const user = await prisma.user.findUnique({

@@ -3,6 +3,10 @@ import { auth } from "@/auth";
 import { prisma } from "@/lib/db";
 import { processDocument } from "@/lib/rag/process-document";
 import { checkDocumentLimit } from "@/lib/plan/check-plan-limit";
+import { createRateLimiter, checkRateLimit, rateLimitResponse } from "@/lib/rate-limit";
+
+// 10 document uploads per org per hour
+const documentsLimiter = createRateLimiter({ limit: 10, window: "1h" });
 
 const ALLOWED_TYPES = ["application/pdf", "text/plain", "text/markdown"];
 const MAX_SIZE = 10 * 1024 * 1024; // 10 MB
@@ -33,6 +37,10 @@ export async function POST(request: Request) {
   if (!session?.user) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
+
+  // Rate limit by orgId — prevents flooding document processing pipeline
+  const rl = await checkRateLimit(documentsLimiter, `documents:${session.user.orgId}`);
+  if (!rl.success) return rateLimitResponse(rl.reset);
 
   const formData = await request.formData();
   const file = formData.get("file") as File | null;

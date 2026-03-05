@@ -4,34 +4,50 @@ import { z } from "zod";
 import { prisma } from "@/lib/db";
 import { sendVerificationEmail } from "@/lib/email/send-verification";
 import { isResendConfigured } from "@/lib/mock-mode";
+import { createRateLimiter, checkRateLimit, getClientIp, rateLimitResponse } from "@/lib/rate-limit";
+import { passwordSchema } from "@/lib/validation";
+import { generateApiKey } from "@/lib/api-key";
+
+// 5 registration attempts per IP per 15 minutes
+const registerLimiter = createRateLimiter({ limit: 5, window: "15m" });
 
 const registerSchema = z.object({
   email: z.string().email(),
-  password: z.string().min(6),
+  password: passwordSchema,
   name: z.string().min(1),
   orgName: z.string().min(1),
 });
 
 export async function POST(request: Request) {
+  // Rate limit by client IP
+  const ip = getClientIp(request);
+  const rl = await checkRateLimit(registerLimiter, `register:${ip}`);
+  if (!rl.success) return rateLimitResponse(rl.reset);
+
   try {
     const body = await request.json();
     const { email, password, name, orgName } = registerSchema.parse(body);
 
-    // Check if email already exists
+    // Anti-enumeration: always perform bcrypt work and return the same 201 response
+    // regardless of whether the email already exists. This eliminates:
+    //   1. Status code difference (409 vs 201) that reveals email existence
+    //   2. Timing difference (bcrypt is slow; skipping it on duplicates was detectable)
     const existing = await prisma.user.findUnique({ where: { email } });
+    const hashedPassword = await bcrypt.hash(password, 12); // always run, even for duplicates
+
     if (existing) {
+      // Do NOT send another verification email. Return identical response to new registration.
       return NextResponse.json(
-        { error: "Email already in use" },
-        { status: 409 }
+        { message: "Account created. Please check your inbox for a verification link." },
+        { status: 201 }
       );
     }
 
-    const hashedPassword = await bcrypt.hash(password, 12);
-
-    // Create org then user in a transaction
-    const user = await prisma.$transaction(async (tx) => {
+    // Create org then user in a transaction (return value unused — userId intentionally
+    // excluded from response to prevent internal ID leakage)
+    await prisma.$transaction(async (tx) => {
       const org = await tx.organization.create({
-        data: { name: orgName },
+        data: { name: orgName, apiKey: generateApiKey() },
       });
 
       return tx.user.create({
@@ -58,7 +74,7 @@ export async function POST(request: Request) {
     }
 
     return NextResponse.json(
-      { message: "Account created", userId: user.id, emailSent },
+      { message: "Account created. Please check your inbox for a verification link.", emailSent },
       { status: 201 }
     );
   } catch (error) {
