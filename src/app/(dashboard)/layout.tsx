@@ -1,4 +1,3 @@
-import { redirect } from "next/navigation";
 import { auth } from "@/auth";
 import { AppSidebar } from "@/components/dashboard/app-sidebar";
 import {
@@ -12,12 +11,13 @@ export default async function DashboardLayout({
 }: {
   children: React.ReactNode;
 }) {
+  // Auth guard is handled by middleware (src/middleware.ts).
+  // We still fetch the session to pass user info to the sidebar.
   const session = await auth();
-  if (!session?.user) redirect("/login");
 
   return (
     <SidebarProvider className="h-svh">
-      <AppSidebar userEmail={session.user.email ?? undefined} />
+      <AppSidebar userEmail={session?.user?.email ?? undefined} />
       <SidebarInset>
         <header className="flex h-14 items-center border-b border-zinc-200 px-4">
           <SidebarTrigger className="-ml-1" aria-label="Toggle sidebar" />

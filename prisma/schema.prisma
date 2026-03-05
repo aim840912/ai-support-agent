@@ -21,17 +21,22 @@ model Organization {
   documents     Document[]
   chatSessions  ChatSession[]
   agentSettings AgentSettings?
+  products      Product[]
+  orders        Order[]
+  tickets       Ticket[]
 }
 
 model User {
-  id        String       @id @default(cuid())
-  email     String       @unique
-  password  String?      // hashed, null if OAuth
-  name      String?
-  role      String       @default("member") // owner | admin | member
-  orgId     String
-  org       Organization @relation(fields: [orgId], references: [id])
-  createdAt DateTime     @default(now())
+  id            String       @id @default(cuid())
+  email         String       @unique
+  emailVerified DateTime?
+  image         String?
+  password      String?      // hashed, null if OAuth
+  name          String?
+  role          String       @default("member") // owner | admin | member
+  orgId         String
+  org           Organization @relation(fields: [orgId], references: [id])
+  createdAt     DateTime     @default(now())
 
   accounts Account[] // NextAuth
   sessions Session[] // NextAuth
@@ -126,4 +131,67 @@ model VerificationToken {
   expires    DateTime
 
   @@unique([identifier, token])
+}
+
+// ─── E-commerce domain models ─────────────────────────────────────────────
+
+model Product {
+  id               String   @id @default(cuid())
+  name             String
+  sku              String   @unique
+  stockLevel       Int      @default(0)
+  warehouse        String
+  reorderThreshold Int      @default(10)
+  price            Float    @default(0)
+  orgId            String
+  org              Organization @relation(fields: [orgId], references: [id])
+  createdAt        DateTime @default(now())
+
+  orderItems OrderItem[]
+
+  @@index([orgId])
+}
+
+model Order {
+  id                String    @id @default(cuid())
+  orderNumber       String    @unique
+  status            String    @default("pending") // pending | processing | shipped | delivered | cancelled
+  trackingNumber    String?
+  estimatedDelivery DateTime?
+  totalPrice        Float     @default(0)
+  customerId        String?   // external customer identifier
+  orgId             String
+  org               Organization @relation(fields: [orgId], references: [id])
+  createdAt         DateTime  @default(now())
+
+  items   OrderItem[]
+  tickets Ticket[]
+
+  @@index([orgId])
+}
+
+model OrderItem {
+  id        String  @id @default(cuid())
+  quantity  Int     @default(1)
+  unitPrice Float   @default(0)
+  orderId   String
+  order     Order   @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  productId String
+  product   Product @relation(fields: [productId], references: [id])
+}
+
+model Ticket {
+  id           String    @id @default(cuid())
+  ticketNumber String    @unique
+  subject      String
+  description  String
+  priority     String    @default("medium") // low | medium | high | urgent
+  status       String    @default("open")   // open | in_progress | resolved | closed
+  orderId      String?
+  order        Order?    @relation(fields: [orderId], references: [id])
+  orgId        String
+  org          Organization @relation(fields: [orgId], references: [id])
+  createdAt    DateTime  @default(now())
+
+  @@index([orgId])
 }

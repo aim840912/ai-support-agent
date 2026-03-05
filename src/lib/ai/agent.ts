@@ -3,12 +3,13 @@ import { MockLanguageModelV3 } from "ai/test";
 import { createGroq } from "@ai-sdk/groq";
 import { isLlmMockMode } from "@/lib/mock-mode";
 import {
-  getOrderStatus,
-  checkInventory,
-  createTicket,
+  createGetOrderStatusTool,
+  createCheckInventoryTool,
+  createCreateTicketTool,
   createSearchKnowledgeBaseTool,
 } from "./tools";
 import { DEFAULT_SYSTEM_PROMPT } from "./prompts";
+import { getPlanLimits } from "@/lib/plan/limits";
 
 /**
  * Returns the language model to use.
@@ -65,20 +66,31 @@ function getModel() {
 /**
  * Creates a configured ToolLoopAgent for customer support.
  *
- * @param orgId - Organization ID for knowledge base scoping
+ * @param orgId - Organization ID for knowledge base and data scoping
+ * @param plan  - Organization plan ("free" | "pro") for tool gating
  */
 // Return type intentionally inferred — ToolLoopAgent<never, {tools}, never> is caller-dependent
 // eslint-disable-next-line @typescript-eslint/explicit-function-return-type
-export function createSupportAgent(orgId: string) {
+export function createSupportAgent(orgId: string, plan = "free") {
+  const limits = getPlanLimits(plan);
+  const allowed = new Set(limits.enabledTools);
+
+  // All possible tools — only include those allowed by the plan
+  const allTools = {
+    searchKnowledgeBase: createSearchKnowledgeBaseTool(orgId),
+    getOrderStatus: createGetOrderStatusTool(orgId),
+    checkInventory: createCheckInventoryTool(orgId),
+    createTicket: createCreateTicketTool(orgId),
+  };
+
+  const tools = Object.fromEntries(
+    Object.entries(allTools).filter(([key]) => allowed.has(key))
+  ) as typeof allTools;
+
   return new ToolLoopAgent({
     model: getModel(),
     instructions: DEFAULT_SYSTEM_PROMPT,
-    tools: {
-      searchKnowledgeBase: createSearchKnowledgeBaseTool(orgId),
-      getOrderStatus,
-      checkInventory,
-      createTicket,
-    },
+    tools,
     stopWhen: stepCountIs(10),
   });
 }

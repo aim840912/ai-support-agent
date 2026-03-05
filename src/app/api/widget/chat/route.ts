@@ -12,7 +12,7 @@ export async function POST(request: Request) {
   // Resolve organization from API key
   const org = await prisma.organization.findUnique({
     where: { apiKey },
-    select: { id: true },
+    select: { id: true, plan: true },
   });
 
   if (!org) {
@@ -20,6 +20,7 @@ export async function POST(request: Request) {
   }
 
   const orgId = org.id;
+  const plan = org.plan ?? "free";
 
   let body: { messages: UIMessage[]; visitorId?: string; sessionId?: string };
   try {
@@ -40,5 +41,6 @@ export async function POST(request: Request) {
     sessionId,
     visitorId,
     source: "widget",
+    plan,
   });
 }

@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import bcrypt from "bcryptjs";
 import { z } from "zod";
 import { prisma } from "@/lib/db";
+import { sendVerificationEmail } from "@/lib/email/send-verification";
 
 const registerSchema = z.object({
   email: z.string().email(),
@@ -39,12 +40,19 @@ export async function POST(request: Request) {
           name,
           orgId: org.id,
           role: "owner",
+          // emailVerified is intentionally null until they click the link
         },
       });
     });
 
+    // Send verification email (fire-and-forget — don't block registration response)
+    const emailSent = !!(process.env.RESEND_API_KEY || true); // always show "check email" UI
+    sendVerificationEmail(email, name).catch((err) =>
+      console.error("[register] Failed to send verification email:", err)
+    );
+
     return NextResponse.json(
-      { message: "Account created", userId: user.id },
+      { message: "Account created", userId: user.id, emailSent },
       { status: 201 }
     );
   } catch (error) {

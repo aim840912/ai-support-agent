@@ -2,6 +2,7 @@ import { prisma } from "@/lib/db";
 import { createSupportAgent } from "@/lib/ai/agent";
 import { createAgentUIStreamResponse } from "ai";
 import type { UIMessage } from "ai";
+import { checkConversationLimit, checkMessageLimit } from "@/lib/plan/check-plan-limit";
 
 type CreateChatStreamOptions = {
   orgId: string;
@@ -10,13 +11,14 @@ type CreateChatStreamOptions = {
   userId?: string;
   visitorId?: string;
   source?: "dashboard" | "widget" | "api";
+  plan?: string;
 };
 
 /**
  * Shared agent + message persistence logic used by both
  * /api/chat (dashboard) and /api/widget/chat (widget).
  *
- * Returns a streaming Response.
+ * Returns a streaming Response, or a 429 Response if plan limits are hit.
  */
 export async function createChatStream({
   orgId,
@@ -25,11 +27,21 @@ export async function createChatStream({
   userId,
   visitorId,
   source = "dashboard",
+  plan = "free",
 }: CreateChatStreamOptions): Promise<Response> {
   // Find or create a ChatSession
   let resolvedSessionId = sessionId;
 
   if (!resolvedSessionId) {
+    // Check conversation limit before creating a new session
+    const convLimit = await checkConversationLimit(orgId);
+    if (!convLimit.allowed) {
+      return new Response(
+        JSON.stringify({ error: convLimit.reason, code: "CONVERSATION_LIMIT" }),
+        { status: 429, headers: { "Content-Type": "application/json" } }
+      );
+    }
+
     try {
       const chatSession = await prisma.chatSession.create({
         data: {
@@ -44,9 +56,18 @@ export async function createChatStream({
     } catch (e) {
       console.error("[createChatStream] Failed to create ChatSession:", e);
     }
+  } else {
+    // Existing session — check message limit
+    const msgLimit = await checkMessageLimit(orgId, resolvedSessionId);
+    if (!msgLimit.allowed) {
+      return new Response(
+        JSON.stringify({ error: msgLimit.reason, code: "MESSAGE_LIMIT" }),
+        { status: 429, headers: { "Content-Type": "application/json" } }
+      );
+    }
   }
 
-  const agent = createSupportAgent(orgId);
+  const agent = createSupportAgent(orgId, plan);
 
   return createAgentUIStreamResponse({
     agent,

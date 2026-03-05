@@ -1,38 +1,59 @@
 import { tool } from "ai";
 import { z } from "zod";
-import { mockOrders } from "../mock-data";
+import { prisma } from "@/lib/db";
 
-export const getOrderStatus = tool({
-  description:
-    "Look up the status of a customer order by order ID. Returns order details including status, tracking number, and estimated delivery date.",
-  inputSchema: z.object({
-    orderId: z
-      .string()
-      .describe(
-        "The order ID to look up (e.g., ORD-001). If unknown, ask the customer."
-      ),
-  }),
-  execute: async ({ orderId }) => {
-    const order = mockOrders[orderId.toUpperCase()];
+/**
+ * Factory that creates a getOrderStatus tool scoped to the given org.
+ * Looks up orders from the database (multi-tenant isolated by orgId).
+ */
+export function createGetOrderStatusTool(orgId: string) {
+  return tool({
+    description:
+      "Look up the status of a customer order by order number. Returns order details including status, tracking number, and estimated delivery date.",
+    inputSchema: z.object({
+      orderId: z
+        .string()
+        .describe(
+          "The order number to look up (e.g., ORD-001). If unknown, ask the customer."
+        ),
+    }),
+    execute: async ({ orderId }) => {
+      const order = await prisma.order.findFirst({
+        where: {
+          orderNumber: orderId.toUpperCase(),
+          orgId,
+        },
+        include: {
+          items: {
+            include: { product: true },
+          },
+        },
+      });
 
-    if (!order) {
+      if (!order) {
+        return {
+          found: false,
+          orderId,
+          message: `Order ${orderId} not found. Please verify the order number and try again.`,
+        };
+      }
+
+      // Build a concise product summary for the first item (primary product)
+      const primaryItem = order.items[0];
+
       return {
-        found: false,
-        orderId,
-        message: `Order ${orderId} not found. Please verify the order ID and try again.`,
+        found: true,
+        orderId: order.orderNumber,
+        status: order.status,
+        product: primaryItem?.product.name ?? "Unknown product",
+        quantity: primaryItem?.quantity ?? 0,
+        price: order.totalPrice,
+        trackingNumber: order.trackingNumber,
+        estimatedDelivery: order.estimatedDelivery
+          ? order.estimatedDelivery.toISOString().split("T")[0]
+          : null,
+        createdAt: order.createdAt.toISOString().split("T")[0],
       };
-    }
-
-    return {
-      found: true,
-      orderId: order.orderId,
-      status: order.status,
-      product: order.product,
-      quantity: order.quantity,
-      price: order.price,
-      trackingNumber: order.trackingNumber,
-      estimatedDelivery: order.estimatedDelivery,
-      createdAt: order.createdAt,
-    };
-  },
-});
+    },
+  });
+}

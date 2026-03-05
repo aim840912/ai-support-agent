@@ -11,6 +11,12 @@ export async function POST(request: Request) {
 
   const { id: userId, orgId } = session.user;
 
+  // Fetch plan for tool gating and limit checks
+  const org = await import("@/lib/db").then(({ prisma }) =>
+    prisma.organization.findUnique({ where: { id: orgId }, select: { plan: true } })
+  );
+  const plan = org?.plan ?? "free";
+
   let body: { messages: UIMessage[]; sessionId?: string };
   try {
     body = await request.json();
@@ -30,5 +36,6 @@ export async function POST(request: Request) {
     sessionId,
     userId,
     source: "dashboard",
+    plan,
   });
 }

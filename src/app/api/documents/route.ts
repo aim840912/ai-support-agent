@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/db";
 import { processDocument } from "@/lib/rag/process-document";
+import { checkDocumentLimit } from "@/lib/plan/check-plan-limit";
 
 const ALLOWED_TYPES = ["application/pdf", "text/plain", "text/markdown"];
 const MAX_SIZE = 10 * 1024 * 1024; // 10 MB
@@ -51,6 +52,15 @@ export async function POST(request: Request) {
     return NextResponse.json(
       { error: "File size exceeds 10MB limit" },
       { status: 400 }
+    );
+  }
+
+  // Check document limit before processing
+  const limitCheck = await checkDocumentLimit(session.user.orgId);
+  if (!limitCheck.allowed) {
+    return NextResponse.json(
+      { error: limitCheck.reason, code: "DOCUMENT_LIMIT" },
+      { status: 429 }
     );
   }
 

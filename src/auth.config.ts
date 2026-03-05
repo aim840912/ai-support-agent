@@ -1,5 +1,7 @@
 import type { NextAuthConfig } from "next-auth";
 import Credentials from "next-auth/providers/credentials";
+import Google from "next-auth/providers/google";
+import GitHub from "next-auth/providers/github";
 import { z } from "zod";
 
 const loginSchema = z.object({
@@ -17,17 +19,20 @@ export const authConfig: NextAuthConfig = {
   callbacks: {
     authorized({ auth, request: { nextUrl } }) {
       const isLoggedIn = !!auth?.user;
-      const isDashboard = nextUrl.pathname.startsWith("/knowledge-base") ||
-        nextUrl.pathname.startsWith("/conversations") ||
-        nextUrl.pathname.startsWith("/playground") ||
-        nextUrl.pathname.startsWith("/analytics") ||
-        nextUrl.pathname.startsWith("/settings");
 
-      if (isDashboard) {
-        if (isLoggedIn) return true;
-        return false; // redirect to /login
-      }
-      return true;
+      // Public routes — no auth required
+      const publicRoutes = ["/", "/login", "/register", "/forgot-password", "/reset-password"];
+      const publicPrefixes = ["/widget", "/api/auth", "/api/widget", "/api/verify-email", "/api/forgot-password", "/api/reset-password"];
+
+      const isPublicRoute = publicRoutes.includes(nextUrl.pathname);
+      const isPublicPrefix = publicPrefixes.some((prefix) =>
+        nextUrl.pathname.startsWith(prefix)
+      );
+
+      if (isPublicRoute || isPublicPrefix) return true;
+
+      // All other routes require authentication
+      return isLoggedIn;
     },
     jwt({ token, user }) {
       if (user) {
@@ -47,6 +52,14 @@ export const authConfig: NextAuthConfig = {
     },
   },
   providers: [
+    Google({
+      clientId: process.env.GOOGLE_CLIENT_ID,
+      clientSecret: process.env.GOOGLE_CLIENT_SECRET,
+    }),
+    GitHub({
+      clientId: process.env.GITHUB_CLIENT_ID,
+      clientSecret: process.env.GITHUB_CLIENT_SECRET,
+    }),
     Credentials({
       async authorize(credentials) {
         const parsed = loginSchema.safeParse(credentials);
