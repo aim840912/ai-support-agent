@@ -111,6 +111,10 @@ const ChartTooltipContent = React.forwardRef<
       indicator?: "line" | "dot" | "dashed"
       nameKey?: string
       labelKey?: string
+      // recharts 3: payload and label are injected by Tooltip via element cloning
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      payload?: ReadonlyArray<any>
+      label?: React.ReactNode
     }
 >(
   (
@@ -263,7 +267,7 @@ const ChartLegend = RechartsPrimitive.Legend
 const ChartLegendContent = React.forwardRef<
   HTMLDivElement,
   React.ComponentProps<"div"> &
-    Pick<RechartsPrimitive.LegendProps, "payload" | "verticalAlign"> & {
+    Pick<RechartsPrimitive.DefaultLegendContentProps, "payload" | "verticalAlign"> & {
       hideIcon?: boolean
       nameKey?: string
     }
