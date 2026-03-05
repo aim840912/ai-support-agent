@@ -12,7 +12,7 @@ model Organization {
   name      String
   apiKey    String   @unique @default(cuid())
   plan      String   @default("free") // free | pro
-  settings  Json?    // { theme, welcomeMessage, ... }
+  settings  Json? // { theme, welcomeMessage, ... }
   createdAt DateTime @default(now())
 
   users         User[]
@@ -29,7 +29,7 @@ model User {
   email         String       @unique
   emailVerified DateTime?
   image         String?
-  password      String?      // hashed, null if OAuth
+  password      String? // hashed, null if OAuth
   name          String?
   role          String       @default("member") // owner | admin | member
   orgId         String
@@ -65,8 +65,8 @@ model Embedding {
 
 model ChatSession {
   id        String       @id @default(cuid())
-  visitorId String?      // anonymous visitor ID
-  userId    String?      // authenticated user ID
+  visitorId String? // anonymous visitor ID
+  userId    String? // authenticated user ID
   orgId     String
   source    String       @default("widget") // widget | dashboard | api
   org       Organization @relation(fields: [orgId], references: [id])
@@ -77,10 +77,10 @@ model ChatSession {
 
 model ChatMessage {
   id        String      @id @default(cuid())
-  role      String      // user | assistant | tool
+  role      String // user | assistant | tool
   content   String
-  sources   Json?       // [{ documentId, chunkText, score }]
-  toolCalls Json?       // Vercel AI SDK tool call records
+  sources   Json? // [{ documentId, chunkText, score }]
+  toolCalls Json? // Vercel AI SDK tool call records
   sessionId String
   session   ChatSession @relation(fields: [sessionId], references: [id])
   createdAt DateTime    @default(now())
@@ -92,7 +92,7 @@ model AgentSettings {
   org            Organization @relation(fields: [orgId], references: [id])
   systemPrompt   String?
   welcomeMessage String       @default("您好！我是 AI 客服，有什麼可以幫助您的嗎？")
-  theme          Json?        // { primaryColor, logoUrl }
+  theme          Json? // { primaryColor, logoUrl }
   enabledTools   String[]     @default(["searchKnowledgeBase"])
 }
 
@@ -134,16 +134,16 @@ model VerificationToken {
 // ─── E-commerce domain models ─────────────────────────────────────────────
 
 model Product {
-  id               String   @id @default(cuid())
+  id               String       @id @default(cuid())
   name             String
-  sku              String   @unique
-  stockLevel       Int      @default(0)
+  sku              String       @unique
+  stockLevel       Int          @default(0)
   warehouse        String
-  reorderThreshold Int      @default(10)
-  price            Float    @default(0)
+  reorderThreshold Int          @default(10)
+  price            Float        @default(0)
   orgId            String
   org              Organization @relation(fields: [orgId], references: [id])
-  createdAt        DateTime @default(now())
+  createdAt        DateTime     @default(now())
 
   orderItems OrderItem[]
 
@@ -151,16 +151,16 @@ model Product {
 }
 
 model Order {
-  id                String    @id @default(cuid())
-  orderNumber       String    @unique
-  status            String    @default("pending") // pending | processing | shipped | delivered | cancelled
+  id                String       @id @default(cuid())
+  orderNumber       String       @unique
+  status            String       @default("pending") // pending | processing | shipped | delivered | cancelled
   trackingNumber    String?
   estimatedDelivery DateTime?
-  totalPrice        Float     @default(0)
-  customerId        String?   // external customer identifier
+  totalPrice        Float        @default(0)
+  customerId        String? // external customer identifier
   orgId             String
   org               Organization @relation(fields: [orgId], references: [id])
-  createdAt         DateTime  @default(now())
+  createdAt         DateTime     @default(now())
 
   items   OrderItem[]
   tickets Ticket[]
@@ -179,17 +179,17 @@ model OrderItem {
 }
 
 model Ticket {
-  id           String    @id @default(cuid())
-  ticketNumber String    @unique
+  id           String       @id @default(cuid())
+  ticketNumber String       @unique
   subject      String
   description  String
-  priority     String    @default("medium") // low | medium | high | urgent
-  status       String    @default("open")   // open | in_progress | resolved | closed
+  priority     String       @default("medium") // low | medium | high | urgent
+  status       String       @default("open") // open | in_progress | resolved | closed
   orderId      String?
-  order        Order?    @relation(fields: [orderId], references: [id])
+  order        Order?       @relation(fields: [orderId], references: [id])
   orgId        String
   org          Organization @relation(fields: [orgId], references: [id])
-  createdAt    DateTime  @default(now())
+  createdAt    DateTime     @default(now())
 
   @@index([orgId])
 }

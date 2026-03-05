@@ -1,7 +1,7 @@
 import { tool } from "ai";
 import { z } from "zod";
 import { prisma } from "@/lib/db";
-import { Prisma } from "@prisma/client";
+import { PrismaClientKnownRequestError } from "@prisma/client/runtime/client";
 
 /**
  * Attempts to create a ticket with a sequential ticket number.
@@ -31,10 +31,7 @@ async function createTicketWithUniqueNumber(data: {
       });
     } catch (err) {
       // P2002 = unique constraint violation — retry with next number
-      if (
-        err instanceof Prisma.PrismaClientKnownRequestError &&
-        err.code === "P2002"
-      ) {
+      if (err instanceof PrismaClientKnownRequestError && err.code === "P2002") {
         continue;
       }
       throw err;
