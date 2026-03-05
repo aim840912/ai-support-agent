@@ -58,6 +58,20 @@ export async function createChatStream({
       console.error("[createChatStream] Failed to create ChatSession:", e);
     }
   } else {
+    // Verify the session belongs to this org before reading/writing messages.
+    // Without this check, an attacker could supply a sessionId from another
+    // org's conversation and append messages to it (cross-tenant injection).
+    const existingSession = await prisma.chatSession.findUnique({
+      where: { id: resolvedSessionId, orgId },
+      select: { id: true },
+    });
+    if (!existingSession) {
+      return new Response(
+        JSON.stringify({ error: "Session not found", code: "SESSION_NOT_FOUND" }),
+        { status: 404, headers: { "Content-Type": "application/json" } }
+      );
+    }
+
     // Existing session — check message limit.
     // Pass plan so the check can skip an extra org DB fetch.
     const msgLimit = await checkMessageLimit(orgId, resolvedSessionId, plan);
