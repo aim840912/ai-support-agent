@@ -2,6 +2,7 @@ import NextAuth from "next-auth";
 import { PrismaAdapter } from "@auth/prisma-adapter";
 import { prisma } from "@/lib/db";
 import { authConfig } from "./auth.config";
+import { generateApiKey } from "@/lib/api-key";
 
 /**
  * Build a PrismaAdapter that auto-creates an Organization for OAuth sign-ups.
@@ -24,6 +25,7 @@ function buildAdapter() {
       const org = await tx.organization.create({
         data: {
           name: (data.name ?? data.email?.split("@")[0] ?? "My Organization") + "'s Org",
+          apiKey: generateApiKey(),
         },
       });
 

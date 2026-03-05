@@ -10,7 +10,7 @@ datasource db {
 model Organization {
   id        String   @id @default(cuid())
   name      String
-  apiKey    String   @unique @default(cuid())
+  apiKey    String   @unique  // Always set via generateApiKey() — never rely on DB default
   plan      String   @default("free") // free | pro
   settings  Json?    // { theme, welcomeMessage, ... }
   createdAt DateTime @default(now())
