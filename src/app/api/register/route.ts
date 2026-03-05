@@ -65,7 +65,6 @@ export async function POST(request: Request) {
     // Send verification email (fire-and-forget — don't block registration response).
     // In dev (no RESEND_API_KEY), sendVerificationEmail logs the link to console.
     // We always show the "check email" UI so the flow is consistent across environments.
-    const emailSent = true;
     sendVerificationEmail(email, name).catch((err) =>
       console.error("[register] Failed to send verification email:", err)
     );
@@ -73,13 +72,16 @@ export async function POST(request: Request) {
       console.info("[register] Dev mode: verification link logged above (no email sent)");
     }
 
+    // Same body as the duplicate-email path — attacker cannot distinguish
+    // new registration from an existing account by comparing response fields.
     return NextResponse.json(
-      { message: "Account created. Please check your inbox for a verification link.", emailSent },
+      { message: "Account created. Please check your inbox for a verification link." },
       { status: 201 }
     );
   } catch (error) {
     if (error instanceof z.ZodError) {
-      return NextResponse.json({ error: error.issues }, { status: 400 });
+      // Return a generic message — exposing error.issues leaks Zod schema structure
+      return NextResponse.json({ error: "Invalid input" }, { status: 400 });
     }
     console.error("[Register]", error);
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });

@@ -4,15 +4,23 @@ import Google from "next-auth/providers/google";
 import GitHub from "next-auth/providers/github";
 import { z } from "zod";
 import { createRateLimiter, checkRateLimit, getClientIp } from "@/lib/rate-limit";
-import { passwordSchema } from "@/lib/validation";
 
 // 5 failed login attempts per IP + email per 15 minutes
 const loginLimiter = createRateLimiter({ limit: 5, window: "15m" });
 
+// Login only validates non-empty — password strength is enforced at write time
+// (register / reset-password). Applying passwordSchema here would lock out
+// existing users whose passwords pre-date the strong-password policy.
 const loginSchema = z.object({
   email: z.string().email(),
-  password: passwordSchema,
+  password: z.string().min(1),
 });
+
+// Pre-hashed dummy value used for constant-time bcrypt when the user doesn't
+// exist, preventing timing-based email enumeration.
+// Generated with: bcrypt.hash("dummy-password-for-timing", 12)
+const DUMMY_HASH =
+  "$2a$12$LJ3m4ys3Tl0H2I14y0g.aOSghlp58bpMksFv/4KE2GI/G0mfqxgMq";
 
 export const authConfig: NextAuthConfig = {
   pages: {
@@ -100,7 +108,12 @@ export const authConfig: NextAuthConfig = {
           },
         });
 
-        if (!user || !user.password) return null;
+        if (!user || !user.password) {
+          // Always run bcrypt even when user doesn't exist — eliminates the
+          // ~200 ms timing gap that would reveal whether an email is registered.
+          await bcrypt.compare(password, DUMMY_HASH);
+          return null;
+        }
 
         const isValid = await bcrypt.compare(password, user.password);
         if (!isValid) return null;

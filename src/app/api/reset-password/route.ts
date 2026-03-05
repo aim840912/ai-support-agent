@@ -60,7 +60,8 @@ export async function POST(request: Request) {
     return NextResponse.json({ message: "Password updated successfully." });
   } catch (error) {
     if (error instanceof z.ZodError) {
-      return NextResponse.json({ error: error.issues }, { status: 400 });
+      // Return a generic message — exposing error.issues leaks Zod schema structure
+      return NextResponse.json({ error: "Invalid input" }, { status: 400 });
     }
     console.error("[reset-password]", error);
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });

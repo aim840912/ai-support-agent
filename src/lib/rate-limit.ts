@@ -15,13 +15,23 @@ type WindowRecord = {
 // In-memory store: identifier → list of request timestamps
 const store = new Map<string, WindowRecord>();
 
-// Periodic cleanup to prevent unbounded memory growth
+// Upper bound for any configured window (1h = longest window in use).
+// Used by maybePruneStore to purge timestamps that are expired across all limiters.
+const MAX_WINDOW_MS = 3_600_000;
+
+// Periodic cleanup to prevent unbounded memory growth.
+// Previous version only deleted entries with zero timestamps — entries that
+// still held old (but expired) timestamps were never cleaned up, causing slow
+// memory growth in long-running processes.
 let lastCleanup = Date.now();
 function maybePruneStore() {
   const now = Date.now();
   if (now - lastCleanup < 60_000) return;
   lastCleanup = now;
+  const globalCutoff = now - MAX_WINDOW_MS;
   for (const [key, record] of store.entries()) {
+    // Drop timestamps older than the maximum possible window
+    record.timestamps = record.timestamps.filter((t) => t > globalCutoff);
     if (record.timestamps.length === 0) store.delete(key);
   }
 }
