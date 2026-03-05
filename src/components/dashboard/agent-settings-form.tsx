@@ -90,7 +90,7 @@ export function AgentSettingsForm({
           className="resize-none font-mono text-xs"
         />
         <p className="text-xs text-zinc-400">
-          Custom instructions that guide the AI's behavior and tone.
+          Custom instructions that guide the AI&apos;s behavior and tone.
         </p>
       </div>
 

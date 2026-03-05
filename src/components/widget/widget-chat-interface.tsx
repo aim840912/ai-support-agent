@@ -43,17 +43,13 @@ export function WidgetChatInterface({
 }: WidgetChatInterfaceProps) {
   const [input, setInput] = useState("");
   const scrollRef = useRef<HTMLDivElement>(null);
-  const visitorId = useRef<string>("");
-
-  useEffect(() => {
-    visitorId.current = getVisitorId();
-  }, []);
+  const [visitorId] = useState(() => getVisitorId());
 
   const { messages, sendMessage, status, error } = useChat({
     transport: new DefaultChatTransport({
       api: "/api/widget/chat",
       headers: { "x-api-key": apiKey },
-      body: { visitorId: visitorId.current },
+      body: { visitorId },
     }),
     messages: [makeWelcomeMessage(welcomeMessage)],
   });
