@@ -3,6 +3,41 @@ import type { NextConfig } from "next";
 const nextConfig: NextConfig = {
   // pdf-parse is CJS-only, must run in Node.js runtime (not Edge)
   serverExternalPackages: ["pdf-parse"],
+
+  async headers() {
+    return [
+      {
+        // Apply to all routes except widget (widget needs to be embeddable via iframe)
+        source: "/((?!widget).*)",
+        headers: [
+          // Prevents clickjacking — disallows this page from being embedded in an iframe
+          { key: "X-Frame-Options", value: "DENY" },
+          // Prevents MIME-type sniffing — browser must respect declared Content-Type
+          { key: "X-Content-Type-Options", value: "nosniff" },
+          // Limits referrer info sent to external sites
+          { key: "Referrer-Policy", value: "strict-origin-when-cross-origin" },
+          // Disables unused browser features (camera, mic, geolocation)
+          {
+            key: "Permissions-Policy",
+            value: "camera=(), microphone=(), geolocation=()",
+          },
+          // Enforces HTTPS for 2 years, including subdomains
+          {
+            key: "Strict-Transport-Security",
+            value: "max-age=63072000; includeSubDomains; preload",
+          },
+        ],
+      },
+      {
+        // Widget is intentionally embeddable via iframe — skip X-Frame-Options
+        // but still protect against MIME sniffing
+        source: "/widget/:path*",
+        headers: [
+          { key: "X-Content-Type-Options", value: "nosniff" },
+        ],
+      },
+    ];
+  },
 };
 
 export default nextConfig;
