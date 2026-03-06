@@ -113,6 +113,21 @@ export async function createChatStream({
             .map((p) => p.text)
             .join("") ?? "";
 
+        const toolCalls =
+          responseMessage?.parts
+            ?.filter((p) => p.type.startsWith("tool-") || p.type === "dynamic-tool")
+            .map((p) => {
+              const tp = p as {
+                type: string;
+                toolName?: string;
+                toolCallId: string;
+              };
+              return {
+                toolName: tp.toolName ?? tp.type.replace(/^tool-/, ""),
+                toolCallId: tp.toolCallId,
+              };
+            }) ?? [];
+
         await prisma.chatMessage.createMany({
           data: [
             { sessionId: resolvedSessionId, role: "user", content: userText },
@@ -120,6 +135,7 @@ export async function createChatStream({
               sessionId: resolvedSessionId,
               role: "assistant",
               content: assistantText,
+              toolCalls: toolCalls.length > 0 ? toolCalls : undefined,
             },
           ],
         });
