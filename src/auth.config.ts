@@ -14,6 +14,7 @@ const loginLimiter = createRateLimiter({ limit: 5, window: "15m" });
 const loginSchema = z.object({
   email: z.string().email(),
   password: z.string().min(1),
+  rememberMe: z.enum(["true", "false"]).optional(), // NextAuth Credentials passes values as strings
 });
 
 // Pre-hashed dummy value used for constant-time bcrypt when the user doesn't
@@ -28,7 +29,7 @@ export const authConfig: NextAuthConfig = {
   },
   session: {
     strategy: "jwt", // Credentials provider requires JWT strategy
-    maxAge: 7 * 24 * 60 * 60,  // 7 days (reduced from NextAuth default of 30 days)
+    maxAge: 30 * 24 * 60 * 60, // 30 days (cookie lifetime — actual expiry enforced in jwt callback)
     updateAge: 24 * 60 * 60,   // Refresh token once per day
   },
   callbacks: {
@@ -51,10 +52,23 @@ export const authConfig: NextAuthConfig = {
     },
     jwt({ token, user }) {
       if (user) {
+        // First sign-in: persist rememberMe preference and login timestamp
         token.id = user.id;
         token.orgId = (user as { orgId?: string }).orgId;
         token.role = (user as { role?: string }).role;
+        token.rememberMe = (user as { rememberMe?: boolean }).rememberMe ?? true; // OAuth defaults to remembered
+        token.loginAt = Math.floor(Date.now() / 1000);
       }
+
+      // Every subsequent request: invalidate short-lived sessions after 1 day
+      const SHORT_MAX_AGE = 24 * 60 * 60; // 1 day in seconds
+      if (!token.rememberMe && token.loginAt) {
+        const elapsed = Math.floor(Date.now() / 1000) - (token.loginAt as number);
+        if (elapsed > SHORT_MAX_AGE) {
+          return {}; // Empty token forces NextAuth to treat session as invalid
+        }
+      }
+
       return token;
     },
     session({ session, token }) {
@@ -129,6 +143,7 @@ export const authConfig: NextAuthConfig = {
           name: user.name,
           orgId: user.orgId,
           role: user.role,
+          rememberMe: parsed.data.rememberMe === "true",
         };
       },
     }),

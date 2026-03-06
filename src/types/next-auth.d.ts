@@ -20,5 +20,7 @@ declare module "next-auth/jwt" {
     id?: string;
     orgId?: string;
     role?: string;
+    rememberMe?: boolean;
+    loginAt?: number; // Unix timestamp (seconds)
   }
 }
