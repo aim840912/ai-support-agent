@@ -2,7 +2,10 @@ import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
   // pdf-parse is CJS-only, must run in Node.js runtime (not Edge)
-  serverExternalPackages: ["pdf-parse"],
+  // @neondatabase/serverless uses WebSocket internals that Turbopack cannot
+  // bundle into worker processes — forcing native Node.js require() prevents
+  // worker crashes during auth module initialization.
+  serverExternalPackages: ["pdf-parse", "@neondatabase/serverless"],
 
   async headers() {
     return [
