@@ -24,7 +24,7 @@ export default async function DashboardLayout({
           <SidebarTrigger className="-ml-1" aria-label="Toggle sidebar" />
           <ThemeToggle />
         </header>
-        <main className="flex-1 flex flex-col p-6 min-h-0">{children}</main>
+        <main className="flex-1 flex flex-col p-6 min-h-0 min-w-0">{children}</main>
       </SidebarInset>
     </SidebarProvider>
   );
