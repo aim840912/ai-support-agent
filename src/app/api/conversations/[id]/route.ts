@@ -13,23 +13,28 @@ export async function DELETE(
   const { orgId } = session.user;
   const { id } = await context.params;
 
-  const chatSession = await prisma.chatSession.findUnique({
-    where: { id },
-    select: { orgId: true },
-  });
+  try {
+    const chatSession = await prisma.chatSession.findUnique({
+      where: { id },
+      select: { orgId: true },
+    });
 
-  if (!chatSession) {
-    return new Response("Not found", { status: 404 });
+    if (!chatSession) {
+      return new Response("Not found", { status: 404 });
+    }
+
+    if (chatSession.orgId !== orgId) {
+      return new Response("Forbidden", { status: 403 });
+    }
+
+    // Cascade delete — ChatMessage rows removed automatically via FK constraint
+    await prisma.chatSession.delete({ where: { id } });
+
+    return new Response(null, { status: 204 });
+  } catch (error) {
+    console.error("[ConversationDeleteAPI]", error);
+    return Response.json({ error: "Internal server error" }, { status: 500 });
   }
-
-  if (chatSession.orgId !== orgId) {
-    return new Response("Forbidden", { status: 403 });
-  }
-
-  // Cascade delete — ChatMessage rows removed automatically via FK constraint
-  await prisma.chatSession.delete({ where: { id } });
-
-  return new Response(null, { status: 204 });
 }
 
 export async function GET(
@@ -44,39 +49,44 @@ export async function GET(
   const { orgId } = session.user;
   const { id } = await context.params;
 
-  const chatSession = await prisma.chatSession.findUnique({
-    where: { id },
-    include: {
-      messages: {
-        orderBy: { createdAt: "asc" },
-        select: {
-          id: true,
-          role: true,
-          content: true,
-          createdAt: true,
-          toolCalls: true,
+  try {
+    const chatSession = await prisma.chatSession.findUnique({
+      where: { id },
+      include: {
+        messages: {
+          orderBy: { createdAt: "asc" },
+          select: {
+            id: true,
+            role: true,
+            content: true,
+            createdAt: true,
+            toolCalls: true,
+          },
         },
       },
-    },
-  });
+    });
 
-  if (!chatSession) {
-    return new Response("Not found", { status: 404 });
+    if (!chatSession) {
+      return new Response("Not found", { status: 404 });
+    }
+
+    // Verify ownership
+    if (chatSession.orgId !== orgId) {
+      return new Response("Forbidden", { status: 403 });
+    }
+
+    return Response.json({
+      id: chatSession.id,
+      source: chatSession.source,
+      visitorId: chatSession.visitorId,
+      createdAt: chatSession.createdAt.toISOString(),
+      messages: chatSession.messages.map((m) => ({
+        ...m,
+        createdAt: m.createdAt.toISOString(),
+      })),
+    });
+  } catch (error) {
+    console.error("[ConversationGetAPI]", error);
+    return Response.json({ error: "Internal server error" }, { status: 500 });
   }
-
-  // Verify ownership
-  if (chatSession.orgId !== orgId) {
-    return new Response("Forbidden", { status: 403 });
-  }
-
-  return Response.json({
-    id: chatSession.id,
-    source: chatSession.source,
-    visitorId: chatSession.visitorId,
-    createdAt: chatSession.createdAt.toISOString(),
-    messages: chatSession.messages.map((m) => ({
-      ...m,
-      createdAt: m.createdAt.toISOString(),
-    })),
-  });
 }

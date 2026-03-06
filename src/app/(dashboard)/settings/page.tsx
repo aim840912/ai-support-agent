@@ -22,82 +22,97 @@ export default async function SettingsPage({
   if (!session?.user?.orgId) redirect("/login");
   const orgId = session.user.orgId;
 
-  // Fetch org (name + apiKey) and agent settings in parallel.
-  // Pass org.plan to getOrgUsage so it can skip a redundant DB round-trip.
-  const [org, agentSettings] = await Promise.all([
-    prisma.organization.findUnique({
-      where: { id: orgId },
-      select: { name: true, plan: true, apiKey: true, stripeCustomerId: true },
-    }),
-    prisma.agentSettings.findUnique({
-      where: { orgId },
-      select: { welcomeMessage: true, systemPrompt: true, enabledTools: true },
-    }),
-  ]);
+  try {
+    // Fetch org (name + apiKey) and agent settings in parallel.
+    // Pass org.plan to getOrgUsage so it can skip a redundant DB round-trip.
+    const [org, agentSettings] = await Promise.all([
+      prisma.organization.findUnique({
+        where: { id: orgId },
+        select: { name: true, plan: true, apiKey: true, stripeCustomerId: true },
+      }),
+      prisma.agentSettings.findUnique({
+        where: { orgId },
+        select: { welcomeMessage: true, systemPrompt: true, enabledTools: true },
+      }),
+    ]);
 
-  const usage = await getOrgUsage(orgId, org?.plan);
+    const usage = await getOrgUsage(orgId, org?.plan);
 
-  // Generate Stripe Customer Portal URL for Pro users
-  let stripePortalUrl: string | undefined;
-  if (org?.plan === "pro" && org.stripeCustomerId) {
-    try {
-      const origin = process.env.AUTH_URL ?? "http://localhost:3000";
-      const portalSession = await getStripeClient().billingPortal.sessions.create({
-        customer: org.stripeCustomerId,
-        return_url: `${origin}/settings?tab=plan`,
-      });
-      stripePortalUrl = portalSession.url;
-    } catch {
-      // Non-fatal — portal URL simply won't show if Stripe is misconfigured
+    // Generate Stripe Customer Portal URL for Pro users
+    let stripePortalUrl: string | undefined;
+    if (org?.plan === "pro" && org.stripeCustomerId) {
+      try {
+        const origin = process.env.AUTH_URL ?? "http://localhost:3000";
+        const portalSession = await getStripeClient().billingPortal.sessions.create({
+          customer: org.stripeCustomerId,
+          return_url: `${origin}/settings?tab=plan`,
+        });
+        stripePortalUrl = portalSession.url;
+      } catch {
+        // Non-fatal — portal URL simply won't show if Stripe is misconfigured
+      }
     }
-  }
 
-  return (
-    <div>
-      {upgraded === "true" && <UpgradeSuccessToast />}
-      <h1 className="text-2xl font-semibold text-foreground">Settings</h1>
-      <p className="mt-1 text-sm text-muted-foreground">
-        Configure your agent and manage API keys
-      </p>
+    return (
+      <div>
+        {upgraded === "true" && <UpgradeSuccessToast />}
+        <h1 className="text-2xl font-semibold text-foreground">Settings</h1>
+        <p className="mt-1 text-sm text-muted-foreground">
+          Configure your agent and manage API keys
+        </p>
 
-      <div className="mt-8">
-        <Tabs defaultValue="agent">
-          <TabsList className="mb-6">
-            <TabsTrigger value="agent">Agent</TabsTrigger>
-            <TabsTrigger value="organization">Organization</TabsTrigger>
-            <TabsTrigger value="plan">Plan & Usage</TabsTrigger>
-          </TabsList>
+        <div className="mt-8">
+          <Tabs defaultValue="agent">
+            <TabsList className="mb-6">
+              <TabsTrigger value="agent">Agent</TabsTrigger>
+              <TabsTrigger value="organization">Organization</TabsTrigger>
+              <TabsTrigger value="plan">Plan & Usage</TabsTrigger>
+            </TabsList>
 
-          <TabsContent value="agent">
-            <AgentSettingsForm
-              welcomeMessage={
-                agentSettings?.welcomeMessage ??
-                "Hi! I'm your AI support assistant. How can I help you today?"
-              }
-              systemPrompt={agentSettings?.systemPrompt ?? ""}
-              enabledTools={
-                agentSettings?.enabledTools ?? ["searchKnowledgeBase"]
-              }
-            />
-          </TabsContent>
-
-          <TabsContent value="organization">
-            {org ? (
-              <OrgInfoCard
-                orgName={org.name}
-                plan={org.plan}
-                apiKey={org.apiKey}
+            <TabsContent value="agent">
+              <AgentSettingsForm
+                welcomeMessage={
+                  agentSettings?.welcomeMessage ??
+                  "Hi! I'm your AI support assistant. How can I help you today?"
+                }
+                systemPrompt={agentSettings?.systemPrompt ?? ""}
+                enabledTools={
+                  agentSettings?.enabledTools ?? ["searchKnowledgeBase"]
+                }
               />
-            ) : (
-              <p className="text-sm text-muted-foreground">Organization not found.</p>
-            )}
-          </TabsContent>
+            </TabsContent>
 
-          <TabsContent value="plan">
-            <PlanUsageSection usage={usage} stripePortalUrl={stripePortalUrl} />
-          </TabsContent>
-        </Tabs>
+            <TabsContent value="organization">
+              {org ? (
+                <OrgInfoCard
+                  orgName={org.name}
+                  plan={org.plan}
+                  apiKey={org.apiKey}
+                />
+              ) : (
+                <p className="text-sm text-muted-foreground">Organization not found.</p>
+              )}
+            </TabsContent>
+
+            <TabsContent value="plan">
+              <PlanUsageSection usage={usage} stripePortalUrl={stripePortalUrl} />
+            </TabsContent>
+          </Tabs>
+        </div>
       </div>
-    </div>
-  );
+    );
+  } catch (error) {
+    console.error("[SettingsPage]", error);
+    return (
+      <div>
+        <h1 className="text-2xl font-semibold text-foreground">Settings</h1>
+        <p className="mt-1 text-sm text-muted-foreground">
+          Configure your agent and manage API keys
+        </p>
+        <p className="mt-8 text-sm text-destructive">
+          Failed to load settings. Please try again later.
+        </p>
+      </div>
+    );
+  }
 }

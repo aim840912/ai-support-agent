@@ -20,32 +20,37 @@ export async function GET(request: NextRequest) {
       ? (rawSource as ValidSource)
       : undefined;
 
-  const sessions = await prisma.chatSession.findMany({
-    where: {
-      orgId,
-      ...(source ? { source } : {}),
-    },
-    orderBy: { createdAt: "desc" },
-    include: {
-      _count: { select: { messages: true } },
-      messages: {
-        take: 1,
-        orderBy: { createdAt: "asc" },
-        select: { content: true, role: true },
+  try {
+    const sessions = await prisma.chatSession.findMany({
+      where: {
+        orgId,
+        ...(source ? { source } : {}),
       },
-    },
-  });
+      orderBy: { createdAt: "desc" },
+      include: {
+        _count: { select: { messages: true } },
+        messages: {
+          take: 1,
+          orderBy: { createdAt: "asc" },
+          select: { content: true, role: true },
+        },
+      },
+    });
 
-  // Serialize dates for client consumption
-  const data = sessions.map((s) => ({
-    id: s.id,
-    source: s.source,
-    visitorId: s.visitorId,
-    userId: s.userId,
-    createdAt: s.createdAt.toISOString(),
-    messageCount: s._count.messages,
-    firstMessage: s.messages[0]?.content ?? null,
-  }));
+    // Serialize dates for client consumption
+    const data = sessions.map((s) => ({
+      id: s.id,
+      source: s.source,
+      visitorId: s.visitorId,
+      userId: s.userId,
+      createdAt: s.createdAt.toISOString(),
+      messageCount: s._count.messages,
+      firstMessage: s.messages[0]?.content ?? null,
+    }));
 
-  return Response.json(data);
+    return Response.json(data);
+  } catch (error) {
+    console.error("[ConversationsAPI]", error);
+    return Response.json({ error: "Internal server error" }, { status: 500 });
+  }
 }

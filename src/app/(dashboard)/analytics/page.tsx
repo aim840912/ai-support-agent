@@ -1,4 +1,5 @@
 import { auth } from "@/auth";
+import { redirect } from "next/navigation";
 import { prisma } from "@/lib/db";
 import { MessageSquare, MessagesSquare, Wrench } from "lucide-react";
 import { StatCard } from "@/components/dashboard/stat-card";
@@ -54,86 +55,103 @@ function getToolUsage(
 
 export default async function AnalyticsPage() {
   const session = await auth();
-  const orgId = session?.user?.orgId;
+  if (!session?.user?.orgId) redirect("/login");
 
-  const [sessions, messages] = await Promise.all([
-    prisma.chatSession.findMany({
-      where: { orgId },
-      select: {
-        source: true,
-        createdAt: true,
-        _count: { select: { messages: true } },
-      },
-    }),
-    prisma.chatMessage.findMany({
-      where: { session: { orgId } },
-      select: { toolCalls: true },
-    }),
-  ]);
+  const { orgId } = session.user;
 
-  const totalSessions = sessions.length;
-  const totalMessages = sessions.reduce((acc, s) => acc + s._count.messages, 0);
-  const avgMessages =
-    totalSessions > 0
-      ? Math.round((totalMessages / totalSessions) * 10) / 10
-      : 0;
+  try {
+    const [sessions, messages] = await Promise.all([
+      prisma.chatSession.findMany({
+        where: { orgId },
+        select: {
+          source: true,
+          createdAt: true,
+          _count: { select: { messages: true } },
+        },
+      }),
+      prisma.chatMessage.findMany({
+        where: { session: { orgId } },
+        select: { toolCalls: true },
+      }),
+    ]);
 
-  const dailyConversations = getDailyConversations(sessions);
-  const sourceDistribution = getSourceDistribution(sessions);
-  const toolUsage = getToolUsage(messages);
+    const totalSessions = sessions.length;
+    const totalMessages = sessions.reduce((acc, s) => acc + s._count.messages, 0);
+    const avgMessages =
+      totalSessions > 0
+        ? Math.round((totalMessages / totalSessions) * 10) / 10
+        : 0;
 
-  return (
-    <div>
-      <h1 className="text-2xl font-semibold text-foreground">Analytics</h1>
-      <p className="mt-1 text-sm text-muted-foreground">
-        Conversation metrics and insights
-      </p>
+    const dailyConversations = getDailyConversations(sessions);
+    const sourceDistribution = getSourceDistribution(sessions);
+    const toolUsage = getToolUsage(messages);
 
-      {/* Overview stat cards */}
-      <div className="mt-8 grid gap-4 sm:grid-cols-3">
-        <StatCard
-          title="Total Conversations"
-          value={totalSessions}
-          description="All sessions across sources"
-          Icon={MessageSquare}
-        />
-        <StatCard
-          title="Total Messages"
-          value={totalMessages}
-          description="User + assistant messages"
-          Icon={MessagesSquare}
-        />
-        <StatCard
-          title="Avg Messages / Session"
-          value={avgMessages}
-          description="Average depth per conversation"
-          Icon={Wrench}
-        />
+    return (
+      <div>
+        <h1 className="text-2xl font-semibold text-foreground">Analytics</h1>
+        <p className="mt-1 text-sm text-muted-foreground">
+          Conversation metrics and insights
+        </p>
+
+        {/* Overview stat cards */}
+        <div className="mt-8 grid gap-4 sm:grid-cols-3">
+          <StatCard
+            title="Total Conversations"
+            value={totalSessions}
+            description="All sessions across sources"
+            Icon={MessageSquare}
+          />
+          <StatCard
+            title="Total Messages"
+            value={totalMessages}
+            description="User + assistant messages"
+            Icon={MessagesSquare}
+          />
+          <StatCard
+            title="Avg Messages / Session"
+            value={avgMessages}
+            description="Average depth per conversation"
+            Icon={Wrench}
+          />
+        </div>
+
+        {/* Charts */}
+        <div className="mt-8 grid gap-6 lg:grid-cols-2">
+          <div className="rounded-lg border border-border bg-card p-4">
+            <h2 className="mb-4 text-sm font-medium text-foreground">
+              Daily Conversations (last 30 days)
+            </h2>
+            <ConversationsChart data={dailyConversations} />
+          </div>
+
+          <div className="rounded-lg border border-border bg-card p-4">
+            <h2 className="mb-4 text-sm font-medium text-foreground">
+              Source Distribution
+            </h2>
+            <SourceDistribution data={sourceDistribution} />
+          </div>
+
+          <div className="rounded-lg border border-border bg-card p-4 lg:col-span-2">
+            <h2 className="mb-4 text-sm font-medium text-foreground">
+              Tool Usage
+            </h2>
+            <ToolUsageChart data={toolUsage} />
+          </div>
+        </div>
       </div>
-
-      {/* Charts */}
-      <div className="mt-8 grid gap-6 lg:grid-cols-2">
-        <div className="rounded-lg border border-border bg-card p-4">
-          <h2 className="mb-4 text-sm font-medium text-foreground">
-            Daily Conversations (last 30 days)
-          </h2>
-          <ConversationsChart data={dailyConversations} />
-        </div>
-
-        <div className="rounded-lg border border-border bg-card p-4">
-          <h2 className="mb-4 text-sm font-medium text-foreground">
-            Source Distribution
-          </h2>
-          <SourceDistribution data={sourceDistribution} />
-        </div>
-
-        <div className="rounded-lg border border-border bg-card p-4 lg:col-span-2">
-          <h2 className="mb-4 text-sm font-medium text-foreground">
-            Tool Usage
-          </h2>
-          <ToolUsageChart data={toolUsage} />
-        </div>
+    );
+  } catch (error) {
+    console.error("[AnalyticsPage]", error);
+    return (
+      <div>
+        <h1 className="text-2xl font-semibold text-foreground">Analytics</h1>
+        <p className="mt-1 text-sm text-muted-foreground">
+          Conversation metrics and insights
+        </p>
+        <p className="mt-8 text-sm text-destructive">
+          Failed to load analytics data. Please try again later.
+        </p>
       </div>
-    </div>
-  );
+    );
+  }
 }

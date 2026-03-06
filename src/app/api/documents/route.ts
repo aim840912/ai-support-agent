@@ -40,19 +40,24 @@ export async function GET() {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  const documents = await prisma.document.findMany({
-    where: { orgId: session.user.orgId },
-    orderBy: { createdAt: "desc" },
-    select: {
-      id: true,
-      filename: true,
-      status: true,
-      chunkCount: true,
-      createdAt: true,
-    },
-  });
+  try {
+    const documents = await prisma.document.findMany({
+      where: { orgId: session.user.orgId },
+      orderBy: { createdAt: "desc" },
+      select: {
+        id: true,
+        filename: true,
+        status: true,
+        chunkCount: true,
+        createdAt: true,
+      },
+    });
 
-  return NextResponse.json(documents);
+    return NextResponse.json(documents);
+  } catch (error) {
+    console.error("[DocumentsGetAPI]", error);
+    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
+  }
 }
 
 export async function POST(request: Request) {
@@ -107,13 +112,19 @@ export async function POST(request: Request) {
   }
 
   // Create document record first (status: processing)
-  const document = await prisma.document.create({
-    data: {
-      filename: file.name,
-      status: "processing",
-      orgId: session.user.orgId,
-    },
-  });
+  let document;
+  try {
+    document = await prisma.document.create({
+      data: {
+        filename: file.name,
+        status: "processing",
+        orgId: session.user.orgId,
+      },
+    });
+  } catch (error) {
+    console.error("[DocumentsPostAPI]", error);
+    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
+  }
 
   // Fire-and-forget: process in background (no await)
   processDocument(document.id, buffer, file.name, session.user.orgId).catch(

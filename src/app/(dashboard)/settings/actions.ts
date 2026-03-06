@@ -39,23 +39,34 @@ export async function updateAgentSettings(input: UpdateAgentSettingsInput) {
 
   const { orgId } = session.user;
 
-  // Validate and sanitize input before writing to the database
-  const validated = updateAgentSettingsSchema.parse(input);
+  // safeParse avoids throwing a raw ZodError — invalid input is handled
+  // explicitly rather than propagating opaque validation exceptions.
+  const result = updateAgentSettingsSchema.safeParse(input);
+  if (!result.success) {
+    throw new Error(result.error.issues[0]?.message ?? "Validation failed");
+  }
 
-  await prisma.agentSettings.upsert({
-    where: { orgId },
-    create: {
-      orgId,
-      welcomeMessage: validated.welcomeMessage,
-      systemPrompt: validated.systemPrompt || null,
-      enabledTools: validated.enabledTools,
-    },
-    update: {
-      welcomeMessage: validated.welcomeMessage,
-      systemPrompt: validated.systemPrompt || null,
-      enabledTools: validated.enabledTools,
-    },
-  });
+  const validated = result.data;
+
+  try {
+    await prisma.agentSettings.upsert({
+      where: { orgId },
+      create: {
+        orgId,
+        welcomeMessage: validated.welcomeMessage,
+        systemPrompt: validated.systemPrompt || null,
+        enabledTools: validated.enabledTools,
+      },
+      update: {
+        welcomeMessage: validated.welcomeMessage,
+        systemPrompt: validated.systemPrompt || null,
+        enabledTools: validated.enabledTools,
+      },
+    });
+  } catch (error) {
+    console.error("[updateAgentSettings]", error);
+    throw new Error("Failed to save settings. Please try again.");
+  }
 
   revalidatePath("/settings");
 }
@@ -71,13 +82,18 @@ export async function regenerateApiKey() {
   const newKey = generateApiKey();
   const newHash = hashApiKey(newKey);
 
-  await prisma.organization.update({
-    where: { id: orgId },
-    data: {
-      apiKey: newKey,
-      apiKeyHash: newHash,
-    },
-  });
+  try {
+    await prisma.organization.update({
+      where: { id: orgId },
+      data: {
+        apiKey: newKey,
+        apiKeyHash: newHash,
+      },
+    });
+  } catch (error) {
+    console.error("[regenerateApiKey]", error);
+    throw new Error("Failed to regenerate API key. Please try again.");
+  }
 
   revalidatePath("/settings");
 

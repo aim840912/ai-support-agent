@@ -15,47 +15,52 @@ export async function POST() {
 
   const { orgId, email } = session.user;
 
-  const org = await prisma.organization.findUnique({
-    where: { id: orgId },
-    select: { stripeCustomerId: true, plan: true },
-  });
+  try {
+    const org = await prisma.organization.findUnique({
+      where: { id: orgId },
+      select: { stripeCustomerId: true, plan: true },
+    });
 
-  if (!org) {
-    return new Response("Organization not found", { status: 404 });
-  }
+    if (!org) {
+      return new Response("Organization not found", { status: 404 });
+    }
 
-  // Already on Pro — don't create a second subscription
-  if (org.plan === "pro") {
-    return Response.json({ error: "Already on Pro plan" }, { status: 400 });
-  }
+    // Already on Pro — don't create a second subscription
+    if (org.plan === "pro") {
+      return Response.json({ error: "Already on Pro plan" }, { status: 400 });
+    }
 
-  const stripe = getStripeClient();
+    const stripe = getStripeClient();
 
-  // Reuse existing Stripe customer or create a new one
-  let customerId = org.stripeCustomerId;
-  if (!customerId) {
-    const customer = await stripe.customers.create({
-      email,
+    // Reuse existing Stripe customer or create a new one
+    let customerId = org.stripeCustomerId;
+    if (!customerId) {
+      const customer = await stripe.customers.create({
+        email,
+        metadata: { orgId },
+      });
+      customerId = customer.id;
+
+      await prisma.organization.update({
+        where: { id: orgId },
+        data: { stripeCustomerId: customerId },
+      });
+    }
+
+    const origin = process.env.AUTH_URL ?? "http://localhost:3000";
+
+    const checkoutSession = await stripe.checkout.sessions.create({
+      customer: customerId,
+      mode: "subscription",
+      line_items: [{ price: priceId, quantity: 1 }],
+      success_url: `${origin}/settings?tab=plan&upgraded=true`,
+      cancel_url: `${origin}/settings?tab=plan`,
       metadata: { orgId },
     });
-    customerId = customer.id;
 
-    await prisma.organization.update({
-      where: { id: orgId },
-      data: { stripeCustomerId: customerId },
-    });
+    return Response.json({ url: checkoutSession.url });
+  } catch (error) {
+    console.error("[StripeCheckout]", error);
+    return Response.json({ error: "Internal server error" }, { status: 500 });
   }
-
-  const origin = process.env.AUTH_URL ?? "http://localhost:3000";
-
-  const checkoutSession = await stripe.checkout.sessions.create({
-    customer: customerId,
-    mode: "subscription",
-    line_items: [{ price: priceId, quantity: 1 }],
-    success_url: `${origin}/settings?tab=plan&upgraded=true`,
-    cancel_url: `${origin}/settings?tab=plan`,
-    metadata: { orgId },
-  });
-
-  return Response.json({ url: checkoutSession.url });
 }

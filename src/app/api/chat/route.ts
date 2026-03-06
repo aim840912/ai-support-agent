@@ -52,16 +52,23 @@ export async function POST(request: Request) {
   }
 
   // Fetch plan + custom system prompt in parallel
-  const [org, agentSettings] = await Promise.all([
-    prisma.organization.findUnique({
-      where: { id: orgId },
-      select: { plan: true },
-    }),
-    prisma.agentSettings.findUnique({
-      where: { orgId },
-      select: { systemPrompt: true },
-    }),
-  ]);
+  let org: { plan: string } | null = null;
+  let agentSettings: { systemPrompt: string | null } | null = null;
+  try {
+    [org, agentSettings] = await Promise.all([
+      prisma.organization.findUnique({
+        where: { id: orgId },
+        select: { plan: true },
+      }),
+      prisma.agentSettings.findUnique({
+        where: { orgId },
+        select: { systemPrompt: true },
+      }),
+    ]);
+  } catch (error) {
+    console.error("[ChatAPI]", error);
+    return new Response("Internal server error", { status: 500 });
+  }
   const plan = org?.plan ?? "free";
 
   return createChatStream({

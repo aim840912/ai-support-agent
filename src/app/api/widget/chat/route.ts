@@ -23,19 +23,25 @@ export async function POST(request: Request) {
   // Fallback to plaintext lookup for orgs created before the hash migration —
   // remove the fallback once all records have been backfilled.
   const keyHash = hashApiKey(apiKey);
-  const org = await prisma.organization.findFirst({
-    where: {
-      OR: [
-        { apiKeyHash: keyHash },  // preferred — hash-based lookup
-        { apiKeyHash: null, apiKey: apiKey },  // migration fallback for pre-hash orgs
-      ],
-    },
-    select: {
-      id: true,
-      plan: true,
-      agentSettings: { select: { systemPrompt: true } },
-    },
-  });
+  let org: { id: string; plan: string; agentSettings: { systemPrompt: string | null } | null } | null;
+  try {
+    org = await prisma.organization.findFirst({
+      where: {
+        OR: [
+          { apiKeyHash: keyHash },  // preferred — hash-based lookup
+          { apiKeyHash: null, apiKey: apiKey },  // migration fallback for pre-hash orgs
+        ],
+      },
+      select: {
+        id: true,
+        plan: true,
+        agentSettings: { select: { systemPrompt: true } },
+      },
+    });
+  } catch (error) {
+    console.error("[WidgetChatAPI]", error);
+    return new Response("Internal server error", { status: 500 });
+  }
 
   if (!org) {
     return new Response("Invalid API key", { status: 401 });

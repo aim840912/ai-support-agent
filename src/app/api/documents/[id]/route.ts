@@ -13,16 +13,21 @@ export async function DELETE(
 
   const { id } = await context.params;
 
-  // Ensure the document belongs to this org
-  const document = await prisma.document.findFirst({
-    where: { id, orgId: session.user.orgId },
-  });
+  try {
+    // Ensure the document belongs to this org
+    const document = await prisma.document.findFirst({
+      where: { id, orgId: session.user.orgId },
+    });
 
-  if (!document) {
-    return NextResponse.json({ error: "Document not found" }, { status: 404 });
+    if (!document) {
+      return NextResponse.json({ error: "Document not found" }, { status: 404 });
+    }
+
+    await prisma.document.delete({ where: { id } });
+
+    return new NextResponse(null, { status: 204 });
+  } catch (error) {
+    console.error("[DocumentDeleteAPI]", error);
+    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
-
-  await prisma.document.delete({ where: { id } });
-
-  return new NextResponse(null, { status: 204 });
 }
