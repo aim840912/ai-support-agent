@@ -65,7 +65,41 @@ let _instance: NextAuthInstance | null = null;
 
 function getInstance(): NextAuthInstance {
   if (!_instance) {
-    _instance = NextAuth({ adapter: buildAdapter(), ...authConfig });
+    _instance = NextAuth({
+      adapter: buildAdapter(),
+      ...authConfig,
+      callbacks: {
+        ...authConfig.callbacks,
+        async jwt(params) {
+          // 1. Run the base edge-safe callback from authConfig (extracts orgId
+          //    from user when present, propagates it on subsequent requests).
+          const baseResult = authConfig.callbacks?.jwt?.(params);
+          const token =
+            baseResult instanceof Promise
+              ? await baseResult
+              : (baseResult ?? params.token);
+
+          // 2. DB fallback — only fires on sign-in (params.user present) when
+          //    orgId is still missing. This handles the NextAuth v5 beta edge
+          //    case where non-standard fields (orgId, role) are stripped from
+          //    the OAuth adapter result before reaching this callback.
+          //    Credentials flow is unaffected: authorize() explicitly returns
+          //    orgId, so the base callback already sets it.
+          if (params.user && !token.orgId && token.id) {
+            const dbUser = await prisma.user.findUnique({
+              where: { id: token.id as string },
+              select: { orgId: true, role: true },
+            });
+            if (dbUser) {
+              token.orgId = dbUser.orgId;
+              token.role = dbUser.role;
+            }
+          }
+
+          return token;
+        },
+      },
+    });
   }
   return _instance;
 }
