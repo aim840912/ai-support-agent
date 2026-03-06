@@ -131,7 +131,7 @@ export default function RegisterPage() {
         <div>
           <label
             htmlFor="email"
-            className="mb-1 block text-sm font-medium text-zinc-700"
+            className="mb-1 block text-sm font-medium text-foreground"
           >
             Email
           </label>
@@ -142,7 +142,7 @@ export default function RegisterPage() {
             required
             value={form.email}
             onChange={update("email")}
-            className="w-full rounded-lg border border-zinc-300 px-3 py-2 text-sm focus:border-zinc-500 focus:outline-none focus:ring-1 focus:ring-zinc-500"
+            className="w-full rounded-lg border border-input bg-background px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
             placeholder="you@company.com"
           />
         </div>
@@ -150,7 +150,7 @@ export default function RegisterPage() {
         <div>
           <label
             htmlFor="password"
-            className="mb-1 block text-sm font-medium text-zinc-700"
+            className="mb-1 block text-sm font-medium text-foreground"
           >
             Password
           </label>
@@ -162,7 +162,7 @@ export default function RegisterPage() {
             minLength={8}
             value={form.password}
             onChange={update("password")}
-            className="w-full rounded-lg border border-zinc-300 px-3 py-2 text-sm focus:border-zinc-500 focus:outline-none focus:ring-1 focus:ring-zinc-500"
+            className="w-full rounded-lg border border-input bg-background px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
             placeholder="Min. 8 chars, upper, lower & number"
           />
         </div>
