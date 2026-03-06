@@ -84,8 +84,8 @@ export default async function AnalyticsPage() {
 
   return (
     <div>
-      <h1 className="text-2xl font-semibold text-zinc-900">Analytics</h1>
-      <p className="mt-1 text-sm text-zinc-500">
+      <h1 className="text-2xl font-semibold text-foreground">Analytics</h1>
+      <p className="mt-1 text-sm text-muted-foreground">
         Conversation metrics and insights
       </p>
 
@@ -113,22 +113,22 @@ export default async function AnalyticsPage() {
 
       {/* Charts */}
       <div className="mt-8 grid gap-6 lg:grid-cols-2">
-        <div className="rounded-lg border border-zinc-200 p-4">
-          <h2 className="mb-4 text-sm font-medium text-zinc-700">
+        <div className="rounded-lg border border-border bg-card p-4">
+          <h2 className="mb-4 text-sm font-medium text-foreground">
             Daily Conversations (last 30 days)
           </h2>
           <ConversationsChart data={dailyConversations} />
         </div>
 
-        <div className="rounded-lg border border-zinc-200 p-4">
-          <h2 className="mb-4 text-sm font-medium text-zinc-700">
+        <div className="rounded-lg border border-border bg-card p-4">
+          <h2 className="mb-4 text-sm font-medium text-foreground">
             Source Distribution
           </h2>
           <SourceDistribution data={sourceDistribution} />
         </div>
 
-        <div className="rounded-lg border border-zinc-200 p-4 lg:col-span-2">
-          <h2 className="mb-4 text-sm font-medium text-zinc-700">
+        <div className="rounded-lg border border-border bg-card p-4 lg:col-span-2">
+          <h2 className="mb-4 text-sm font-medium text-foreground">
             Tool Usage
           </h2>
           <ToolUsageChart data={toolUsage} />

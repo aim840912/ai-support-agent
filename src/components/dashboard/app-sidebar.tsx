@@ -59,8 +59,8 @@ export function AppSidebar({ userEmail }: { userEmail?: string }) {
     <Sidebar>
       <SidebarHeader className="border-b border-sidebar-border px-4 py-3">
         <div className="flex items-center gap-2">
-          <Bot className="h-5 w-5 text-zinc-900" aria-hidden="true" />
-          <span className="text-sm font-semibold text-zinc-900">
+          <Bot className="h-5 w-5 text-foreground" aria-hidden="true" />
+          <span className="text-sm font-semibold text-foreground">
             AI Support Agent
           </span>
         </div>
@@ -76,7 +76,7 @@ export function AppSidebar({ userEmail }: { userEmail?: string }) {
                     asChild
                     isActive={pathname === item.href || pathname.startsWith(item.href + "/")}
                     className={cn(
-                      (pathname === item.href || pathname.startsWith(item.href + "/")) && "bg-zinc-100 font-medium"
+                      (pathname === item.href || pathname.startsWith(item.href + "/")) && "bg-accent font-medium"
                     )}
                   >
                     <Link href={item.href}>
@@ -92,10 +92,10 @@ export function AppSidebar({ userEmail }: { userEmail?: string }) {
       </SidebarContent>
 
       <SidebarFooter className="border-t border-sidebar-border p-4">
-        <div className="mb-2 truncate text-xs text-zinc-500">{userEmail}</div>
+        <div className="mb-2 truncate text-xs text-muted-foreground">{userEmail}</div>
         <button
           onClick={() => signOut({ callbackUrl: "/login" })}
-          className="flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-sm text-zinc-600 transition-colors hover:bg-zinc-100 hover:text-zinc-900"
+          className="flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-sm text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
         >
           <LogOut className="h-4 w-4" aria-hidden="true" />
           Sign out

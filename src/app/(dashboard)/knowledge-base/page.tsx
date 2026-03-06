@@ -40,8 +40,8 @@ export default async function KnowledgeBasePage() {
 
   return (
     <div>
-      <h1 className="text-2xl font-semibold text-zinc-900">Knowledge Base</h1>
-      <p className="mt-1 text-sm text-zinc-500">
+      <h1 className="text-2xl font-semibold text-foreground">Knowledge Base</h1>
+      <p className="mt-1 text-sm text-muted-foreground">
         Upload documents to train your AI support agent
       </p>
 

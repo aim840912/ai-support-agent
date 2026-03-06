@@ -5,6 +5,7 @@ import {
   SidebarProvider,
   SidebarTrigger,
 } from "@/components/ui/sidebar";
+import { ThemeToggle } from "@/components/theme-toggle";
 
 export default async function DashboardLayout({
   children,
@@ -19,8 +20,9 @@ export default async function DashboardLayout({
     <SidebarProvider className="h-svh">
       <AppSidebar userEmail={session?.user?.email ?? undefined} />
       <SidebarInset>
-        <header className="flex h-14 items-center border-b border-zinc-200 px-4">
+        <header className="flex h-14 items-center justify-between border-b border-border px-4">
           <SidebarTrigger className="-ml-1" aria-label="Toggle sidebar" />
+          <ThemeToggle />
         </header>
         <main className="flex-1 flex flex-col p-6 min-h-0">{children}</main>
       </SidebarInset>

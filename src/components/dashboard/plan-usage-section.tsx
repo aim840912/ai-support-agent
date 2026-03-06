@@ -19,16 +19,16 @@ function UsageStat({
   return (
     <div className="space-y-1.5">
       <div className="flex items-center justify-between text-sm">
-        <span className="font-medium text-zinc-700">{label}</span>
-        <span className="text-zinc-500">
+        <span className="font-medium text-foreground">{label}</span>
+        <span className="text-muted-foreground">
           {current} / {unlimited ? "Unlimited" : limit}
         </span>
       </div>
       {!unlimited && (
-        <div className="h-1.5 w-full rounded-full bg-zinc-100">
+        <div className="h-1.5 w-full rounded-full bg-muted">
           <div
             className={`h-full rounded-full transition-all ${
-              isAt ? "bg-red-500" : isNear ? "bg-amber-400" : "bg-zinc-400"
+              isAt ? "bg-red-500" : isNear ? "bg-amber-400" : "bg-primary"
             }`}
             style={{ width: `${pct}%` }}
             role="progressbar"
@@ -50,19 +50,19 @@ export function PlanUsageSection({ usage }: { usage: UsageData }) {
     <div className="max-w-lg space-y-8">
       {/* Plan badge */}
       <div className="flex items-center gap-3">
-        <span className="inline-flex items-center rounded-full border border-zinc-200 bg-zinc-50 px-3 py-1 text-sm font-semibold uppercase tracking-wide text-zinc-700">
+        <span className="inline-flex items-center rounded-full border border-border bg-muted px-3 py-1 text-sm font-semibold uppercase tracking-wide text-foreground">
           {plan}
         </span>
         {plan === "free" && (
-          <span className="text-sm text-zinc-500">
+          <span className="text-sm text-muted-foreground">
             Upgrade to Pro for higher limits and all tools.
           </span>
         )}
       </div>
 
       {/* Usage stats */}
-      <div className="rounded-xl border border-zinc-200 bg-white p-6 space-y-5">
-        <h2 className="text-sm font-semibold text-zinc-900">Usage this month</h2>
+      <div className="rounded-xl border border-border bg-card p-6 space-y-5">
+        <h2 className="text-sm font-semibold text-foreground">Usage this month</h2>
 
         <UsageStat
           label="Knowledge base documents"
@@ -87,8 +87,8 @@ export function PlanUsageSection({ usage }: { usage: UsageData }) {
       </div>
 
       {/* Enabled tools */}
-      <div className="rounded-xl border border-zinc-200 bg-white p-6">
-        <h2 className="mb-4 text-sm font-semibold text-zinc-900">AI Tools</h2>
+      <div className="rounded-xl border border-border bg-card p-6">
+        <h2 className="mb-4 text-sm font-semibold text-foreground">AI Tools</h2>
         <ul className="space-y-2">
           {[
             { key: "searchKnowledgeBase", label: "Knowledge Base Search" },
@@ -105,11 +105,11 @@ export function PlanUsageSection({ usage }: { usage: UsageData }) {
                   }`}
                   aria-hidden="true"
                 />
-                <span className={enabled ? "text-zinc-700" : "text-zinc-400"}>
+                <span className={enabled ? "text-foreground" : "text-muted-foreground"}>
                   {label}
                 </span>
                 {!enabled && (
-                  <span className="ml-auto text-xs text-zinc-400">Pro only</span>
+                  <span className="ml-auto text-xs text-muted-foreground">Pro only</span>
                 )}
               </li>
             );

@@ -41,8 +41,8 @@ export function UpgradeDialog({ open, onOpenChange, reason }: Props) {
 
         <ul className="mt-2 space-y-2">
           {PRO_FEATURES.map((feature) => (
-            <li key={feature} className="flex items-center gap-2 text-sm text-zinc-700">
-              <Check className="h-4 w-4 shrink-0 text-zinc-500" aria-hidden="true" />
+            <li key={feature} className="flex items-center gap-2 text-sm text-foreground">
+              <Check className="h-4 w-4 shrink-0 text-muted-foreground" aria-hidden="true" />
               {feature}
             </li>
           ))}
@@ -51,7 +51,7 @@ export function UpgradeDialog({ open, onOpenChange, reason }: Props) {
         <div className="mt-4 flex flex-col gap-2">
           <button
             type="button"
-            className="w-full rounded-lg bg-zinc-900 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-zinc-700"
+            className="w-full rounded-lg bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/80"
             onClick={() => {
               // TODO: integrate Stripe or billing portal
               alert("Billing not yet configured. Contact support to upgrade.");
@@ -61,7 +61,7 @@ export function UpgradeDialog({ open, onOpenChange, reason }: Props) {
           </button>
           <button
             type="button"
-            className="w-full rounded-lg border border-zinc-200 px-4 py-2 text-sm font-medium text-zinc-600 transition-colors hover:bg-zinc-50"
+            className="w-full rounded-lg border border-border px-4 py-2 text-sm font-medium text-muted-foreground transition-colors hover:bg-accent"
             onClick={() => onOpenChange(false)}
           >
             Maybe later

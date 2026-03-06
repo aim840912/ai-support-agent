@@ -53,16 +53,16 @@ export function ConversationDetail({
     <Dialog open={!!sessionId} onOpenChange={handleOpenChange}>
       <DialogContent className="max-w-2xl">
         <DialogHeader>
-          <DialogTitle className="text-zinc-900">Conversation History</DialogTitle>
+          <DialogTitle className="text-foreground">Conversation History</DialogTitle>
         </DialogHeader>
 
         {loading ? (
           <div className="flex h-48 items-center justify-center">
-            <p className="text-sm text-zinc-400">Loading...</p>
+            <p className="text-sm text-muted-foreground">Loading...</p>
           </div>
         ) : messages.length === 0 ? (
           <div className="flex h-48 items-center justify-center">
-            <p className="text-sm text-zinc-400">No messages in this conversation.</p>
+            <p className="text-sm text-muted-foreground">No messages in this conversation.</p>
           </div>
         ) : (
           <ScrollArea className="h-[480px] pr-4">
@@ -79,15 +79,15 @@ export function ConversationDetail({
                     className={cn(
                       "max-w-[80%] rounded-lg px-3 py-2 text-sm",
                       msg.role === "user"
-                        ? "bg-zinc-900 text-white"
-                        : "bg-zinc-100 text-zinc-900"
+                        ? "bg-primary text-primary-foreground"
+                        : "bg-muted text-foreground"
                     )}
                   >
                     <p className="whitespace-pre-wrap break-words">{msg.content}</p>
                     <p
                       className={cn(
                         "mt-1 text-xs",
-                        msg.role === "user" ? "text-zinc-400" : "text-zinc-400"
+                        msg.role === "user" ? "text-primary-foreground/60" : "text-muted-foreground"
                       )}
                     >
                       {new Date(msg.createdAt).toLocaleTimeString()}

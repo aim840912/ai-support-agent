@@ -30,8 +30,8 @@ export default async function ConversationsPage() {
 
   return (
     <div>
-      <h1 className="text-2xl font-semibold text-zinc-900">Conversations</h1>
-      <p className="mt-1 text-sm text-zinc-500">
+      <h1 className="text-2xl font-semibold text-foreground">Conversations</h1>
+      <p className="mt-1 text-sm text-muted-foreground">
         View all customer conversations
       </p>
 

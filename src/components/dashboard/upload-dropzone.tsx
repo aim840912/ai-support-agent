@@ -70,18 +70,18 @@ export function UploadDropzone() {
         className={cn(
           "flex cursor-pointer flex-col items-center justify-center rounded-xl border-2 border-dashed px-6 py-12 text-center transition-colors",
           dragging
-            ? "border-zinc-400 bg-zinc-50"
-            : "border-zinc-200 hover:border-zinc-300 hover:bg-zinc-50"
+            ? "border-ring bg-accent"
+            : "border-border hover:border-ring/50 hover:bg-accent"
         )}
       >
         <Upload
-          className="mb-3 h-8 w-8 text-zinc-400"
+          className="mb-3 h-8 w-8 text-muted-foreground"
           aria-hidden="true"
         />
-        <p className="text-sm font-medium text-zinc-700">
+        <p className="text-sm font-medium text-foreground">
           {uploading ? "Uploading..." : "Drop a file here, or click to browse"}
         </p>
-        <p className="mt-1 text-xs text-zinc-400">
+        <p className="mt-1 text-xs text-muted-foreground">
           PDF, TXT, Markdown — max {MAX_MB}MB
         </p>
       </div>

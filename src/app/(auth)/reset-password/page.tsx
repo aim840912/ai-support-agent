@@ -54,7 +54,7 @@ function ResetPasswordForm() {
       <div>
         <label
           htmlFor="password"
-          className="mb-1 block text-sm font-medium text-zinc-700"
+          className="mb-1 block text-sm font-medium text-foreground"
         >
           New password
         </label>
@@ -66,7 +66,7 @@ function ResetPasswordForm() {
           minLength={8}
           value={password}
           onChange={(e) => setPassword(e.target.value)}
-          className="w-full rounded-lg border border-zinc-300 px-3 py-2 text-sm text-zinc-900 placeholder-zinc-400 focus:border-zinc-500 focus:outline-none focus:ring-1 focus:ring-zinc-500"
+          className="w-full rounded-lg border border-input bg-background px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
           placeholder="Min. 8 chars, upper, lower & number"
         />
       </div>
@@ -74,7 +74,7 @@ function ResetPasswordForm() {
       <div>
         <label
           htmlFor="confirm"
-          className="mb-1 block text-sm font-medium text-zinc-700"
+          className="mb-1 block text-sm font-medium text-foreground"
         >
           Confirm password
         </label>
@@ -86,7 +86,7 @@ function ResetPasswordForm() {
           minLength={6}
           value={confirm}
           onChange={(e) => setConfirm(e.target.value)}
-          className="w-full rounded-lg border border-zinc-300 px-3 py-2 text-sm text-zinc-900 placeholder-zinc-400 focus:border-zinc-500 focus:outline-none focus:ring-1 focus:ring-zinc-500"
+          className="w-full rounded-lg border border-input bg-background px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
           placeholder="Re-enter password"
         />
       </div>
@@ -100,7 +100,7 @@ function ResetPasswordForm() {
       <button
         type="submit"
         disabled={loading}
-        className="w-full rounded-lg bg-zinc-900 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-zinc-700 disabled:opacity-50"
+        className="w-full rounded-lg bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/80 disabled:opacity-50"
       >
         {loading ? "Updating..." : "Update password"}
       </button>
@@ -110,18 +110,18 @@ function ResetPasswordForm() {
 
 export default function ResetPasswordPage() {
   return (
-    <div className="rounded-xl border border-zinc-200 bg-white p-8 shadow-sm">
-      <h1 className="mb-1 text-2xl font-semibold text-zinc-900">Set new password</h1>
-      <p className="mb-6 text-sm text-zinc-500">
+    <div className="rounded-xl border border-border bg-card p-8 shadow-sm">
+      <h1 className="mb-1 text-2xl font-semibold text-foreground">Set new password</h1>
+      <p className="mb-6 text-sm text-muted-foreground">
         Choose a new password for your account.
       </p>
 
-      <Suspense fallback={<div className="text-sm text-zinc-400">Loading...</div>}>
+      <Suspense fallback={<div className="text-sm text-muted-foreground">Loading...</div>}>
         <ResetPasswordForm />
       </Suspense>
 
-      <p className="mt-4 text-center text-sm text-zinc-500">
-        <Link href="/login" className="font-medium text-zinc-900 hover:underline">
+      <p className="mt-4 text-center text-sm text-muted-foreground">
+        <Link href="/login" className="font-medium text-foreground hover:underline">
           Back to sign in
         </Link>
       </p>

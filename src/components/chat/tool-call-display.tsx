@@ -47,12 +47,12 @@ export function ToolCallDisplay({ part }: ToolCallDisplayProps) {
   const isRunning = !isComplete && !isError;
 
   return (
-    <div className="rounded-md border border-zinc-200 bg-zinc-50 text-sm overflow-hidden">
+    <div className="rounded-md border border-border bg-muted/50 text-sm overflow-hidden">
       {/* Header row */}
       <button
         type="button"
         onClick={() => setIsExpanded((v) => !v)}
-        className="flex w-full items-center gap-2 px-3 py-2 text-left hover:bg-zinc-100 transition-colors"
+        className="flex w-full items-center gap-2 px-3 py-2 text-left hover:bg-accent transition-colors"
         aria-expanded={isExpanded}
         aria-label={`${label} — ${isRunning ? "in progress" : isError ? "error" : "completed"}`}
       >
@@ -68,22 +68,22 @@ export function ToolCallDisplay({ part }: ToolCallDisplayProps) {
           <CheckCircle className="w-3.5 h-3.5 text-green-500 shrink-0" aria-hidden="true" />
         )}
 
-        <span className="flex-1 text-zinc-700 font-medium">{label}</span>
+        <span className="flex-1 text-foreground font-medium">{label}</span>
 
         {isExpanded ? (
-          <ChevronDown className="w-3.5 h-3.5 text-zinc-400 shrink-0" aria-hidden="true" />
+          <ChevronDown className="w-3.5 h-3.5 text-muted-foreground shrink-0" aria-hidden="true" />
         ) : (
-          <ChevronRight className="w-3.5 h-3.5 text-zinc-400 shrink-0" aria-hidden="true" />
+          <ChevronRight className="w-3.5 h-3.5 text-muted-foreground shrink-0" aria-hidden="true" />
         )}
       </button>
 
       {/* Expandable details */}
       {isExpanded && (
-        <div className="border-t border-zinc-200 px-3 py-2 space-y-2">
+        <div className="border-t border-border px-3 py-2 space-y-2">
           {part.input !== undefined && (
             <div>
-              <p className="text-xs font-medium text-zinc-500 mb-1">Input</p>
-              <pre className="text-xs text-zinc-700 whitespace-pre-wrap break-all bg-white rounded border border-zinc-100 p-2 overflow-auto max-h-40">
+              <p className="text-xs font-medium text-muted-foreground mb-1">Input</p>
+              <pre className="text-xs text-foreground whitespace-pre-wrap break-all bg-background rounded border border-border p-2 overflow-auto max-h-40">
                 {JSON.stringify(part.input, null, 2)}
               </pre>
             </div>
@@ -91,8 +91,8 @@ export function ToolCallDisplay({ part }: ToolCallDisplayProps) {
 
           {isComplete && part.output !== undefined && (
             <div>
-              <p className="text-xs font-medium text-zinc-500 mb-1">Output</p>
-              <pre className="text-xs text-zinc-700 whitespace-pre-wrap break-all bg-white rounded border border-zinc-100 p-2 overflow-auto max-h-40">
+              <p className="text-xs font-medium text-muted-foreground mb-1">Output</p>
+              <pre className="text-xs text-foreground whitespace-pre-wrap break-all bg-background rounded border border-border p-2 overflow-auto max-h-40">
                 {JSON.stringify(part.output, null, 2)}
               </pre>
             </div>
@@ -101,7 +101,7 @@ export function ToolCallDisplay({ part }: ToolCallDisplayProps) {
           {isError && part.errorText && (
             <div>
               <p className="text-xs font-medium text-red-500 mb-1">Error</p>
-              <p className="text-xs text-red-700 bg-red-50 rounded border border-red-100 p-2">
+              <p className="text-xs text-red-700 dark:text-red-300 bg-red-50 dark:bg-red-950 rounded border border-red-100 dark:border-red-800 p-2">
                 {part.errorText}
               </p>
             </div>

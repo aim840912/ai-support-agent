@@ -1,10 +1,11 @@
 {
-  "enabledMcpjsonServers": [
-    "agentation"
-  ],
   "permissions": {
     "allow": [
-      "WebFetch(domain:raw.githubusercontent.com)"
+      "WebFetch(domain:raw.githubusercontent.com)",
+      "Bash(node:*)"
     ]
-  }
+  },
+  "enabledMcpjsonServers": [
+    "agentation"
+  ]
 }

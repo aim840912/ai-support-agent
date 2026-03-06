@@ -32,9 +32,9 @@ export default async function PlaygroundPage() {
   return (
     <div className="flex flex-col flex-1 min-h-0">
       {/* Page header */}
-      <div className="shrink-0 px-6 py-4 border-b border-zinc-200 bg-white">
-        <h1 className="text-xl font-semibold text-zinc-900">Playground</h1>
-        <p className="mt-0.5 text-sm text-zinc-500">
+      <div className="shrink-0 px-6 py-4 border-b border-border bg-card">
+        <h1 className="text-xl font-semibold text-foreground">Playground</h1>
+        <p className="mt-0.5 text-sm text-muted-foreground">
           Test your AI support agent before deploying to customers
         </p>
       </div>

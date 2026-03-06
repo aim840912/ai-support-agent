@@ -60,7 +60,7 @@ export function AgentSettingsForm({
     <div className="space-y-6">
       {/* Welcome message */}
       <div className="space-y-2">
-        <Label htmlFor="welcome-message" className="text-sm font-medium text-zinc-700">
+        <Label htmlFor="welcome-message" className="text-sm font-medium text-foreground">
           Welcome Message
         </Label>
         <Textarea
@@ -71,14 +71,14 @@ export function AgentSettingsForm({
           rows={2}
           className="resize-none"
         />
-        <p className="text-xs text-zinc-400">
+        <p className="text-xs text-muted-foreground">
           First message shown to visitors when they open the chat widget.
         </p>
       </div>
 
       {/* System prompt */}
       <div className="space-y-2">
-        <Label htmlFor="system-prompt" className="text-sm font-medium text-zinc-700">
+        <Label htmlFor="system-prompt" className="text-sm font-medium text-foreground">
           System Prompt
         </Label>
         <Textarea
@@ -89,18 +89,18 @@ export function AgentSettingsForm({
           rows={5}
           className="resize-none font-mono text-xs"
         />
-        <p className="text-xs text-zinc-400">
+        <p className="text-xs text-muted-foreground">
           Custom instructions that guide the AI&apos;s behavior and tone.
         </p>
       </div>
 
       {/* Enabled tools */}
       <div className="space-y-3">
-        <Label className="text-sm font-medium text-zinc-700">Enabled Tools</Label>
-        <div className="space-y-3 rounded-lg border border-zinc-200 p-4">
+        <Label className="text-sm font-medium text-foreground">Enabled Tools</Label>
+        <div className="space-y-3 rounded-lg border border-border p-4">
           {AVAILABLE_TOOLS.map((tool) => (
             <div key={tool.key} className="flex items-center justify-between">
-              <span className="text-sm text-zinc-700">{tool.label}</span>
+              <span className="text-sm text-foreground">{tool.label}</span>
               <Switch
                 id={`tool-${tool.key}`}
                 checked={enabledTools.has(tool.key)}
@@ -110,7 +110,7 @@ export function AgentSettingsForm({
             </div>
           ))}
         </div>
-        <p className="text-xs text-zinc-400">
+        <p className="text-xs text-muted-foreground">
           Choose which tools the agent can use when responding.
         </p>
       </div>
@@ -121,7 +121,7 @@ export function AgentSettingsForm({
           type="button"
           onClick={handleSave}
           disabled={isPending}
-          className="bg-zinc-900 text-white hover:bg-zinc-700"
+          className="bg-primary text-primary-foreground hover:bg-primary/80"
         >
           {isPending ? "Saving..." : "Save Changes"}
         </Button>

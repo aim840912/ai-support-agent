@@ -61,14 +61,14 @@ export function ChatInterface({
   }
 
   return (
-    <div className="flex flex-col h-full bg-zinc-50">
+    <div className="flex flex-col h-full bg-muted/30">
       {/* Mock mode banner */}
       {isLlmMock && (
-        <div className="flex items-center gap-2 px-4 py-2 bg-amber-50 border-b border-amber-200 text-xs text-amber-700">
+        <div className="flex items-center gap-2 px-4 py-2 bg-amber-50 border-b border-amber-200 text-xs text-amber-700 dark:bg-amber-950 dark:border-amber-800 dark:text-amber-300">
           <AlertCircle className="w-3.5 h-3.5 shrink-0" aria-hidden="true" />
           <span>
             <strong>Demo mode</strong> — Running with a mock LLM. Add{" "}
-            <code className="font-mono bg-amber-100 px-1 rounded">GROQ_API_KEY</code> to
+            <code className="font-mono bg-amber-100 dark:bg-amber-900 px-1 rounded">GROQ_API_KEY</code> to
             enable a real AI model.
           </span>
         </div>
@@ -84,11 +84,11 @@ export function ChatInterface({
           {/* Typing indicator */}
           {isLoading && (
             <div className="flex justify-start mb-3">
-              <div className="bg-white border border-zinc-200 rounded-2xl rounded-bl-sm px-4 py-3 shadow-sm">
+              <div className="bg-card border border-border rounded-2xl rounded-bl-sm px-4 py-3 shadow-sm">
                 <span className="flex gap-1" aria-label="AI is typing">
-                  <span className="w-1.5 h-1.5 rounded-full bg-zinc-400 animate-bounce [animation-delay:-0.3s]" />
-                  <span className="w-1.5 h-1.5 rounded-full bg-zinc-400 animate-bounce [animation-delay:-0.15s]" />
-                  <span className="w-1.5 h-1.5 rounded-full bg-zinc-400 animate-bounce" />
+                  <span className="w-1.5 h-1.5 rounded-full bg-muted-foreground animate-bounce [animation-delay:-0.3s]" />
+                  <span className="w-1.5 h-1.5 rounded-full bg-muted-foreground animate-bounce [animation-delay:-0.15s]" />
+                  <span className="w-1.5 h-1.5 rounded-full bg-muted-foreground animate-bounce" />
                 </span>
               </div>
             </div>
@@ -97,7 +97,7 @@ export function ChatInterface({
           {/* Error state */}
           {error && (
             <div className="flex justify-center mb-3">
-              <div className="flex items-center gap-2 rounded-md border border-red-200 bg-red-50 px-3 py-2 text-xs text-red-700">
+              <div className="flex items-center gap-2 rounded-md border border-red-200 bg-red-50 px-3 py-2 text-xs text-red-700 dark:border-red-800 dark:bg-red-950 dark:text-red-300">
                 <AlertCircle className="w-3.5 h-3.5 shrink-0" aria-hidden="true" />
                 <span>
                   Something went wrong.{" "}

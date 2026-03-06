@@ -25,8 +25,8 @@ const chartConfig = {
 
 function EmptyState({ message }: { message: string }) {
   return (
-    <div className="flex h-48 items-center justify-center rounded-lg border border-dashed border-zinc-200">
-      <p className="text-sm text-zinc-400">{message}</p>
+    <div className="flex h-48 items-center justify-center rounded-lg border border-dashed border-border">
+      <p className="text-sm text-muted-foreground">{message}</p>
     </div>
   );
 }

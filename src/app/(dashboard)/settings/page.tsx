@@ -32,8 +32,8 @@ export default async function SettingsPage() {
 
   return (
     <div>
-      <h1 className="text-2xl font-semibold text-zinc-900">Settings</h1>
-      <p className="mt-1 text-sm text-zinc-500">
+      <h1 className="text-2xl font-semibold text-foreground">Settings</h1>
+      <p className="mt-1 text-sm text-muted-foreground">
         Configure your agent and manage API keys
       </p>
 
@@ -66,7 +66,7 @@ export default async function SettingsPage() {
                 apiKey={org.apiKey}
               />
             ) : (
-              <p className="text-sm text-zinc-400">Organization not found.</p>
+              <p className="text-sm text-muted-foreground">Organization not found.</p>
             )}
           </TabsContent>
 

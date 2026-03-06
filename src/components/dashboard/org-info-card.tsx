@@ -25,14 +25,14 @@ export function OrgInfoCard({ orgName, plan, apiKey }: OrgInfoCardProps) {
   return (
     <div className="space-y-6">
       {/* Org info */}
-      <div className="space-y-4 rounded-lg border border-zinc-200 p-4">
+      <div className="space-y-4 rounded-lg border border-border p-4">
         <div className="flex items-center justify-between">
-          <span className="text-sm text-zinc-500">Organization</span>
-          <span className="text-sm font-medium text-zinc-900">{orgName}</span>
+          <span className="text-sm text-muted-foreground">Organization</span>
+          <span className="text-sm font-medium text-foreground">{orgName}</span>
         </div>
         <div className="flex items-center justify-between">
-          <span className="text-sm text-zinc-500">Plan</span>
-          <Badge className="border-0 bg-zinc-100 text-xs font-medium capitalize text-zinc-700">
+          <span className="text-sm text-muted-foreground">Plan</span>
+          <Badge className="border-0 bg-muted text-xs font-medium capitalize text-foreground">
             {plan}
           </Badge>
         </div>
@@ -40,9 +40,9 @@ export function OrgInfoCard({ orgName, plan, apiKey }: OrgInfoCardProps) {
 
       {/* API Key */}
       <div className="space-y-2">
-        <label className="text-sm font-medium text-zinc-700">API Key</label>
+        <label className="text-sm font-medium text-foreground">API Key</label>
         <div className="flex items-center gap-2">
-          <code className="flex-1 truncate rounded-md border border-zinc-200 bg-zinc-50 px-3 py-2 font-mono text-xs text-zinc-600">
+          <code className="flex-1 truncate rounded-md border border-border bg-muted px-3 py-2 font-mono text-xs text-muted-foreground">
             {apiKey}
           </code>
           <Button
@@ -60,18 +60,18 @@ export function OrgInfoCard({ orgName, plan, apiKey }: OrgInfoCardProps) {
             )}
           </Button>
         </div>
-        <p className="text-xs text-zinc-400">
+        <p className="text-xs text-muted-foreground">
           Keep this key secret. Use it in the embed script or API calls.
         </p>
       </div>
 
       {/* Embed snippet */}
       <div className="space-y-2">
-        <label className="text-sm font-medium text-zinc-700">
+        <label className="text-sm font-medium text-foreground">
           Widget Embed Code
         </label>
         <div className="relative">
-          <pre className="overflow-x-auto rounded-md border border-zinc-200 bg-zinc-50 px-3 py-3 font-mono text-xs text-zinc-600 whitespace-pre-wrap break-all">
+          <pre className="overflow-x-auto rounded-md border border-border bg-muted px-3 py-3 font-mono text-xs text-muted-foreground whitespace-pre-wrap break-all">
             {embedSnippet}
           </pre>
           <Button
@@ -95,7 +95,7 @@ export function OrgInfoCard({ orgName, plan, apiKey }: OrgInfoCardProps) {
             )}
           </Button>
         </div>
-        <p className="text-xs text-zinc-400">
+        <p className="text-xs text-muted-foreground">
           Paste this snippet before the <code>&lt;/body&gt;</code> tag on your website.
         </p>
       </div>
