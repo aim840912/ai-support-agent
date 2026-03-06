@@ -1,5 +1,6 @@
 import { auth } from "@/auth";
 import { prisma } from "@/lib/db";
+import { getStripeClient } from "@/lib/stripe";
 import { redirect } from "next/navigation";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { AgentSettingsForm } from "@/components/dashboard/agent-settings-form";
@@ -20,7 +21,7 @@ export default async function SettingsPage() {
   const [org, agentSettings] = await Promise.all([
     prisma.organization.findUnique({
       where: { id: orgId },
-      select: { name: true, plan: true, apiKey: true },
+      select: { name: true, plan: true, apiKey: true, stripeCustomerId: true },
     }),
     prisma.agentSettings.findUnique({
       where: { orgId },
@@ -29,6 +30,21 @@ export default async function SettingsPage() {
   ]);
 
   const usage = await getOrgUsage(orgId, org?.plan);
+
+  // Generate Stripe Customer Portal URL for Pro users
+  let stripePortalUrl: string | undefined;
+  if (org?.plan === "pro" && org.stripeCustomerId) {
+    try {
+      const origin = process.env.AUTH_URL ?? "http://localhost:3000";
+      const portalSession = await getStripeClient().billingPortal.sessions.create({
+        customer: org.stripeCustomerId,
+        return_url: `${origin}/settings?tab=plan`,
+      });
+      stripePortalUrl = portalSession.url;
+    } catch {
+      // Non-fatal — portal URL simply won't show if Stripe is misconfigured
+    }
+  }
 
   return (
     <div>
@@ -71,7 +87,7 @@ export default async function SettingsPage() {
           </TabsContent>
 
           <TabsContent value="plan">
-            <PlanUsageSection usage={usage} />
+            <PlanUsageSection usage={usage} stripePortalUrl={stripePortalUrl} />
           </TabsContent>
         </Tabs>
       </div>

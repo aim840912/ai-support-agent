@@ -2297,6 +2297,8 @@ export namespace Prisma {
     apiKey: string | null
     apiKeyHash: string | null
     plan: string | null
+    stripeCustomerId: string | null
+    stripeSubscriptionId: string | null
     createdAt: Date | null
   }
 
@@ -2306,6 +2308,8 @@ export namespace Prisma {
     apiKey: string | null
     apiKeyHash: string | null
     plan: string | null
+    stripeCustomerId: string | null
+    stripeSubscriptionId: string | null
     createdAt: Date | null
   }
 
@@ -2316,6 +2320,8 @@ export namespace Prisma {
     apiKeyHash: number
     plan: number
     settings: number
+    stripeCustomerId: number
+    stripeSubscriptionId: number
     createdAt: number
     _all: number
   }
@@ -2327,6 +2333,8 @@ export namespace Prisma {
     apiKey?: true
     apiKeyHash?: true
     plan?: true
+    stripeCustomerId?: true
+    stripeSubscriptionId?: true
     createdAt?: true
   }
 
@@ -2336,6 +2344,8 @@ export namespace Prisma {
     apiKey?: true
     apiKeyHash?: true
     plan?: true
+    stripeCustomerId?: true
+    stripeSubscriptionId?: true
     createdAt?: true
   }
 
@@ -2346,6 +2356,8 @@ export namespace Prisma {
     apiKeyHash?: true
     plan?: true
     settings?: true
+    stripeCustomerId?: true
+    stripeSubscriptionId?: true
     createdAt?: true
     _all?: true
   }
@@ -2429,6 +2441,8 @@ export namespace Prisma {
     apiKeyHash: string | null
     plan: string
     settings: JsonValue | null
+    stripeCustomerId: string | null
+    stripeSubscriptionId: string | null
     createdAt: Date
     _count: OrganizationCountAggregateOutputType | null
     _min: OrganizationMinAggregateOutputType | null
@@ -2456,6 +2470,8 @@ export namespace Prisma {
     apiKeyHash?: boolean
     plan?: boolean
     settings?: boolean
+    stripeCustomerId?: boolean
+    stripeSubscriptionId?: boolean
     createdAt?: boolean
     users?: boolean | Organization$usersArgs<ExtArgs>
     documents?: boolean | Organization$documentsArgs<ExtArgs>
@@ -2474,6 +2490,8 @@ export namespace Prisma {
     apiKeyHash?: boolean
     plan?: boolean
     settings?: boolean
+    stripeCustomerId?: boolean
+    stripeSubscriptionId?: boolean
     createdAt?: boolean
   }, ExtArgs["result"]["organization"]>
 
@@ -2484,6 +2502,8 @@ export namespace Prisma {
     apiKeyHash?: boolean
     plan?: boolean
     settings?: boolean
+    stripeCustomerId?: boolean
+    stripeSubscriptionId?: boolean
     createdAt?: boolean
   }, ExtArgs["result"]["organization"]>
 
@@ -2494,10 +2514,12 @@ export namespace Prisma {
     apiKeyHash?: boolean
     plan?: boolean
     settings?: boolean
+    stripeCustomerId?: boolean
+    stripeSubscriptionId?: boolean
     createdAt?: boolean
   }
 
-  export type OrganizationOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "name" | "apiKey" | "apiKeyHash" | "plan" | "settings" | "createdAt", ExtArgs["result"]["organization"]>
+  export type OrganizationOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "name" | "apiKey" | "apiKeyHash" | "plan" | "settings" | "stripeCustomerId" | "stripeSubscriptionId" | "createdAt", ExtArgs["result"]["organization"]>
   export type OrganizationInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     users?: boolean | Organization$usersArgs<ExtArgs>
     documents?: boolean | Organization$documentsArgs<ExtArgs>
@@ -2529,6 +2551,8 @@ export namespace Prisma {
       apiKeyHash: string | null
       plan: string
       settings: Prisma.JsonValue | null
+      stripeCustomerId: string | null
+      stripeSubscriptionId: string | null
       createdAt: Date
     }, ExtArgs["result"]["organization"]>
     composites: {}
@@ -2966,6 +2990,8 @@ export namespace Prisma {
     readonly apiKeyHash: FieldRef<"Organization", 'String'>
     readonly plan: FieldRef<"Organization", 'String'>
     readonly settings: FieldRef<"Organization", 'Json'>
+    readonly stripeCustomerId: FieldRef<"Organization", 'String'>
+    readonly stripeSubscriptionId: FieldRef<"Organization", 'String'>
     readonly createdAt: FieldRef<"Organization", 'DateTime'>
   }
     
@@ -17800,6 +17826,8 @@ export namespace Prisma {
     apiKeyHash: 'apiKeyHash',
     plan: 'plan',
     settings: 'settings',
+    stripeCustomerId: 'stripeCustomerId',
+    stripeSubscriptionId: 'stripeSubscriptionId',
     createdAt: 'createdAt'
   };
 
@@ -18102,6 +18130,8 @@ export namespace Prisma {
     apiKeyHash?: StringNullableFilter<"Organization"> | string | null
     plan?: StringFilter<"Organization"> | string
     settings?: JsonNullableFilter<"Organization">
+    stripeCustomerId?: StringNullableFilter<"Organization"> | string | null
+    stripeSubscriptionId?: StringNullableFilter<"Organization"> | string | null
     createdAt?: DateTimeFilter<"Organization"> | Date | string
     users?: UserListRelationFilter
     documents?: DocumentListRelationFilter
@@ -18119,6 +18149,8 @@ export namespace Prisma {
     apiKeyHash?: SortOrderInput | SortOrder
     plan?: SortOrder
     settings?: SortOrderInput | SortOrder
+    stripeCustomerId?: SortOrderInput | SortOrder
+    stripeSubscriptionId?: SortOrderInput | SortOrder
     createdAt?: SortOrder
     users?: UserOrderByRelationAggregateInput
     documents?: DocumentOrderByRelationAggregateInput
@@ -18133,12 +18165,14 @@ export namespace Prisma {
     id?: string
     apiKey?: string
     apiKeyHash?: string
+    stripeCustomerId?: string
     AND?: OrganizationWhereInput | OrganizationWhereInput[]
     OR?: OrganizationWhereInput[]
     NOT?: OrganizationWhereInput | OrganizationWhereInput[]
     name?: StringFilter<"Organization"> | string
     plan?: StringFilter<"Organization"> | string
     settings?: JsonNullableFilter<"Organization">
+    stripeSubscriptionId?: StringNullableFilter<"Organization"> | string | null
     createdAt?: DateTimeFilter<"Organization"> | Date | string
     users?: UserListRelationFilter
     documents?: DocumentListRelationFilter
@@ -18147,7 +18181,7 @@ export namespace Prisma {
     products?: ProductListRelationFilter
     orders?: OrderListRelationFilter
     tickets?: TicketListRelationFilter
-  }, "id" | "apiKey" | "apiKeyHash">
+  }, "id" | "apiKey" | "apiKeyHash" | "stripeCustomerId">
 
   export type OrganizationOrderByWithAggregationInput = {
     id?: SortOrder
@@ -18156,6 +18190,8 @@ export namespace Prisma {
     apiKeyHash?: SortOrderInput | SortOrder
     plan?: SortOrder
     settings?: SortOrderInput | SortOrder
+    stripeCustomerId?: SortOrderInput | SortOrder
+    stripeSubscriptionId?: SortOrderInput | SortOrder
     createdAt?: SortOrder
     _count?: OrganizationCountOrderByAggregateInput
     _max?: OrganizationMaxOrderByAggregateInput
@@ -18172,6 +18208,8 @@ export namespace Prisma {
     apiKeyHash?: StringNullableWithAggregatesFilter<"Organization"> | string | null
     plan?: StringWithAggregatesFilter<"Organization"> | string
     settings?: JsonNullableWithAggregatesFilter<"Organization">
+    stripeCustomerId?: StringNullableWithAggregatesFilter<"Organization"> | string | null
+    stripeSubscriptionId?: StringNullableWithAggregatesFilter<"Organization"> | string | null
     createdAt?: DateTimeWithAggregatesFilter<"Organization"> | Date | string
   }
 
@@ -19053,6 +19091,8 @@ export namespace Prisma {
     apiKeyHash?: string | null
     plan?: string
     settings?: NullableJsonNullValueInput | InputJsonValue
+    stripeCustomerId?: string | null
+    stripeSubscriptionId?: string | null
     createdAt?: Date | string
     users?: UserCreateNestedManyWithoutOrgInput
     documents?: DocumentCreateNestedManyWithoutOrgInput
@@ -19070,6 +19110,8 @@ export namespace Prisma {
     apiKeyHash?: string | null
     plan?: string
     settings?: NullableJsonNullValueInput | InputJsonValue
+    stripeCustomerId?: string | null
+    stripeSubscriptionId?: string | null
     createdAt?: Date | string
     users?: UserUncheckedCreateNestedManyWithoutOrgInput
     documents?: DocumentUncheckedCreateNestedManyWithoutOrgInput
@@ -19087,6 +19129,8 @@ export namespace Prisma {
     apiKeyHash?: NullableStringFieldUpdateOperationsInput | string | null
     plan?: StringFieldUpdateOperationsInput | string
     settings?: NullableJsonNullValueInput | InputJsonValue
+    stripeCustomerId?: NullableStringFieldUpdateOperationsInput | string | null
+    stripeSubscriptionId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     users?: UserUpdateManyWithoutOrgNestedInput
     documents?: DocumentUpdateManyWithoutOrgNestedInput
@@ -19104,6 +19148,8 @@ export namespace Prisma {
     apiKeyHash?: NullableStringFieldUpdateOperationsInput | string | null
     plan?: StringFieldUpdateOperationsInput | string
     settings?: NullableJsonNullValueInput | InputJsonValue
+    stripeCustomerId?: NullableStringFieldUpdateOperationsInput | string | null
+    stripeSubscriptionId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     users?: UserUncheckedUpdateManyWithoutOrgNestedInput
     documents?: DocumentUncheckedUpdateManyWithoutOrgNestedInput
@@ -19121,6 +19167,8 @@ export namespace Prisma {
     apiKeyHash?: string | null
     plan?: string
     settings?: NullableJsonNullValueInput | InputJsonValue
+    stripeCustomerId?: string | null
+    stripeSubscriptionId?: string | null
     createdAt?: Date | string
   }
 
@@ -19131,6 +19179,8 @@ export namespace Prisma {
     apiKeyHash?: NullableStringFieldUpdateOperationsInput | string | null
     plan?: StringFieldUpdateOperationsInput | string
     settings?: NullableJsonNullValueInput | InputJsonValue
+    stripeCustomerId?: NullableStringFieldUpdateOperationsInput | string | null
+    stripeSubscriptionId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
@@ -19141,6 +19191,8 @@ export namespace Prisma {
     apiKeyHash?: NullableStringFieldUpdateOperationsInput | string | null
     plan?: StringFieldUpdateOperationsInput | string
     settings?: NullableJsonNullValueInput | InputJsonValue
+    stripeCustomerId?: NullableStringFieldUpdateOperationsInput | string | null
+    stripeSubscriptionId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
@@ -20174,6 +20226,8 @@ export namespace Prisma {
     apiKeyHash?: SortOrder
     plan?: SortOrder
     settings?: SortOrder
+    stripeCustomerId?: SortOrder
+    stripeSubscriptionId?: SortOrder
     createdAt?: SortOrder
   }
 
@@ -20183,6 +20237,8 @@ export namespace Prisma {
     apiKey?: SortOrder
     apiKeyHash?: SortOrder
     plan?: SortOrder
+    stripeCustomerId?: SortOrder
+    stripeSubscriptionId?: SortOrder
     createdAt?: SortOrder
   }
 
@@ -20192,6 +20248,8 @@ export namespace Prisma {
     apiKey?: SortOrder
     apiKeyHash?: SortOrder
     plan?: SortOrder
+    stripeCustomerId?: SortOrder
+    stripeSubscriptionId?: SortOrder
     createdAt?: SortOrder
   }
 
@@ -22363,6 +22421,8 @@ export namespace Prisma {
     apiKeyHash?: string | null
     plan?: string
     settings?: NullableJsonNullValueInput | InputJsonValue
+    stripeCustomerId?: string | null
+    stripeSubscriptionId?: string | null
     createdAt?: Date | string
     documents?: DocumentCreateNestedManyWithoutOrgInput
     chatSessions?: ChatSessionCreateNestedManyWithoutOrgInput
@@ -22379,6 +22439,8 @@ export namespace Prisma {
     apiKeyHash?: string | null
     plan?: string
     settings?: NullableJsonNullValueInput | InputJsonValue
+    stripeCustomerId?: string | null
+    stripeSubscriptionId?: string | null
     createdAt?: Date | string
     documents?: DocumentUncheckedCreateNestedManyWithoutOrgInput
     chatSessions?: ChatSessionUncheckedCreateNestedManyWithoutOrgInput
@@ -22471,6 +22533,8 @@ export namespace Prisma {
     apiKeyHash?: NullableStringFieldUpdateOperationsInput | string | null
     plan?: StringFieldUpdateOperationsInput | string
     settings?: NullableJsonNullValueInput | InputJsonValue
+    stripeCustomerId?: NullableStringFieldUpdateOperationsInput | string | null
+    stripeSubscriptionId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     documents?: DocumentUpdateManyWithoutOrgNestedInput
     chatSessions?: ChatSessionUpdateManyWithoutOrgNestedInput
@@ -22487,6 +22551,8 @@ export namespace Prisma {
     apiKeyHash?: NullableStringFieldUpdateOperationsInput | string | null
     plan?: StringFieldUpdateOperationsInput | string
     settings?: NullableJsonNullValueInput | InputJsonValue
+    stripeCustomerId?: NullableStringFieldUpdateOperationsInput | string | null
+    stripeSubscriptionId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     documents?: DocumentUncheckedUpdateManyWithoutOrgNestedInput
     chatSessions?: ChatSessionUncheckedUpdateManyWithoutOrgNestedInput
@@ -22563,6 +22629,8 @@ export namespace Prisma {
     apiKeyHash?: string | null
     plan?: string
     settings?: NullableJsonNullValueInput | InputJsonValue
+    stripeCustomerId?: string | null
+    stripeSubscriptionId?: string | null
     createdAt?: Date | string
     users?: UserCreateNestedManyWithoutOrgInput
     chatSessions?: ChatSessionCreateNestedManyWithoutOrgInput
@@ -22579,6 +22647,8 @@ export namespace Prisma {
     apiKeyHash?: string | null
     plan?: string
     settings?: NullableJsonNullValueInput | InputJsonValue
+    stripeCustomerId?: string | null
+    stripeSubscriptionId?: string | null
     createdAt?: Date | string
     users?: UserUncheckedCreateNestedManyWithoutOrgInput
     chatSessions?: ChatSessionUncheckedCreateNestedManyWithoutOrgInput
@@ -22611,6 +22681,8 @@ export namespace Prisma {
     apiKeyHash?: NullableStringFieldUpdateOperationsInput | string | null
     plan?: StringFieldUpdateOperationsInput | string
     settings?: NullableJsonNullValueInput | InputJsonValue
+    stripeCustomerId?: NullableStringFieldUpdateOperationsInput | string | null
+    stripeSubscriptionId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     users?: UserUpdateManyWithoutOrgNestedInput
     chatSessions?: ChatSessionUpdateManyWithoutOrgNestedInput
@@ -22627,6 +22699,8 @@ export namespace Prisma {
     apiKeyHash?: NullableStringFieldUpdateOperationsInput | string | null
     plan?: StringFieldUpdateOperationsInput | string
     settings?: NullableJsonNullValueInput | InputJsonValue
+    stripeCustomerId?: NullableStringFieldUpdateOperationsInput | string | null
+    stripeSubscriptionId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     users?: UserUncheckedUpdateManyWithoutOrgNestedInput
     chatSessions?: ChatSessionUncheckedUpdateManyWithoutOrgNestedInput
@@ -22715,6 +22789,8 @@ export namespace Prisma {
     apiKeyHash?: string | null
     plan?: string
     settings?: NullableJsonNullValueInput | InputJsonValue
+    stripeCustomerId?: string | null
+    stripeSubscriptionId?: string | null
     createdAt?: Date | string
     users?: UserCreateNestedManyWithoutOrgInput
     documents?: DocumentCreateNestedManyWithoutOrgInput
@@ -22731,6 +22807,8 @@ export namespace Prisma {
     apiKeyHash?: string | null
     plan?: string
     settings?: NullableJsonNullValueInput | InputJsonValue
+    stripeCustomerId?: string | null
+    stripeSubscriptionId?: string | null
     createdAt?: Date | string
     users?: UserUncheckedCreateNestedManyWithoutOrgInput
     documents?: DocumentUncheckedCreateNestedManyWithoutOrgInput
@@ -22791,6 +22869,8 @@ export namespace Prisma {
     apiKeyHash?: NullableStringFieldUpdateOperationsInput | string | null
     plan?: StringFieldUpdateOperationsInput | string
     settings?: NullableJsonNullValueInput | InputJsonValue
+    stripeCustomerId?: NullableStringFieldUpdateOperationsInput | string | null
+    stripeSubscriptionId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     users?: UserUpdateManyWithoutOrgNestedInput
     documents?: DocumentUpdateManyWithoutOrgNestedInput
@@ -22807,6 +22887,8 @@ export namespace Prisma {
     apiKeyHash?: NullableStringFieldUpdateOperationsInput | string | null
     plan?: StringFieldUpdateOperationsInput | string
     settings?: NullableJsonNullValueInput | InputJsonValue
+    stripeCustomerId?: NullableStringFieldUpdateOperationsInput | string | null
+    stripeSubscriptionId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     users?: UserUncheckedUpdateManyWithoutOrgNestedInput
     documents?: DocumentUncheckedUpdateManyWithoutOrgNestedInput
@@ -22904,6 +22986,8 @@ export namespace Prisma {
     apiKeyHash?: string | null
     plan?: string
     settings?: NullableJsonNullValueInput | InputJsonValue
+    stripeCustomerId?: string | null
+    stripeSubscriptionId?: string | null
     createdAt?: Date | string
     users?: UserCreateNestedManyWithoutOrgInput
     documents?: DocumentCreateNestedManyWithoutOrgInput
@@ -22920,6 +23004,8 @@ export namespace Prisma {
     apiKeyHash?: string | null
     plan?: string
     settings?: NullableJsonNullValueInput | InputJsonValue
+    stripeCustomerId?: string | null
+    stripeSubscriptionId?: string | null
     createdAt?: Date | string
     users?: UserUncheckedCreateNestedManyWithoutOrgInput
     documents?: DocumentUncheckedCreateNestedManyWithoutOrgInput
@@ -22952,6 +23038,8 @@ export namespace Prisma {
     apiKeyHash?: NullableStringFieldUpdateOperationsInput | string | null
     plan?: StringFieldUpdateOperationsInput | string
     settings?: NullableJsonNullValueInput | InputJsonValue
+    stripeCustomerId?: NullableStringFieldUpdateOperationsInput | string | null
+    stripeSubscriptionId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     users?: UserUpdateManyWithoutOrgNestedInput
     documents?: DocumentUpdateManyWithoutOrgNestedInput
@@ -22968,6 +23056,8 @@ export namespace Prisma {
     apiKeyHash?: NullableStringFieldUpdateOperationsInput | string | null
     plan?: StringFieldUpdateOperationsInput | string
     settings?: NullableJsonNullValueInput | InputJsonValue
+    stripeCustomerId?: NullableStringFieldUpdateOperationsInput | string | null
+    stripeSubscriptionId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     users?: UserUncheckedUpdateManyWithoutOrgNestedInput
     documents?: DocumentUncheckedUpdateManyWithoutOrgNestedInput
@@ -23120,6 +23210,8 @@ export namespace Prisma {
     apiKeyHash?: string | null
     plan?: string
     settings?: NullableJsonNullValueInput | InputJsonValue
+    stripeCustomerId?: string | null
+    stripeSubscriptionId?: string | null
     createdAt?: Date | string
     users?: UserCreateNestedManyWithoutOrgInput
     documents?: DocumentCreateNestedManyWithoutOrgInput
@@ -23136,6 +23228,8 @@ export namespace Prisma {
     apiKeyHash?: string | null
     plan?: string
     settings?: NullableJsonNullValueInput | InputJsonValue
+    stripeCustomerId?: string | null
+    stripeSubscriptionId?: string | null
     createdAt?: Date | string
     users?: UserUncheckedCreateNestedManyWithoutOrgInput
     documents?: DocumentUncheckedCreateNestedManyWithoutOrgInput
@@ -23192,6 +23286,8 @@ export namespace Prisma {
     apiKeyHash?: NullableStringFieldUpdateOperationsInput | string | null
     plan?: StringFieldUpdateOperationsInput | string
     settings?: NullableJsonNullValueInput | InputJsonValue
+    stripeCustomerId?: NullableStringFieldUpdateOperationsInput | string | null
+    stripeSubscriptionId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     users?: UserUpdateManyWithoutOrgNestedInput
     documents?: DocumentUpdateManyWithoutOrgNestedInput
@@ -23208,6 +23304,8 @@ export namespace Prisma {
     apiKeyHash?: NullableStringFieldUpdateOperationsInput | string | null
     plan?: StringFieldUpdateOperationsInput | string
     settings?: NullableJsonNullValueInput | InputJsonValue
+    stripeCustomerId?: NullableStringFieldUpdateOperationsInput | string | null
+    stripeSubscriptionId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     users?: UserUncheckedUpdateManyWithoutOrgNestedInput
     documents?: DocumentUncheckedUpdateManyWithoutOrgNestedInput
@@ -23251,6 +23349,8 @@ export namespace Prisma {
     apiKeyHash?: string | null
     plan?: string
     settings?: NullableJsonNullValueInput | InputJsonValue
+    stripeCustomerId?: string | null
+    stripeSubscriptionId?: string | null
     createdAt?: Date | string
     users?: UserCreateNestedManyWithoutOrgInput
     documents?: DocumentCreateNestedManyWithoutOrgInput
@@ -23267,6 +23367,8 @@ export namespace Prisma {
     apiKeyHash?: string | null
     plan?: string
     settings?: NullableJsonNullValueInput | InputJsonValue
+    stripeCustomerId?: string | null
+    stripeSubscriptionId?: string | null
     createdAt?: Date | string
     users?: UserUncheckedCreateNestedManyWithoutOrgInput
     documents?: DocumentUncheckedCreateNestedManyWithoutOrgInput
@@ -23355,6 +23457,8 @@ export namespace Prisma {
     apiKeyHash?: NullableStringFieldUpdateOperationsInput | string | null
     plan?: StringFieldUpdateOperationsInput | string
     settings?: NullableJsonNullValueInput | InputJsonValue
+    stripeCustomerId?: NullableStringFieldUpdateOperationsInput | string | null
+    stripeSubscriptionId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     users?: UserUpdateManyWithoutOrgNestedInput
     documents?: DocumentUpdateManyWithoutOrgNestedInput
@@ -23371,6 +23475,8 @@ export namespace Prisma {
     apiKeyHash?: NullableStringFieldUpdateOperationsInput | string | null
     plan?: StringFieldUpdateOperationsInput | string
     settings?: NullableJsonNullValueInput | InputJsonValue
+    stripeCustomerId?: NullableStringFieldUpdateOperationsInput | string | null
+    stripeSubscriptionId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     users?: UserUncheckedUpdateManyWithoutOrgNestedInput
     documents?: DocumentUncheckedUpdateManyWithoutOrgNestedInput
@@ -23582,6 +23688,8 @@ export namespace Prisma {
     apiKeyHash?: string | null
     plan?: string
     settings?: NullableJsonNullValueInput | InputJsonValue
+    stripeCustomerId?: string | null
+    stripeSubscriptionId?: string | null
     createdAt?: Date | string
     users?: UserCreateNestedManyWithoutOrgInput
     documents?: DocumentCreateNestedManyWithoutOrgInput
@@ -23598,6 +23706,8 @@ export namespace Prisma {
     apiKeyHash?: string | null
     plan?: string
     settings?: NullableJsonNullValueInput | InputJsonValue
+    stripeCustomerId?: string | null
+    stripeSubscriptionId?: string | null
     createdAt?: Date | string
     users?: UserUncheckedCreateNestedManyWithoutOrgInput
     documents?: DocumentUncheckedCreateNestedManyWithoutOrgInput
@@ -23667,6 +23777,8 @@ export namespace Prisma {
     apiKeyHash?: NullableStringFieldUpdateOperationsInput | string | null
     plan?: StringFieldUpdateOperationsInput | string
     settings?: NullableJsonNullValueInput | InputJsonValue
+    stripeCustomerId?: NullableStringFieldUpdateOperationsInput | string | null
+    stripeSubscriptionId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     users?: UserUpdateManyWithoutOrgNestedInput
     documents?: DocumentUpdateManyWithoutOrgNestedInput
@@ -23683,6 +23795,8 @@ export namespace Prisma {
     apiKeyHash?: NullableStringFieldUpdateOperationsInput | string | null
     plan?: StringFieldUpdateOperationsInput | string
     settings?: NullableJsonNullValueInput | InputJsonValue
+    stripeCustomerId?: NullableStringFieldUpdateOperationsInput | string | null
+    stripeSubscriptionId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     users?: UserUncheckedUpdateManyWithoutOrgNestedInput
     documents?: DocumentUncheckedUpdateManyWithoutOrgNestedInput

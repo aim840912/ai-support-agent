@@ -2,6 +2,7 @@
 
 import { auth } from "@/auth";
 import { prisma } from "@/lib/db";
+import { generateApiKey, hashApiKey } from "@/lib/api-key";
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
 
@@ -57,4 +58,29 @@ export async function updateAgentSettings(input: UpdateAgentSettingsInput) {
   });
 
   revalidatePath("/settings");
+}
+
+export async function regenerateApiKey() {
+  const session = await auth();
+  if (!session?.user?.orgId) {
+    throw new Error("Unauthorized");
+  }
+
+  const { orgId } = session.user;
+
+  const newKey = generateApiKey();
+  const newHash = hashApiKey(newKey);
+
+  await prisma.organization.update({
+    where: { id: orgId },
+    data: {
+      apiKey: newKey,
+      apiKeyHash: newHash,
+    },
+  });
+
+  revalidatePath("/settings");
+
+  // Return the new raw key so the UI can display it immediately
+  return { apiKey: newKey };
 }

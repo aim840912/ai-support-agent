@@ -2,11 +2,32 @@ import { auth } from "@/auth";
 import { prisma } from "@/lib/db";
 import { ConversationList } from "@/components/dashboard/conversation-list";
 
-export default async function ConversationsPage() {
+const VALID_SOURCES = ["widget", "dashboard", "api"] as const;
+type Source = (typeof VALID_SOURCES)[number];
+
+function isValidSource(s: string): s is Source {
+  return VALID_SOURCES.includes(s as Source);
+}
+
+export default async function ConversationsPage({
+  searchParams,
+}: {
+  searchParams: Promise<Record<string, string | string[] | undefined>>;
+}) {
   const session = await auth();
+  const resolvedParams = await searchParams;
+
+  const rawSource = resolvedParams.source;
+  const source =
+    typeof rawSource === "string" && isValidSource(rawSource)
+      ? rawSource
+      : undefined;
 
   const sessions = await prisma.chatSession.findMany({
-    where: { orgId: session?.user?.orgId },
+    where: {
+      orgId: session?.user?.orgId,
+      ...(source ? { source } : {}),
+    },
     orderBy: { createdAt: "desc" },
     include: {
       _count: { select: { messages: true } },
@@ -36,7 +57,7 @@ export default async function ConversationsPage() {
       </p>
 
       <div className="mt-8">
-        <ConversationList sessions={serialized} />
+        <ConversationList sessions={serialized} activeSource={source} />
       </div>
     </div>
   );

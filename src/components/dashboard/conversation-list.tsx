@@ -1,7 +1,8 @@
 "use client";
 
-import { useState } from "react";
-import { MessageSquare } from "lucide-react";
+import { useState, useTransition } from "react";
+import { useRouter } from "next/navigation";
+import { MessageSquare, Trash2 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import {
   Table,
@@ -11,8 +12,28 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
+import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { ConversationDetail } from "./conversation-detail";
+import { toast } from "sonner";
 
 type ChatSession = {
   id: string;
@@ -30,75 +51,169 @@ const sourceConfig: Record<string, { label: string; className: string }> = {
   api: { label: "API", className: "bg-orange-100 text-orange-800 dark:bg-orange-900/30 dark:text-orange-300" },
 };
 
-export function ConversationList({ sessions }: { sessions: ChatSession[] }) {
-  const [selectedId, setSelectedId] = useState<string | null>(null);
+type Props = {
+  sessions: ChatSession[];
+  activeSource?: string;
+};
 
-  if (sessions.length === 0) {
-    return (
-      <div className="flex flex-col items-center justify-center rounded-lg border border-dashed border-border py-16">
-        <MessageSquare className="mb-3 h-8 w-8 text-muted-foreground/50" aria-hidden="true" />
-        <p className="text-sm font-medium text-muted-foreground">No conversations yet</p>
-        <p className="mt-1 text-xs text-muted-foreground/70">
-          Conversations will appear here once customers start chatting.
-        </p>
-      </div>
-    );
+export function ConversationList({ sessions, activeSource }: Props) {
+  const router = useRouter();
+  const [selectedId, setSelectedId] = useState<string | null>(null);
+  const [deletingId, setDeletingId] = useState<string | null>(null);
+  const [isPending, startTransition] = useTransition();
+
+  function handleSourceChange(value: string) {
+    const params = new URLSearchParams();
+    if (value !== "all") {
+      params.set("source", value);
+    }
+    router.push(`/conversations?${params.toString()}`);
+  }
+
+  function handleDelete(sessionId: string) {
+    setDeletingId(sessionId);
+    startTransition(async () => {
+      try {
+        const res = await fetch(`/api/conversations/${sessionId}`, {
+          method: "DELETE",
+        });
+        if (!res.ok) throw new Error("Delete failed");
+        toast.success("Conversation deleted");
+        router.refresh();
+      } catch {
+        toast.error("Failed to delete conversation. Please try again.");
+      } finally {
+        setDeletingId(null);
+      }
+    });
   }
 
   return (
     <>
-      <div className="rounded-lg border border-border overflow-hidden">
-        <Table>
-          <TableHeader>
-            <TableRow className="bg-muted/50 hover:bg-muted/50">
-              <TableHead className="text-xs font-medium text-muted-foreground">Source</TableHead>
-              <TableHead className="text-xs font-medium text-muted-foreground">First message</TableHead>
-              <TableHead className="text-xs font-medium text-muted-foreground text-right">Messages</TableHead>
-              <TableHead className="text-xs font-medium text-muted-foreground text-right">Date</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {sessions.map((session) => {
-              const source =
-                sourceConfig[session.source] ?? {
-                  label: session.source,
-                  className: "bg-muted text-foreground",
-                };
-              return (
-                <TableRow
-                  key={session.id}
-                  className="cursor-pointer hover:bg-accent"
-                  onClick={() => setSelectedId(session.id)}
-                >
-                  <TableCell>
-                    <Badge
-                      className={cn(
-                        "border-0 text-xs font-medium",
-                        source.className
-                      )}
-                    >
-                      {source.label}
-                    </Badge>
-                  </TableCell>
-                  <TableCell className="max-w-xs">
-                    <p className="truncate text-sm text-foreground">
-                      {session.firstMessage ?? (
-                        <span className="italic text-muted-foreground">No messages</span>
-                      )}
-                    </p>
-                  </TableCell>
-                  <TableCell className="text-right text-sm text-muted-foreground">
-                    {session.messageCount}
-                  </TableCell>
-                  <TableCell className="text-right text-sm text-muted-foreground/70">
-                    {new Date(session.createdAt).toLocaleDateString()}
-                  </TableCell>
-                </TableRow>
-              );
-            })}
-          </TableBody>
-        </Table>
+      {/* Filter bar */}
+      <div className="mb-4 flex items-center gap-3">
+        <span className="text-sm text-muted-foreground">Filter by source:</span>
+        <Select
+          value={activeSource ?? "all"}
+          onValueChange={handleSourceChange}
+        >
+          <SelectTrigger className="w-40" aria-label="Filter conversations by source">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">All sources</SelectItem>
+            <SelectItem value="widget">Widget</SelectItem>
+            <SelectItem value="dashboard">Dashboard</SelectItem>
+            <SelectItem value="api">API</SelectItem>
+          </SelectContent>
+        </Select>
       </div>
+
+      {sessions.length === 0 ? (
+        <div className="flex flex-col items-center justify-center rounded-lg border border-dashed border-border py-16">
+          <MessageSquare className="mb-3 h-8 w-8 text-muted-foreground/50" aria-hidden="true" />
+          <p className="text-sm font-medium text-muted-foreground">No conversations yet</p>
+          <p className="mt-1 text-xs text-muted-foreground/70">
+            {activeSource
+              ? `No ${activeSource} conversations found.`
+              : "Conversations will appear here once customers start chatting."}
+          </p>
+        </div>
+      ) : (
+        <div className="rounded-lg border border-border overflow-hidden">
+          <Table>
+            <TableHeader>
+              <TableRow className="bg-muted/50 hover:bg-muted/50">
+                <TableHead className="text-xs font-medium text-muted-foreground">Source</TableHead>
+                <TableHead className="text-xs font-medium text-muted-foreground">First message</TableHead>
+                <TableHead className="text-xs font-medium text-muted-foreground text-right">Messages</TableHead>
+                <TableHead className="text-xs font-medium text-muted-foreground text-right">Date</TableHead>
+                <TableHead className="w-10" />
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {sessions.map((session) => {
+                const source =
+                  sourceConfig[session.source] ?? {
+                    label: session.source,
+                    className: "bg-muted text-foreground",
+                  };
+                const isDeleting = deletingId === session.id && isPending;
+
+                return (
+                  <TableRow
+                    key={session.id}
+                    className={cn(
+                      "group cursor-pointer hover:bg-accent",
+                      isDeleting && "opacity-50"
+                    )}
+                    onClick={() => setSelectedId(session.id)}
+                  >
+                    <TableCell>
+                      <Badge
+                        className={cn(
+                          "border-0 text-xs font-medium",
+                          source.className
+                        )}
+                      >
+                        {source.label}
+                      </Badge>
+                    </TableCell>
+                    <TableCell className="max-w-xs">
+                      <p className="truncate text-sm text-foreground">
+                        {session.firstMessage ?? (
+                          <span className="italic text-muted-foreground">No messages</span>
+                        )}
+                      </p>
+                    </TableCell>
+                    <TableCell className="text-right text-sm text-muted-foreground">
+                      {session.messageCount}
+                    </TableCell>
+                    <TableCell className="text-right text-sm text-muted-foreground/70">
+                      {new Date(session.createdAt).toLocaleDateString()}
+                    </TableCell>
+                    <TableCell
+                      onClick={(e) => e.stopPropagation()}
+                    >
+                      <AlertDialog>
+                        <AlertDialogTrigger asChild>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            aria-label="Delete conversation"
+                            disabled={isDeleting}
+                            className="h-7 w-7 p-0 opacity-0 group-hover:opacity-100 transition-opacity hover:bg-destructive/10 hover:text-destructive"
+                          >
+                            <Trash2 className="h-3.5 w-3.5" aria-hidden="true" />
+                          </Button>
+                        </AlertDialogTrigger>
+                        <AlertDialogContent>
+                          <AlertDialogHeader>
+                            <AlertDialogTitle>Delete this conversation?</AlertDialogTitle>
+                            <AlertDialogDescription>
+                              This will permanently delete the conversation and all its messages.
+                              Analytics counts will be updated. This action cannot be undone.
+                            </AlertDialogDescription>
+                          </AlertDialogHeader>
+                          <AlertDialogFooter>
+                            <AlertDialogCancel>Cancel</AlertDialogCancel>
+                            <AlertDialogAction
+                              onClick={() => handleDelete(session.id)}
+                              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                            >
+                              Delete
+                            </AlertDialogAction>
+                          </AlertDialogFooter>
+                        </AlertDialogContent>
+                      </AlertDialog>
+                    </TableCell>
+                  </TableRow>
+                );
+              })}
+            </TableBody>
+          </Table>
+        </div>
+      )}
 
       <ConversationDetail
         sessionId={selectedId}

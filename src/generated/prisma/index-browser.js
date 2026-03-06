@@ -127,6 +127,8 @@ exports.Prisma.OrganizationScalarFieldEnum = {
   apiKeyHash: 'apiKeyHash',
   plan: 'plan',
   settings: 'settings',
+  stripeCustomerId: 'stripeCustomerId',
+  stripeSubscriptionId: 'stripeSubscriptionId',
   createdAt: 'createdAt'
 };
 

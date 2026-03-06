@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import {
   Dialog,
   DialogContent,
@@ -24,11 +25,29 @@ const PRO_FEATURES = [
   "All 4 AI tools (KB, Orders, Inventory, Tickets)",
 ];
 
-/**
- * Upgrade prompt dialog — shown when a user hits a plan limit.
- * CTA is a placeholder (no payment integration yet).
- */
 export function UpgradeDialog({ open, onOpenChange, reason }: Props) {
+  const [isLoading, setIsLoading] = useState(false);
+
+  async function handleUpgrade() {
+    setIsLoading(true);
+    try {
+      const res = await fetch("/api/stripe/checkout", { method: "POST" });
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}));
+        throw new Error(data.error ?? "Failed to start checkout");
+      }
+      const { url } = await res.json();
+      if (url) {
+        window.location.href = url;
+      }
+    } catch (err) {
+      console.error("[upgrade-dialog] checkout error:", err);
+      // Keep dialog open so user can try again
+    } finally {
+      setIsLoading(false);
+    }
+  }
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-md">
@@ -51,13 +70,11 @@ export function UpgradeDialog({ open, onOpenChange, reason }: Props) {
         <div className="mt-4 flex flex-col gap-2">
           <button
             type="button"
-            className="w-full rounded-lg bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/80"
-            onClick={() => {
-              // TODO: integrate Stripe or billing portal
-              alert("Billing not yet configured. Contact support to upgrade.");
-            }}
+            disabled={isLoading}
+            className="w-full rounded-lg bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/80 disabled:cursor-not-allowed disabled:opacity-60"
+            onClick={handleUpgrade}
           >
-            Upgrade to Pro
+            {isLoading ? "Redirecting to checkout…" : "Upgrade to Pro"}
           </button>
           <button
             type="button"

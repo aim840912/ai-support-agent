@@ -1,3 +1,4 @@
+import Link from "next/link";
 import type { getOrgUsage } from "@/lib/plan/check-plan-limit";
 
 export type UsageData = Awaited<ReturnType<typeof getOrgUsage>>;
@@ -43,7 +44,13 @@ function UsageStat({
   );
 }
 
-export function PlanUsageSection({ usage }: { usage: UsageData }) {
+export function PlanUsageSection({
+  usage,
+  stripePortalUrl,
+}: {
+  usage: UsageData;
+  stripePortalUrl?: string;
+}) {
   const { plan, limits, usage: stats } = usage;
 
   return (
@@ -57,6 +64,14 @@ export function PlanUsageSection({ usage }: { usage: UsageData }) {
           <span className="text-sm text-muted-foreground">
             Upgrade to Pro for higher limits and all tools.
           </span>
+        )}
+        {plan === "pro" && stripePortalUrl && (
+          <Link
+            href={stripePortalUrl}
+            className="text-sm text-muted-foreground underline underline-offset-4 hover:text-foreground"
+          >
+            Manage Subscription
+          </Link>
         )}
       </div>
 

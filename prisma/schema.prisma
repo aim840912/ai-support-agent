@@ -15,8 +15,10 @@ model Organization {
                                // Nullable during migration; populated for all new orgs.
                                // Run: pnpm prisma migrate deploy (see migrations/add_api_key_hash)
   plan        String  @default("free") // free | pro
-  settings  Json?    // { theme, welcomeMessage, ... }
-  createdAt DateTime @default(now())
+  settings    Json?   // { theme, welcomeMessage, ... }
+  stripeCustomerId     String? @unique
+  stripeSubscriptionId String?
+  createdAt   DateTime @default(now())
 
   users         User[]
   documents     Document[]
@@ -85,7 +87,7 @@ model ChatMessage {
   sources   Json?       // [{ documentId, chunkText, score }]
   toolCalls Json?       // Vercel AI SDK tool call records
   sessionId String
-  session   ChatSession @relation(fields: [sessionId], references: [id])
+  session   ChatSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
   createdAt DateTime    @default(now())
 }
 
