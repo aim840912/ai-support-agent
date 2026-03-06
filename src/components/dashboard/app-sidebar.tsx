@@ -4,6 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { signOut } from "next-auth/react";
 import {
+  LayoutDashboard,
   FileText,
   MessageSquare,
   Bot,
@@ -25,6 +26,11 @@ import {
 import { cn } from "@/lib/utils";
 
 const navItems = [
+  {
+    title: "Overview",
+    href: "/overview",
+    icon: LayoutDashboard,
+  },
   {
     title: "Knowledge Base",
     href: "/knowledge-base",

@@ -62,5 +62,11 @@ ${trimmed}
 ${SECURITY_RULES}`;
 }
 
-export const DEFAULT_WELCOME_MESSAGE =
-  "Hi! I'm your AI support assistant. I can help you check order status, find product information, or create a support ticket. How can I help you today?";
+export const DEFAULT_WELCOME_MESSAGE = `Hi! I'm your AI support assistant. Here's what I can help with:
+
+- Check order status — try "What's the status of ORD-001?"
+- Look up inventory — try "Is the Ergonomic Mouse in stock?"
+- Create support tickets — just describe your issue
+- Search knowledge base — ask about products and policies
+
+How can I help you today?`;

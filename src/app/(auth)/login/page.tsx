@@ -36,7 +36,7 @@ function LoginForm() {
     if (result?.error) {
       setError("Invalid email or password");
     } else {
-      router.push("/knowledge-base");
+      router.push("/overview");
     }
   }
 
