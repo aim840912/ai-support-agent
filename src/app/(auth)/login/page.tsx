@@ -53,13 +53,10 @@ function LoginForm() {
 
       <OAuthButtons />
 
-      <div className="relative my-5">
-        <div className="absolute inset-0 flex items-center">
-          <div className="w-full border-t border-border" />
-        </div>
-        <div className="relative flex justify-center text-xs text-muted-foreground">
-          <span className="bg-card px-2">or continue with email</span>
-        </div>
+      <div className="my-5 flex items-center gap-3">
+        <div className="h-px flex-1 bg-border" />
+        <span className="text-xs text-muted-foreground">or continue with email</span>
+        <div className="h-px flex-1 bg-border" />
       </div>
 
       <form onSubmit={handleSubmit} className="space-y-4">
