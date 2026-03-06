@@ -7,8 +7,14 @@ import { AgentSettingsForm } from "@/components/dashboard/agent-settings-form";
 import { OrgInfoCard } from "@/components/dashboard/org-info-card";
 import { PlanUsageSection } from "@/components/dashboard/plan-usage-section";
 import { getOrgUsage } from "@/lib/plan/check-plan-limit";
+import { UpgradeSuccessToast } from "@/components/dashboard/upgrade-button";
 
-export default async function SettingsPage() {
+export default async function SettingsPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ tab?: string; upgraded?: string }>;
+}) {
+  const { upgraded } = await searchParams;
   const session = await auth();
   // Explicit guard — don't silently fall back to empty orgId and query with "".
   // Middleware should have already redirected, but defense-in-depth requires
@@ -48,6 +54,7 @@ export default async function SettingsPage() {
 
   return (
     <div>
+      {upgraded === "true" && <UpgradeSuccessToast />}
       <h1 className="text-2xl font-semibold text-foreground">Settings</h1>
       <p className="mt-1 text-sm text-muted-foreground">
         Configure your agent and manage API keys

@@ -1,5 +1,6 @@
 import Link from "next/link";
 import type { getOrgUsage } from "@/lib/plan/check-plan-limit";
+import { UpgradeButton } from "./upgrade-button";
 
 export type UsageData = Awaited<ReturnType<typeof getOrgUsage>>;
 
@@ -60,11 +61,7 @@ export function PlanUsageSection({
         <span className="inline-flex items-center rounded-full border border-border bg-muted px-3 py-1 text-sm font-semibold uppercase tracking-wide text-foreground">
           {plan}
         </span>
-        {plan === "free" && (
-          <span className="text-sm text-muted-foreground">
-            Upgrade to Pro for higher limits and all tools.
-          </span>
-        )}
+        {plan === "free" && <UpgradeButton />}
         {plan === "pro" && stripePortalUrl && (
           <Link
             href={stripePortalUrl}
