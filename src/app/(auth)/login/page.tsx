@@ -18,6 +18,16 @@ function LoginForm() {
 
   const isVerified = searchParams.get("verified") === "1";
   const isReset = searchParams.get("reset") === "1";
+  const authError = searchParams.get("error");
+
+  const errorMessages: Record<string, string> = {
+    OAuthAccountNotLinked:
+      "This email is already linked to another sign-in method. Please use your original method.",
+    Configuration:
+      "There is a problem with the server configuration. Please try again later.",
+    AccessDenied: "Access denied. You do not have permission to sign in.",
+    Default: "An error occurred during sign-in. Please try again.",
+  };
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -50,6 +60,11 @@ function LoginForm() {
       {isReset && (
         <p className="mb-4 rounded-lg bg-muted px-4 py-3 text-sm text-foreground" role="status">
           Password updated. Sign in with your new password.
+        </p>
+      )}
+      {authError && (
+        <p className="mb-4 rounded-lg bg-destructive/10 px-4 py-3 text-sm text-destructive" role="alert">
+          {errorMessages[authError] ?? errorMessages.Default}
         </p>
       )}
 
