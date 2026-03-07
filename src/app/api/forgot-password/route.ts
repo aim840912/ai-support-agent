@@ -29,8 +29,10 @@ export async function POST(request: Request) {
     });
 
     if (user) {
-      // Fire-and-forget: don't await so we don't leak timing info
-      sendPasswordResetEmail(email, user.name ?? email.split("@")[0]).catch(
+      // Await the email send — fire-and-forget is unreliable in serverless (Vercel
+      // may terminate the container after the response is sent before the async
+      // operation completes). Errors are caught so the 200 response is always returned.
+      await sendPasswordResetEmail(email, user.name ?? email.split("@")[0]).catch(
         (err) => console.error("[forgot-password] Email error:", err)
       );
     }

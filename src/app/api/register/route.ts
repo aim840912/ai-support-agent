@@ -82,10 +82,11 @@ export async function POST(request: Request) {
       });
     });
 
-    // Send verification email (fire-and-forget — don't block registration response).
+    // Await the email send — fire-and-forget is unreliable in serverless (Vercel
+    // may terminate the container after the response is sent before the async
+    // operation completes). Errors are caught so registration always returns 201.
     // In dev (no RESEND_API_KEY), sendVerificationEmail logs the link to console.
-    // We always show the "check email" UI so the flow is consistent across environments.
-    sendVerificationEmail(email, name).catch((err) =>
+    await sendVerificationEmail(email, name).catch((err) =>
       console.error("[register] Failed to send verification email:", err)
     );
     if (!isResendConfigured()) {
