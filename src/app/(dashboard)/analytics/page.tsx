@@ -7,7 +7,7 @@ import {
   ConversationsChart,
   SourceDistribution,
   ToolUsageChart,
-} from "@/components/dashboard/analytics-charts";
+} from "@/components/dashboard/analytics-charts-lazy";
 
 // JS-side aggregation helpers
 function getDailyConversations(

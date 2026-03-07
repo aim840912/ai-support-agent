@@ -1,4 +1,5 @@
 import { prisma } from "@/lib/db";
+import { hashApiKey } from "@/lib/api-key";
 import { WidgetChatInterface } from "@/components/widget/widget-chat-interface";
 import { notFound } from "next/navigation";
 
@@ -9,9 +10,17 @@ export default async function WidgetPage({
 }) {
   const { apiKey } = await params;
 
-  // Validate the API key and fetch org + agent settings
-  const org = await prisma.organization.findUnique({
-    where: { apiKey },
+  // Validate the API key and fetch org + agent settings.
+  // Use hash-based lookup (consistent with /api/widget/chat) with a plaintext
+  // fallback for orgs created before the hash migration.
+  const keyHash = hashApiKey(apiKey);
+  const org = await prisma.organization.findFirst({
+    where: {
+      OR: [
+        { apiKeyHash: keyHash },
+        { apiKeyHash: null, apiKey: apiKey },
+      ],
+    },
     select: {
       id: true,
       name: true,

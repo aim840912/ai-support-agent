@@ -139,17 +139,17 @@ export function rateLimitResponse(reset: number): Response {
  * `x-forwarded-for` is set by the client and can be forged unless your
  * deployment sits behind a trusted reverse proxy that overwrites the header.
  *
- * Mitigations by platform:
- *   • Vercel:  use `x-vercel-forwarded-for` (set by Vercel's infrastructure,
- *              not passable by clients). Switch to that header when deploying
- *              on Vercel to prevent rate-limit bypass via spoofed IPs.
- *   • Other:   configure your reverse proxy to strip / overwrite the header
- *              before it reaches the app, then trust only the proxy-set value.
- *
- * TODO: switch to `x-vercel-forwarded-for` before production deployment on Vercel.
+ * Header priority:
+ *   1. `x-vercel-forwarded-for` — set by Vercel's infrastructure, not
+ *      passable by clients; prevents rate-limit bypass via spoofed IPs.
+ *   2. `x-forwarded-for` — fallback for local dev and non-Vercel deployments.
+ *      On other platforms, configure your reverse proxy to strip / overwrite
+ *      this header before it reaches the app.
+ *   3. `x-real-ip` — common single-IP header set by nginx.
  */
 export function getClientIp(request: Request): string {
   return (
+    request.headers.get("x-vercel-forwarded-for")?.split(",")[0]?.trim() ??
     request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ??
     request.headers.get("x-real-ip") ??
     "unknown"
