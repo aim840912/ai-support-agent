@@ -257,6 +257,26 @@ exports.Prisma.TicketScalarFieldEnum = {
   status: 'status',
   orderId: 'orderId',
   orgId: 'orgId',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+};
+
+exports.Prisma.TicketNoteScalarFieldEnum = {
+  id: 'id',
+  content: 'content',
+  authorId: 'authorId',
+  ticketId: 'ticketId',
+  createdAt: 'createdAt'
+};
+
+exports.Prisma.InvitationScalarFieldEnum = {
+  id: 'id',
+  email: 'email',
+  role: 'role',
+  token: 'token',
+  orgId: 'orgId',
+  invitedBy: 'invitedBy',
+  expires: 'expires',
   createdAt: 'createdAt'
 };
 
@@ -301,7 +321,9 @@ exports.Prisma.ModelName = {
   Product: 'Product',
   Order: 'Order',
   OrderItem: 'OrderItem',
-  Ticket: 'Ticket'
+  Ticket: 'Ticket',
+  TicketNote: 'TicketNote',
+  Invitation: 'Invitation'
 };
 
 /**

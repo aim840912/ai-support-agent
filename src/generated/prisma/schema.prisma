@@ -27,6 +27,7 @@ model Organization {
   products      Product[]
   orders        Order[]
   tickets       Ticket[]
+  invitations   Invitation[]
 }
 
 model User {
@@ -195,6 +196,35 @@ model Ticket {
   orgId        String
   org          Organization @relation(fields: [orgId], references: [id])
   createdAt    DateTime     @default(now())
+  updatedAt    DateTime     @updatedAt
+
+  notes TicketNote[]
 
   @@index([orgId])
+}
+
+model TicketNote {
+  id        String   @id @default(cuid())
+  content   String
+  authorId  String // userId of the staff member who wrote the note
+  ticketId  String
+  ticket    Ticket   @relation(fields: [ticketId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+
+  @@index([ticketId])
+}
+
+model Invitation {
+  id        String       @id @default(cuid())
+  email     String
+  role      String       @default("member") // admin | member
+  token     String       @unique
+  orgId     String
+  org       Organization @relation(fields: [orgId], references: [id], onDelete: Cascade)
+  invitedBy String // userId of the inviter
+  expires   DateTime
+  createdAt DateTime     @default(now())
+
+  @@index([orgId])
+  @@index([token])
 }

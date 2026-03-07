@@ -107,19 +107,23 @@ function getInstance(): NextAuthInstance {
 // Each export is a thin wrapper that triggers lazy initialization on first call.
 // ESM destructuring (e.g. `const { GET, POST } = handlers`) captures the wrapper
 // function at import time but only invokes getInstance() when the request arrives.
+//
+// We use Parameters<...> (tuple type) instead of any[] to satisfy TS2556 —
+// TypeScript requires a tuple type when spreading args into an overloaded function.
+// The outer `as NextAuthInstance[...]` cast restores the full overloaded signature.
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export const auth = ((...args: any[]) => getInstance().auth(...args)) as NextAuthInstance["auth"];
+export const auth = ((...args: Parameters<NextAuthInstance["auth"]>) =>
+  getInstance().auth(...args)) as NextAuthInstance["auth"];
 
 export const handlers: NextAuthInstance["handlers"] = {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  GET: (...args: any[]) => getInstance().handlers.GET(...args),
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  POST: (...args: any[]) => getInstance().handlers.POST(...args),
+  GET: ((...args: Parameters<NextAuthInstance["handlers"]["GET"]>) =>
+    getInstance().handlers.GET(...args)) as NextAuthInstance["handlers"]["GET"],
+  POST: ((...args: Parameters<NextAuthInstance["handlers"]["POST"]>) =>
+    getInstance().handlers.POST(...args)) as NextAuthInstance["handlers"]["POST"],
 };
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export const signIn = ((...args: any[]) => getInstance().signIn(...args)) as NextAuthInstance["signIn"];
+export const signIn = ((...args: Parameters<NextAuthInstance["signIn"]>) =>
+  getInstance().signIn(...args)) as NextAuthInstance["signIn"];
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export const signOut = ((...args: any[]) => getInstance().signOut(...args)) as NextAuthInstance["signOut"];
+export const signOut = ((...args: Parameters<NextAuthInstance["signOut"]>) =>
+  getInstance().signOut(...args)) as NextAuthInstance["signOut"];
