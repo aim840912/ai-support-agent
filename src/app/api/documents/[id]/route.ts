@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/db";
+import { logError } from "@/lib/error-logger";
 
 export async function DELETE(
   _request: Request,
@@ -14,20 +15,19 @@ export async function DELETE(
   const { id } = await context.params;
 
   try {
-    // Ensure the document belongs to this org
-    const document = await prisma.document.findFirst({
+    // Atomic deleteMany with orgId — eliminates the TOCTOU race that existed
+    // when findFirst (with orgId) was followed by delete (with id only).
+    const result = await prisma.document.deleteMany({
       where: { id, orgId: session.user.orgId },
     });
 
-    if (!document) {
+    if (result.count === 0) {
       return NextResponse.json({ error: "Document not found" }, { status: 404 });
     }
 
-    await prisma.document.delete({ where: { id } });
-
     return new NextResponse(null, { status: 204 });
   } catch (error) {
-    console.error("[DocumentDeleteAPI]", error);
+    logError("[DocumentDeleteAPI]", error);
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
 }

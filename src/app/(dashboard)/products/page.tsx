@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 import { prisma } from "@/lib/db";
 import { getOrgUsage } from "@/lib/plan/check-plan-limit";
 import { ProductList } from "@/components/dashboard/product-list";
+import { logError } from "@/lib/error-logger";
 
 export default async function ProductsPage() {
   const session = await auth();
@@ -54,7 +55,7 @@ export default async function ProductsPage() {
       </div>
     );
   } catch (error) {
-    console.error("[ProductsPage]", error);
+    logError("[ProductsPage]", error);
     return (
       <div>
         <h1 className="text-2xl font-semibold text-foreground">Products</h1>

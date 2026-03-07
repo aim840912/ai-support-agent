@@ -2,6 +2,7 @@ import { auth } from "@/auth";
 import { prisma } from "@/lib/db";
 import { z } from "zod";
 import { NextRequest } from "next/server";
+import { logError } from "@/lib/error-logger";
 
 const VALID_STATUSES = ["open", "in_progress", "resolved", "closed"] as const;
 const VALID_PRIORITIES = ["low", "medium", "high", "urgent"] as const;
@@ -57,7 +58,7 @@ export async function GET(
       })),
     });
   } catch (error) {
-    console.error("[TicketsAPI GET/:id]", error);
+    logError("[TicketsAPI GET/:id]", error);
     return Response.json({ error: "Internal server error" }, { status: 500 });
   }
 }
@@ -115,7 +116,7 @@ export async function PATCH(
       updatedAt: ticket.updatedAt.toISOString(),
     });
   } catch (error) {
-    console.error("[TicketsAPI PATCH/:id]", error);
+    logError("[TicketsAPI PATCH/:id]", error);
     return Response.json({ error: "Internal server error" }, { status: 500 });
   }
 }

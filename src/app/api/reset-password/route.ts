@@ -4,6 +4,7 @@ import { z } from "zod";
 import { prisma } from "@/lib/db";
 import { createRateLimiter, checkRateLimit, getClientIp, rateLimitResponse } from "@/lib/rate-limit";
 import { passwordSchema } from "@/lib/validation";
+import { logError } from "@/lib/error-logger";
 
 // 5 reset attempts per IP per 15 minutes
 const resetPasswordLimiter = createRateLimiter({ limit: 5, window: "15m" });
@@ -96,7 +97,7 @@ export async function POST(request: Request) {
         return NextResponse.json(INVALID_LINK_ERROR, { status: 400 });
       }
     }
-    console.error("[reset-password]", error instanceof Error ? error.message : "Unknown error");
+    logError("[reset-password]", error);
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
 }

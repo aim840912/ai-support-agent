@@ -2,6 +2,7 @@ import { auth } from "@/auth";
 import { prisma } from "@/lib/db";
 import { z } from "zod";
 import { NextRequest } from "next/server";
+import { logError } from "@/lib/error-logger";
 
 const ASSIGNABLE_ROLES = ["admin", "member"] as const;
 
@@ -56,7 +57,7 @@ export async function PATCH(
 
     return Response.json(updated);
   } catch (error) {
-    console.error("[TeamAPI PATCH/:id]", error);
+    logError("[TeamAPI PATCH/:id]", error);
     return Response.json({ error: "Internal server error" }, { status: 500 });
   }
 }
@@ -111,7 +112,7 @@ export async function DELETE(
 
     return new Response(null, { status: 204 });
   } catch (error) {
-    console.error("[TeamAPI DELETE/:id]", error);
+    logError("[TeamAPI DELETE/:id]", error);
     return Response.json({ error: "Internal server error" }, { status: 500 });
   }
 }

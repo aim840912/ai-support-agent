@@ -1,5 +1,6 @@
 import { auth } from "@/auth";
 import { prisma } from "@/lib/db";
+import { logError } from "@/lib/error-logger";
 
 export async function DELETE(
   _request: Request,
@@ -32,7 +33,7 @@ export async function DELETE(
 
     return new Response(null, { status: 204 });
   } catch (error) {
-    console.error("[ConversationDeleteAPI]", error);
+    logError("[ConversationDeleteAPI]", error);
     return Response.json({ error: "Internal server error" }, { status: 500 });
   }
 }
@@ -86,7 +87,7 @@ export async function GET(
       })),
     });
   } catch (error) {
-    console.error("[ConversationGetAPI]", error);
+    logError("[ConversationGetAPI]", error);
     return Response.json({ error: "Internal server error" }, { status: 500 });
   }
 }

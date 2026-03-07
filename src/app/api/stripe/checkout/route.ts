@@ -1,11 +1,18 @@
 import { auth } from "@/auth";
 import { prisma } from "@/lib/db";
 import { getStripeClient } from "@/lib/stripe";
+import { logError } from "@/lib/error-logger";
 
 export async function POST() {
   const session = await auth();
   if (!session?.user?.orgId || !session.user.email) {
     return new Response("Unauthorized", { status: 401 });
+  }
+
+  // Only owner or admin can initiate an upgrade — members should not be able
+  // to trigger billing operations on behalf of the organization.
+  if (!["owner", "admin"].includes(session.user.role as string)) {
+    return new Response("Insufficient permissions", { status: 403 });
   }
 
   const priceId = process.env.NEXT_PUBLIC_STRIPE_PRICE_ID;
@@ -60,7 +67,7 @@ export async function POST() {
 
     return Response.json({ url: checkoutSession.url });
   } catch (error) {
-    console.error("[StripeCheckout]", error);
+    logError("[StripeCheckout]", error);
     return Response.json({ error: "Internal server error" }, { status: 500 });
   }
 }

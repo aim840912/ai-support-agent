@@ -1,6 +1,7 @@
 import { auth } from "@/auth";
 import { prisma } from "@/lib/db";
 import { NextRequest } from "next/server";
+import { logError } from "@/lib/error-logger";
 
 export async function GET(request: NextRequest) {
   const session = await auth();
@@ -27,6 +28,7 @@ export async function GET(request: NextRequest) {
         ...(source ? { source } : {}),
       },
       orderBy: { createdAt: "desc" },
+      take: 200, // Guard against OOM on large datasets — use cursor pagination for exports
       include: {
         _count: { select: { messages: true } },
         messages: {
@@ -50,7 +52,7 @@ export async function GET(request: NextRequest) {
 
     return Response.json(data);
   } catch (error) {
-    console.error("[ConversationsAPI]", error);
+    logError("[ConversationsAPI]", error);
     return Response.json({ error: "Internal server error" }, { status: 500 });
   }
 }

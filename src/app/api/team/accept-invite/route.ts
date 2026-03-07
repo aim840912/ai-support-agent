@@ -2,6 +2,7 @@ import { auth } from "@/auth";
 import { prisma } from "@/lib/db";
 import { NextRequest, NextResponse } from "next/server";
 import { createRateLimiter, checkRateLimit, getClientIp, rateLimitResponse } from "@/lib/rate-limit";
+import { logError } from "@/lib/error-logger";
 
 // 10 invite-accept attempts per IP per 15 minutes — prevents token brute-forcing
 const acceptInviteLimiter = createRateLimiter({ limit: 10, window: "15m" });
@@ -63,7 +64,7 @@ export async function GET(request: NextRequest) {
     registerUrl.searchParams.set("email", invitation.email);
     return NextResponse.redirect(registerUrl);
   } catch (error) {
-    console.error("[AcceptInvite]", error instanceof Error ? error.message : "Unknown error");
+    logError("[AcceptInvite]", error);
     return NextResponse.redirect(new URL("/login?error=server_error", request.url));
   }
 }
@@ -150,7 +151,7 @@ export async function POST(request: NextRequest) {
         );
       }
     }
-    console.error("[AcceptInvite POST]", error instanceof Error ? error.message : "Unknown error");
+    logError("[AcceptInvite POST]", error);
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
 }

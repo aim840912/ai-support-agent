@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { createRateLimiter, checkRateLimit, getClientIp, rateLimitResponse } from "@/lib/rate-limit";
+import { logError } from "@/lib/error-logger";
 
 // 10 verification attempts per IP per 15 minutes — prevents token brute-forcing
 const verifyEmailLimiter = createRateLimiter({ limit: 10, window: "15m" });
@@ -128,7 +129,7 @@ export async function POST(request: Request) {
         return NextResponse.json({ error: "Verification link has expired" }, { status: 400 });
       }
     }
-    console.error("[VerifyEmail POST]", error instanceof Error ? error.message : "Unknown error");
+    logError("[VerifyEmail POST]", error);
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
 }

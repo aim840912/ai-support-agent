@@ -8,6 +8,7 @@ import {
   SourceDistribution,
   ToolUsageChart,
 } from "@/components/dashboard/analytics-charts-lazy";
+import { logError } from "@/lib/error-logger";
 
 // JS-side aggregation helpers
 function getDailyConversations(
@@ -141,7 +142,7 @@ export default async function AnalyticsPage() {
       </div>
     );
   } catch (error) {
-    console.error("[AnalyticsPage]", error);
+    logError("[AnalyticsPage]", error);
     return (
       <div>
         <h1 className="text-2xl font-semibold text-foreground">Analytics</h1>

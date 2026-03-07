@@ -2,6 +2,7 @@ import { auth } from "@/auth";
 import { redirect } from "next/navigation";
 import { prisma } from "@/lib/db";
 import { TicketList } from "@/components/dashboard/ticket-list";
+import { logError } from "@/lib/error-logger";
 
 const VALID_STATUSES = ["open", "in_progress", "resolved", "closed"] as const;
 const VALID_PRIORITIES = ["low", "medium", "high", "urgent"] as const;
@@ -85,7 +86,7 @@ export default async function TicketsPage({
       </div>
     );
   } catch (error) {
-    console.error("[TicketsPage]", error);
+    logError("[TicketsPage]", error);
     return (
       <div>
         <h1 className="text-2xl font-semibold text-foreground">Tickets</h1>

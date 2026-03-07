@@ -2,6 +2,7 @@ import { auth } from "@/auth";
 import { redirect } from "next/navigation";
 import { prisma } from "@/lib/db";
 import { ConversationList } from "@/components/dashboard/conversation-list";
+import { logError } from "@/lib/error-logger";
 
 const VALID_SOURCES = ["widget", "dashboard", "api"] as const;
 type Source = (typeof VALID_SOURCES)[number];
@@ -66,7 +67,7 @@ export default async function ConversationsPage({
       </div>
     );
   } catch (error) {
-    console.error("[ConversationsPage]", error);
+    logError("[ConversationsPage]", error);
     return (
       <div>
         <h1 className="text-2xl font-semibold text-foreground">Conversations</h1>

@@ -1,6 +1,7 @@
 import { auth } from "@/auth";
 import { prisma } from "@/lib/db";
 import { NextRequest } from "next/server";
+import { logError } from "@/lib/error-logger";
 
 const VALID_STATUSES = ["open", "in_progress", "resolved", "closed"] as const;
 const VALID_PRIORITIES = ["low", "medium", "high", "urgent"] as const;
@@ -38,6 +39,7 @@ export async function GET(request: NextRequest) {
         ...(priority ? { priority } : {}),
       },
       orderBy: { createdAt: "desc" },
+      take: 200, // Guard against OOM on large datasets — use cursor pagination for exports
       include: {
         order: { select: { orderNumber: true } },
         _count: { select: { notes: true } },
@@ -60,7 +62,7 @@ export async function GET(request: NextRequest) {
 
     return Response.json(data);
   } catch (error) {
-    console.error("[TicketsAPI GET]", error);
+    logError("[TicketsAPI GET]", error);
     return Response.json({ error: "Internal server error" }, { status: 500 });
   }
 }

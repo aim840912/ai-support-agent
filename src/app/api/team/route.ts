@@ -4,6 +4,12 @@ import { z } from "zod";
 import { checkTeamMemberLimit } from "@/lib/plan/check-plan-limit";
 import { sendInvitationEmail } from "@/lib/email/send-invitation";
 import { NextRequest } from "next/server";
+import { logError } from "@/lib/error-logger";
+import { createRateLimiter, checkRateLimit, rateLimitResponse } from "@/lib/rate-limit";
+
+// 10 invite sends per org per 15 minutes — prevents a compromised account from
+// mass-sending invitations and exhausting the Resend API quota.
+const teamInviteLimiter = createRateLimiter({ limit: 10, window: "15m" });
 
 const INVITABLE_ROLES = ["admin", "member"] as const;
 
@@ -56,7 +62,7 @@ export async function GET() {
       })),
     });
   } catch (error) {
-    console.error("[TeamAPI GET]", error);
+    logError("[TeamAPI GET]", error);
     return Response.json({ error: "Internal server error" }, { status: 500 });
   }
 }
@@ -74,6 +80,11 @@ export async function POST(request: NextRequest) {
   if (!["owner", "admin"].includes(inviterRole)) {
     return Response.json({ error: "Insufficient permissions" }, { status: 403 });
   }
+
+  // Rate limit by orgId — prevents a compromised owner/admin account from
+  // spamming invitations and exhausting Resend API quota.
+  const rl = await checkRateLimit(teamInviteLimiter, `team-invite:${orgId}`);
+  if (!rl.success) return rateLimitResponse(rl.reset);
 
   try {
     const body = await request.json();
@@ -118,7 +129,7 @@ export async function POST(request: NextRequest) {
 
     return Response.json({ message: "Invitation sent" }, { status: 201 });
   } catch (error) {
-    console.error("[TeamAPI POST]", error);
+    logError("[TeamAPI POST]", error);
     return Response.json({ error: "Internal server error" }, { status: 500 });
   }
 }

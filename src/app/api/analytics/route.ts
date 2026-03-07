@@ -1,5 +1,6 @@
 import { auth } from "@/auth";
 import { prisma } from "@/lib/db";
+import { logError } from "@/lib/error-logger";
 
 export async function GET() {
   const session = await auth();
@@ -81,7 +82,7 @@ export async function GET() {
       toolUsage,
     });
   } catch (error) {
-    console.error("[AnalyticsAPI]", error);
+    logError("[AnalyticsAPI]", error);
     return Response.json({ error: "Internal server error" }, { status: 500 });
   }
 }

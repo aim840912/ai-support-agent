@@ -3,6 +3,7 @@ import { z } from "zod";
 import { prisma } from "@/lib/db";
 import { sendPasswordResetEmail } from "@/lib/email/send-password-reset";
 import { createRateLimiter, checkRateLimit, getClientIp, rateLimitResponse } from "@/lib/rate-limit";
+import { logError } from "@/lib/error-logger";
 
 // Outer: 10 reset requests per IP per 15 minutes (any email target)
 const forgotPasswordIpLimiter = createRateLimiter({ limit: 10, window: "15m" });
@@ -40,7 +41,7 @@ export async function POST(request: Request) {
       // may terminate the container after the response is sent before the async
       // operation completes). Errors are caught so the 200 response is always returned.
       await sendPasswordResetEmail(email, user.name ?? email.split("@")[0]).catch(
-        (err) => console.error("[forgot-password] Email error:", err instanceof Error ? err.message : "Unknown error")
+        (err) => logError("[forgot-password] Email error:", err)
       );
     }
 
@@ -51,7 +52,7 @@ export async function POST(request: Request) {
     if (error instanceof z.ZodError) {
       return NextResponse.json({ error: "Invalid email address" }, { status: 400 });
     }
-    console.error("[forgot-password]", error instanceof Error ? error.message : "Unknown error");
+    logError("[forgot-password]", error);
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
 }

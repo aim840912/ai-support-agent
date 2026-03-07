@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { logError } from "@/lib/error-logger";
 import {
   Dialog,
   DialogContent,
@@ -41,7 +42,7 @@ export function UpgradeDialog({ open, onOpenChange, reason }: Props) {
         window.location.href = url;
       }
     } catch (err) {
-      console.error("[upgrade-dialog] checkout error:", err);
+      logError("[upgrade-dialog] checkout error:", err);
       // Keep dialog open so user can try again
     } finally {
       setIsLoading(false);

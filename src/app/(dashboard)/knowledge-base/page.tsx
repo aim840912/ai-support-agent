@@ -5,6 +5,7 @@ import { UploadDropzone } from "@/components/dashboard/upload-dropzone";
 import { DocumentList } from "@/components/dashboard/document-list";
 import { PlanLimitBanner } from "@/components/dashboard/plan-limit-banner";
 import { getPlanLimits } from "@/lib/plan/limits";
+import { logError } from "@/lib/error-logger";
 
 export default async function KnowledgeBasePage() {
   const session = await auth();
@@ -59,7 +60,7 @@ export default async function KnowledgeBasePage() {
       </div>
     );
   } catch (error) {
-    console.error("[KnowledgeBasePage]", error);
+    logError("[KnowledgeBasePage]", error);
     return (
       <div>
         <h1 className="text-2xl font-semibold text-foreground">Knowledge Base</h1>

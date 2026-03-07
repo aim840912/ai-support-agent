@@ -3,6 +3,7 @@ import { prisma } from "@/lib/db";
 import { z } from "zod";
 import { checkProductLimit } from "@/lib/plan/check-plan-limit";
 import { NextRequest } from "next/server";
+import { logError } from "@/lib/error-logger";
 
 const createSchema = z.object({
   name: z.string().min(1).max(200),
@@ -25,6 +26,7 @@ export async function GET(_request: NextRequest) {
     const products = await prisma.product.findMany({
       where: { orgId },
       orderBy: { createdAt: "desc" },
+      take: 200, // Guard against OOM on large datasets — use cursor pagination for exports
       select: {
         id: true,
         name: true,
@@ -50,7 +52,7 @@ export async function GET(_request: NextRequest) {
 
     return Response.json(data);
   } catch (error) {
-    console.error("[ProductsAPI GET]", error);
+    logError("[ProductsAPI GET]", error);
     return Response.json({ error: "Internal server error" }, { status: 500 });
   }
 }
@@ -103,7 +105,7 @@ export async function POST(request: NextRequest) {
       { status: 201 }
     );
   } catch (error) {
-    console.error("[ProductsAPI POST]", error);
+    logError("[ProductsAPI POST]", error);
     return Response.json({ error: "Internal server error" }, { status: 500 });
   }
 }

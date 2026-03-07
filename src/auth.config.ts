@@ -127,20 +127,24 @@ export const authConfig: NextAuthConfig = {
         }
       }
 
-      // Refresh passwordChangedAt every 24 h (matching updateAge) so that
-      // password changes are detected within one updateAge window — not just
-      // at sign-in. Also handles tokens pre-dating this field (first request
-      // will hydrate the value from DB as a one-time backwards-compat migration).
+      // Refresh passwordChangedAt, role, and orgId every 24 h (matching updateAge).
+      // Password change detection: forces re-login within one updateAge window.
+      // Role/orgId refresh: ensures demoted/transferred users can't retain stale
+      // permissions longer than 24 h without re-authenticating.
       const lastChecked = token.passwordChangedAtCheckedAt as number | undefined;
       if (token.id && (!lastChecked || now - lastChecked > UPDATE_AGE_SEC)) {
         const { prisma } = await import("@/lib/db");
         const dbUser = await prisma.user.findUnique({
           where: { id: token.id as string },
-          select: { passwordChangedAt: true },
+          select: { passwordChangedAt: true, role: true, orgId: true },
         });
         token.passwordChangedAt = dbUser?.passwordChangedAt
           ? Math.floor(dbUser.passwordChangedAt.getTime() / 1000)
           : 0;
+        // Propagate fresh role and orgId — handles role changes and org transfers
+        // made between sign-ins without requiring a manual re-login.
+        token.role = dbUser?.role;
+        token.orgId = dbUser?.orgId;
         token.passwordChangedAtCheckedAt = now;
       }
 

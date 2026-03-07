@@ -2,6 +2,7 @@ import { headers } from "next/headers";
 import { prisma } from "@/lib/db";
 import { getStripeClient } from "@/lib/stripe";
 import type Stripe from "stripe";
+import { logError } from "@/lib/error-logger";
 
 // Webhook route must read raw body — do NOT use JSON parsing middleware.
 // next.js App Router streams the body; we read it as text for signature verification.
@@ -84,7 +85,7 @@ export async function POST(request: Request) {
         break;
     }
   } catch (err) {
-    console.error("[stripe/webhook] handler error:", err);
+    logError("[stripe/webhook] handler error:", err);
     return new Response("Webhook handler failed", { status: 500 });
   }
 

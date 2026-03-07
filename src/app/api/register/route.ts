@@ -7,6 +7,7 @@ import { isResendConfigured } from "@/lib/mock-mode";
 import { createRateLimiter, checkRateLimit, getClientIp, rateLimitResponse } from "@/lib/rate-limit";
 import { passwordSchema } from "@/lib/validation";
 import { generateApiKey, hashApiKey } from "@/lib/api-key";
+import { logError } from "@/lib/error-logger";
 
 // 5 registration attempts per IP per 15 minutes
 const registerLimiter = createRateLimiter({ limit: 5, window: "15m" });
@@ -87,7 +88,7 @@ export async function POST(request: Request) {
     // operation completes). Errors are caught so registration always returns 201.
     // In dev (no RESEND_API_KEY), sendVerificationEmail logs the link to console.
     await sendVerificationEmail(email, name).catch((err) =>
-      console.error("[register] Failed to send verification email:", err)
+      logError("[register] Failed to send verification email:", err)
     );
     if (!isResendConfigured()) {
       console.info("[register] Dev mode: verification link logged above (no email sent)");
@@ -107,7 +108,7 @@ export async function POST(request: Request) {
     if (error instanceof Error && error.message === "INVALID_INVITE") {
       return NextResponse.json({ error: "Invalid or expired invitation" }, { status: 400 });
     }
-    console.error("[Register]", error);
+    logError("[Register]", error);
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
 }

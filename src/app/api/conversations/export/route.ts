@@ -1,6 +1,7 @@
 import { auth } from "@/auth";
 import { prisma } from "@/lib/db";
 import { NextRequest } from "next/server";
+import { logError } from "@/lib/error-logger";
 
 type ExportFormat = "csv" | "json";
 
@@ -124,7 +125,7 @@ export async function GET(request: NextRequest) {
       },
     });
   } catch (error) {
-    console.error("[ConversationsExportAPI]", error);
+    logError("[ConversationsExportAPI]", error);
     return Response.json({ error: "Internal server error" }, { status: 500 });
   }
 }

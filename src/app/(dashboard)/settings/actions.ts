@@ -5,6 +5,7 @@ import { prisma } from "@/lib/db";
 import { generateApiKey, hashApiKey } from "@/lib/api-key";
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
+import { logError } from "@/lib/error-logger";
 
 // Server actions are callable from the browser — always validate input.
 // The TypeScript type alone is NOT sufficient: the caller can send arbitrary
@@ -70,7 +71,7 @@ export async function updateAgentSettings(input: UpdateAgentSettingsInput) {
       },
     });
   } catch (error) {
-    console.error("[updateAgentSettings]", error);
+    logError("[updateAgentSettings]", error);
     throw new Error("Failed to save settings. Please try again.");
   }
 
@@ -104,7 +105,7 @@ export async function regenerateApiKey() {
       },
     });
   } catch (error) {
-    console.error("[regenerateApiKey]", error);
+    logError("[regenerateApiKey]", error);
     throw new Error("Failed to regenerate API key. Please try again.");
   }
 

@@ -1,9 +1,11 @@
+import path from "path";
 import { NextResponse } from "next/server";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/db";
 import { processDocument } from "@/lib/rag/process-document";
 import { checkDocumentLimit } from "@/lib/plan/check-plan-limit";
 import { createRateLimiter, checkRateLimit, rateLimitResponse } from "@/lib/rate-limit";
+import { logError } from "@/lib/error-logger";
 
 // 10 document uploads per org per hour
 const documentsLimiter = createRateLimiter({ limit: 10, window: "1h" });
@@ -55,7 +57,7 @@ export async function GET() {
 
     return NextResponse.json(documents);
   } catch (error) {
-    console.error("[DocumentsGetAPI]", error);
+    logError("[DocumentsGetAPI]", error);
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
 }
@@ -111,24 +113,30 @@ export async function POST(request: Request) {
     );
   }
 
+  // Sanitize filename: strip directory traversal and cap length.
+  // file.name comes from the client-controlled multipart header and could
+  // contain path separators ("../../../etc/passwd") or excessively long strings
+  // that waste DB index space.
+  const sanitizedFilename = path.basename(file.name).slice(0, 255);
+
   // Create document record first (status: processing)
   let document;
   try {
     document = await prisma.document.create({
       data: {
-        filename: file.name,
+        filename: sanitizedFilename,
         status: "processing",
         orgId: session.user.orgId,
       },
     });
   } catch (error) {
-    console.error("[DocumentsPostAPI]", error);
+    logError("[DocumentsPostAPI]", error);
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
 
   // Fire-and-forget: process in background (no await)
-  processDocument(document.id, buffer, file.name, session.user.orgId).catch(
-    (err) => console.error("[processDocument]", err)
+  processDocument(document.id, buffer, sanitizedFilename, session.user.orgId).catch(
+    (err) => logError("[processDocument]", err)
   );
 
   return NextResponse.json(document, { status: 201 });

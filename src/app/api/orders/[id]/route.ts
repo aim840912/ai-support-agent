@@ -2,6 +2,7 @@ import { auth } from "@/auth";
 import { prisma } from "@/lib/db";
 import { z } from "zod";
 import { NextRequest } from "next/server";
+import { logError } from "@/lib/error-logger";
 
 const VALID_STATUSES = ["pending", "processing", "shipped", "delivered", "cancelled"] as const;
 
@@ -69,7 +70,7 @@ export async function GET(
       })),
     });
   } catch (error) {
-    console.error("[OrdersAPI GET/:id]", error);
+    logError("[OrdersAPI GET/:id]", error);
     return Response.json({ error: "Internal server error" }, { status: 500 });
   }
 }
@@ -93,15 +94,12 @@ export async function PATCH(
       return Response.json({ error: "Invalid input" }, { status: 400 });
     }
 
-    const existing = await prisma.order.findFirst({ where: { id, orgId } });
-    if (!existing) {
-      return Response.json({ error: "Order not found" }, { status: 404 });
-    }
-
     const { status, trackingNumber, estimatedDelivery } = parsed.data;
 
-    const order = await prisma.order.update({
-      where: { id },
+    // updateMany with orgId — atomic authorization + mutation, eliminates TOCTOU
+    // race between the previous findFirst (with orgId) and update (with id only).
+    const result = await prisma.order.updateMany({
+      where: { id, orgId },
       data: {
         ...(status ? { status } : {}),
         ...(trackingNumber !== undefined ? { trackingNumber } : {}),
@@ -109,14 +107,24 @@ export async function PATCH(
       },
     });
 
+    if (result.count === 0) {
+      return Response.json({ error: "Order not found" }, { status: 404 });
+    }
+
+    // Fetch updated record for response — updateMany does not return updated rows.
+    const order = await prisma.order.findUnique({
+      where: { id },
+      select: { id: true, status: true, trackingNumber: true, estimatedDelivery: true },
+    });
+
     return Response.json({
-      id: order.id,
-      status: order.status,
-      trackingNumber: order.trackingNumber,
-      estimatedDelivery: order.estimatedDelivery?.toISOString() ?? null,
+      id: order!.id,
+      status: order!.status,
+      trackingNumber: order!.trackingNumber,
+      estimatedDelivery: order!.estimatedDelivery?.toISOString() ?? null,
     });
   } catch (error) {
-    console.error("[OrdersAPI PATCH/:id]", error);
+    logError("[OrdersAPI PATCH/:id]", error);
     return Response.json({ error: "Internal server error" }, { status: 500 });
   }
 }

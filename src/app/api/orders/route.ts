@@ -2,6 +2,7 @@ import { auth } from "@/auth";
 import { prisma } from "@/lib/db";
 import { z } from "zod";
 import { NextRequest } from "next/server";
+import { logError } from "@/lib/error-logger";
 
 const VALID_STATUSES = ["pending", "processing", "shipped", "delivered", "cancelled"] as const;
 
@@ -40,6 +41,7 @@ export async function GET(request: NextRequest) {
         ...(status ? { status } : {}),
       },
       orderBy: { createdAt: "desc" },
+      take: 200, // Guard against OOM on large datasets — use cursor pagination for exports
       include: {
         items: {
           include: { product: { select: { name: true, sku: true } } },
@@ -63,7 +65,7 @@ export async function GET(request: NextRequest) {
 
     return Response.json(data);
   } catch (error) {
-    console.error("[OrdersAPI GET]", error);
+    logError("[OrdersAPI GET]", error);
     return Response.json({ error: "Internal server error" }, { status: 500 });
   }
 }
@@ -123,7 +125,7 @@ export async function POST(request: NextRequest) {
       { status: 201 }
     );
   } catch (error) {
-    console.error("[OrdersAPI POST]", error);
+    logError("[OrdersAPI POST]", error);
     return Response.json({ error: "Internal server error" }, { status: 500 });
   }
 }

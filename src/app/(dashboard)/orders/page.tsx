@@ -2,6 +2,7 @@ import { auth } from "@/auth";
 import { redirect } from "next/navigation";
 import { prisma } from "@/lib/db";
 import { OrderList } from "@/components/dashboard/order-list";
+import { logError } from "@/lib/error-logger";
 
 const VALID_STATUSES = ["pending", "processing", "shipped", "delivered", "cancelled"] as const;
 type ValidStatus = (typeof VALID_STATUSES)[number];
@@ -62,7 +63,7 @@ export default async function OrdersPage({
       </div>
     );
   } catch (error) {
-    console.error("[OrdersPage]", error);
+    logError("[OrdersPage]", error);
     return (
       <div>
         <h1 className="text-2xl font-semibold text-foreground">Orders</h1>

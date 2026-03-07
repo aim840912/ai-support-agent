@@ -2,6 +2,7 @@ import { auth } from "@/auth";
 import { prisma } from "@/lib/db";
 import { z } from "zod";
 import { NextRequest } from "next/server";
+import { logError } from "@/lib/error-logger";
 
 const updateSchema = z.object({
   name: z.string().min(1).max(200).optional(),
@@ -30,28 +31,38 @@ export async function PATCH(
       return Response.json({ error: "Invalid input" }, { status: 400 });
     }
 
-    const existing = await prisma.product.findFirst({ where: { id, orgId } });
-    if (!existing) {
-      return Response.json({ error: "Product not found" }, { status: 404 });
-    }
-
-    const product = await prisma.product.update({
-      where: { id },
+    // updateMany with orgId — atomic authorization + mutation, eliminates TOCTOU
+    // race between the previous findFirst (with orgId) and update (with id only).
+    const updateResult = await prisma.product.updateMany({
+      where: { id, orgId },
       data: parsed.data,
     });
 
+    if (updateResult.count === 0) {
+      return Response.json({ error: "Product not found" }, { status: 404 });
+    }
+
+    // Fetch updated record for response — updateMany does not return updated rows.
+    const product = await prisma.product.findUnique({
+      where: { id },
+      select: {
+        id: true, name: true, sku: true, stockLevel: true,
+        warehouse: true, reorderThreshold: true, price: true, createdAt: true,
+      },
+    });
+
     return Response.json({
-      id: product.id,
-      name: product.name,
-      sku: product.sku,
-      stockLevel: product.stockLevel,
-      warehouse: product.warehouse,
-      reorderThreshold: product.reorderThreshold,
-      price: product.price,
-      createdAt: product.createdAt.toISOString(),
+      id: product!.id,
+      name: product!.name,
+      sku: product!.sku,
+      stockLevel: product!.stockLevel,
+      warehouse: product!.warehouse,
+      reorderThreshold: product!.reorderThreshold,
+      price: product!.price,
+      createdAt: product!.createdAt.toISOString(),
     });
   } catch (error) {
-    console.error("[ProductsAPI PATCH/:id]", error);
+    logError("[ProductsAPI PATCH/:id]", error);
     return Response.json({ error: "Internal server error" }, { status: 500 });
   }
 }
@@ -69,12 +80,7 @@ export async function DELETE(
   const { id } = await context.params;
 
   try {
-    const existing = await prisma.product.findFirst({ where: { id, orgId } });
-    if (!existing) {
-      return Response.json({ error: "Product not found" }, { status: 404 });
-    }
-
-    // Prevent deletion if the product is referenced by any order items
+    // Check for existing order references first (informational guard)
     const referencedByOrders = await prisma.orderItem.count({ where: { productId: id } });
     if (referencedByOrders > 0) {
       return Response.json(
@@ -83,11 +89,17 @@ export async function DELETE(
       );
     }
 
-    await prisma.product.delete({ where: { id } });
+    // deleteMany with orgId — atomic authorization + deletion, eliminates TOCTOU
+    // race between the previous findFirst (with orgId) and delete (with id only).
+    const deleteResult = await prisma.product.deleteMany({ where: { id, orgId } });
+
+    if (deleteResult.count === 0) {
+      return Response.json({ error: "Product not found" }, { status: 404 });
+    }
 
     return new Response(null, { status: 204 });
   } catch (error) {
-    console.error("[ProductsAPI DELETE/:id]", error);
+    logError("[ProductsAPI DELETE/:id]", error);
     return Response.json({ error: "Internal server error" }, { status: 500 });
   }
 }

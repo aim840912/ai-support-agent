@@ -9,6 +9,7 @@ import { PlanUsageSection } from "@/components/dashboard/plan-usage-section";
 import { TeamMembers } from "@/components/dashboard/team-members";
 import { getOrgUsage } from "@/lib/plan/check-plan-limit";
 import { UpgradeSuccessToast } from "@/components/dashboard/upgrade-button";
+import { logError } from "@/lib/error-logger";
 
 export default async function SettingsPage({
   searchParams,
@@ -140,7 +141,7 @@ export default async function SettingsPage({
       </div>
     );
   } catch (error) {
-    console.error("[SettingsPage]", error);
+    logError("[SettingsPage]", error);
     return (
       <div>
         <h1 className="text-2xl font-semibold text-foreground">Settings</h1>

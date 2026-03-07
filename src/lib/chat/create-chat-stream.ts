@@ -3,6 +3,7 @@ import { createSupportAgent } from "@/lib/ai/agent";
 import { createAgentUIStreamResponse } from "ai";
 import type { UIMessage } from "ai";
 import { checkConversationLimit, checkMessageLimit } from "@/lib/plan/check-plan-limit";
+import { logError } from "@/lib/error-logger";
 
 type CreateChatStreamOptions = {
   orgId: string;
@@ -58,7 +59,7 @@ export async function createChatStream({
       });
       resolvedSessionId = chatSession.id;
     } catch (e) {
-      console.error("[createChatStream] Failed to create ChatSession:", e);
+      logError("[createChatStream] Failed to create ChatSession:", e);
     }
   } else {
     // Verify the session belongs to this org before reading/writing messages.
@@ -140,7 +141,7 @@ export async function createChatStream({
           ],
         });
       } catch (e) {
-        console.error("[createChatStream] Failed to persist messages:", e);
+        logError("[createChatStream] Failed to persist messages:", e);
       }
     },
   });

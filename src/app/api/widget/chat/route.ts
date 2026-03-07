@@ -3,6 +3,7 @@ import { hashApiKey } from "@/lib/api-key";
 import { createChatStream } from "@/lib/chat/create-chat-stream";
 import type { UIMessage } from "ai";
 import { createRateLimiter, checkRateLimit, getClientIp, rateLimitResponse } from "@/lib/rate-limit";
+import { logError } from "@/lib/error-logger";
 
 // 20 widget messages per API key + IP per minute
 const widgetChatLimiter = createRateLimiter({ limit: 20, window: "1m" });
@@ -39,7 +40,7 @@ export async function POST(request: Request) {
       },
     });
   } catch (error) {
-    console.error("[WidgetChatAPI]", error instanceof Error ? error.message : "Unknown error");
+    logError("[WidgetChatAPI]", error);
     return new Response("Internal server error", { status: 500 });
   }
 

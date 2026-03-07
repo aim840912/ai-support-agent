@@ -3,6 +3,7 @@ import { prisma } from "@/lib/db";
 import { createChatStream } from "@/lib/chat/create-chat-stream";
 import type { UIMessage } from "ai";
 import { createRateLimiter, checkRateLimit, rateLimitResponse } from "@/lib/rate-limit";
+import { logError } from "@/lib/error-logger";
 
 // 30 messages per user per minute
 const chatLimiter = createRateLimiter({ limit: 30, window: "1m" });
@@ -66,7 +67,7 @@ export async function POST(request: Request) {
       }),
     ]);
   } catch (error) {
-    console.error("[ChatAPI]", error);
+    logError("[ChatAPI]", error);
     return new Response("Internal server error", { status: 500 });
   }
   const plan = org?.plan ?? "free";

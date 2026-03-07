@@ -10,6 +10,7 @@ import { Badge } from "@/components/ui/badge";
 import { getOrgUsage } from "@/lib/plan/check-plan-limit";
 import { getPlanLimits } from "@/lib/plan/limits";
 import { formatTimeAgo } from "@/lib/utils";
+import { logError } from "@/lib/error-logger";
 
 // ─── AI Tool display metadata ──────────────────────────────────────────────
 const TOOL_DISPLAY: Record<string, { label: string; requiresPro: boolean }> = {
@@ -246,7 +247,7 @@ export default async function OverviewPage() {
       </div>
     );
   } catch (error) {
-    console.error("[OverviewPage]", error);
+    logError("[OverviewPage]", error);
     return (
       <div>
         <h1 className="text-2xl font-semibold text-foreground">Overview</h1>
