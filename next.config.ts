@@ -5,7 +5,7 @@ const nextConfig: NextConfig = {
   // @neondatabase/serverless uses WebSocket internals that Turbopack cannot
   // bundle into worker processes — forcing native Node.js require() prevents
   // worker crashes during auth module initialization.
-  serverExternalPackages: ["pdf-parse", "@neondatabase/serverless"],
+  serverExternalPackages: ["pdf-parse", "@neondatabase/serverless", "@prisma/adapter-neon"],
 
   async headers() {
     return [
