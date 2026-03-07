@@ -28,8 +28,9 @@ export async function POST(request: Request) {
   try {
     event = stripe.webhooks.constructEvent(body, signature, webhookSecret);
   } catch (err) {
-    const message = err instanceof Error ? err.message : "Invalid signature";
-    return new Response(`Webhook signature verification failed: ${message}`, {
+    // Return a generic message — Stripe SDK internals (err.message) may leak
+    // implementation details that help an attacker craft valid-looking payloads.
+    return new Response("Webhook signature verification failed", {
       status: 400,
     });
   }

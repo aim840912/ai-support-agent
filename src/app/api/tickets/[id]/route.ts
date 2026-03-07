@@ -84,21 +84,21 @@ export async function PATCH(
 
     const { status, priority, note } = parsed.data;
 
-    // Verify ownership before mutating
-    const existing = await prisma.ticket.findFirst({ where: { id, orgId } });
-    if (!existing) {
-      return Response.json({ error: "Ticket not found" }, { status: 404 });
-    }
-
-    // Run status/priority update + optional note creation in a transaction
+    // Use updateMany with orgId inside the transaction to eliminate the TOCTOU
+    // race between the pre-check findFirst and the actual update.  The count
+    // check replaces the external ownership guard atomically.
     const ticket = await prisma.$transaction(async (tx) => {
-      const updated = await tx.ticket.update({
-        where: { id },
+      const { count } = await tx.ticket.updateMany({
+        where: { id, orgId },
         data: {
           ...(status ? { status } : {}),
           ...(priority ? { priority } : {}),
         },
       });
+
+      if (count === 0) {
+        return null;
+      }
 
       if (note) {
         await tx.ticketNote.create({
@@ -106,8 +106,12 @@ export async function PATCH(
         });
       }
 
-      return updated;
+      return tx.ticket.findUnique({ where: { id } });
     });
+
+    if (!ticket) {
+      return Response.json({ error: "Ticket not found" }, { status: 404 });
+    }
 
     return Response.json({
       id: ticket.id,

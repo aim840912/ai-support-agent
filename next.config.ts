@@ -10,6 +10,16 @@ const nextConfig: NextConfig = {
   async headers() {
     return [
       {
+        // Prevent browsers and CDNs from caching API responses that may contain
+        // sensitive data.  Must-revalidate ensures stale-while-revalidate cannot
+        // serve cached copies even when combined with a downstream proxy.
+        source: "/api/:path*",
+        headers: [
+          { key: "Cache-Control", value: "no-store, no-cache, must-revalidate" },
+          { key: "Pragma", value: "no-cache" },
+        ],
+      },
+      {
         // Apply to all routes except widget (widget needs to be embeddable via iframe)
         source: "/((?!widget).*)",
         headers: [

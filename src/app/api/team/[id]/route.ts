@@ -44,18 +44,18 @@ export async function PATCH(
       return Response.json({ error: "Invalid input" }, { status: 400 });
     }
 
-    const target = await prisma.user.findFirst({ where: { id: targetUserId, orgId } });
-    if (!target) {
+    // updateMany with orgId in the where clause eliminates the TOCTOU race
+    // between the pre-check findFirst and the actual update.
+    const { count } = await prisma.user.updateMany({
+      where: { id: targetUserId, orgId },
+      data: { role: parsed.data.role },
+    });
+
+    if (count === 0) {
       return Response.json({ error: "Member not found" }, { status: 404 });
     }
 
-    const updated = await prisma.user.update({
-      where: { id: targetUserId },
-      data: { role: parsed.data.role },
-      select: { id: true, role: true },
-    });
-
-    return Response.json(updated);
+    return Response.json({ id: targetUserId, role: parsed.data.role });
   } catch (error) {
     logError("[TeamAPI PATCH/:id]", error);
     return Response.json({ error: "Internal server error" }, { status: 500 });
@@ -108,7 +108,14 @@ export async function DELETE(
       return Response.json({ error: "Cannot remove the organization owner" }, { status: 400 });
     }
 
-    await prisma.user.delete({ where: { id: targetUserId } });
+    // deleteMany with orgId in the where clause eliminates the TOCTOU race
+    // between the pre-check findFirst and the actual delete.  The findFirst
+    // above is still required here to read target.role for permission checks.
+    const { count } = await prisma.user.deleteMany({ where: { id: targetUserId, orgId } });
+
+    if (count === 0) {
+      return Response.json({ error: "Member not found" }, { status: 404 });
+    }
 
     return new Response(null, { status: 204 });
   } catch (error) {

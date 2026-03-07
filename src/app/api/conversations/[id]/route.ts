@@ -15,21 +15,17 @@ export async function DELETE(
   const { id } = await context.params;
 
   try {
-    const chatSession = await prisma.chatSession.findUnique({
-      where: { id },
-      select: { orgId: true },
+    // deleteMany with orgId in the where clause eliminates the TOCTOU race
+    // (findUnique → orgId check → delete) and also removes the 404 vs 403
+    // information leak that allowed session ID enumeration across orgs.
+    // Cascade delete — ChatMessage rows removed automatically via FK constraint.
+    const { count } = await prisma.chatSession.deleteMany({
+      where: { id, orgId },
     });
 
-    if (!chatSession) {
+    if (count === 0) {
       return new Response("Not found", { status: 404 });
     }
-
-    if (chatSession.orgId !== orgId) {
-      return new Response("Forbidden", { status: 403 });
-    }
-
-    // Cascade delete — ChatMessage rows removed automatically via FK constraint
-    await prisma.chatSession.delete({ where: { id } });
 
     return new Response(null, { status: 204 });
   } catch (error) {
@@ -51,8 +47,11 @@ export async function GET(
   const { id } = await context.params;
 
   try {
+    // Include orgId in the where clause to prevent the 404 vs 403 information
+    // leak — a different org's session now returns 404 instead of 403, which
+    // prevents attackers from enumerating valid session IDs across organisations.
     const chatSession = await prisma.chatSession.findUnique({
-      where: { id },
+      where: { id, orgId },
       include: {
         messages: {
           orderBy: { createdAt: "asc" },
@@ -69,11 +68,6 @@ export async function GET(
 
     if (!chatSession) {
       return new Response("Not found", { status: 404 });
-    }
-
-    // Verify ownership
-    if (chatSession.orgId !== orgId) {
-      return new Response("Forbidden", { status: 403 });
     }
 
     return Response.json({

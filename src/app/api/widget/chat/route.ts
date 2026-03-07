@@ -95,9 +95,17 @@ export async function POST(request: Request) {
     }
   }
 
+  // Strip any messages with disallowed roles — prevents a widget client from
+  // injecting role:"system" messages that could bypass the server-side system prompt.
+  const ALLOWED_ROLES = new Set(["user", "assistant"]);
+  const sanitizedMessages = messages.filter((msg) => ALLOWED_ROLES.has(msg.role));
+  if (sanitizedMessages.length === 0) {
+    return new Response("No valid messages", { status: 400 });
+  }
+
   return createChatStream({
     orgId,
-    messages,
+    messages: sanitizedMessages,
     sessionId,
     visitorId,
     source: "widget",

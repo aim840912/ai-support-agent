@@ -31,7 +31,14 @@ export async function POST(request: Request) {
     return new Response("Invalid JSON body", { status: 400 });
   }
 
-  const { messages, sessionId } = body;
+  const { messages } = body;
+  // Validate sessionId: same pattern as widget — prevents unbounded strings
+  // from wasting DB index space while Prisma parameterized queries already
+  // prevent SQL injection.
+  const sessionId =
+    typeof body.sessionId === "string" && body.sessionId.length <= 100
+      ? body.sessionId
+      : undefined;
 
   if (!Array.isArray(messages) || messages.length === 0) {
     return new Response("messages array is required", { status: 400 });
@@ -50,6 +57,16 @@ export async function POST(request: Request) {
     if (text.length > MAX_MESSAGE_LENGTH) {
       return new Response(`Message exceeds maximum length of ${MAX_MESSAGE_LENGTH} characters`, { status: 400 });
     }
+  }
+
+  // Strip any messages with disallowed roles — prevents a client from injecting
+  // role:"system" messages that could override or bypass the server-side system prompt.
+  // The DB persistence layer already hard-codes role:"user", but the AI stream
+  // receives the raw uiMessages array which must be sanitised independently.
+  const ALLOWED_ROLES = new Set(["user", "assistant"]);
+  const sanitizedMessages = messages.filter((msg) => ALLOWED_ROLES.has(msg.role));
+  if (sanitizedMessages.length === 0) {
+    return new Response("No valid messages", { status: 400 });
   }
 
   // Fetch plan + custom system prompt in parallel
@@ -74,7 +91,7 @@ export async function POST(request: Request) {
 
   return createChatStream({
     orgId,
-    messages,
+    messages: sanitizedMessages,
     sessionId,
     userId,
     source: "dashboard",

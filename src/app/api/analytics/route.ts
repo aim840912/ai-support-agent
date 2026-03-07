@@ -11,7 +11,10 @@ export async function GET() {
   const { orgId } = session.user;
 
   try {
-    // Fetch all sessions + messages in parallel
+    // Fetch all sessions + messages in parallel.
+    // take limits prevent OOM on Pro orgs with unbounded data accumulation —
+    // analytics aggregations are approximate for very large datasets, which
+    // is an acceptable trade-off versus a single request exhausting server memory.
     const [sessions, messages] = await Promise.all([
       prisma.chatSession.findMany({
         where: { orgId },
@@ -21,10 +24,12 @@ export async function GET() {
           createdAt: true,
           _count: { select: { messages: true } },
         },
+        take: 1000,
       }),
       prisma.chatMessage.findMany({
         where: { session: { orgId } },
         select: { toolCalls: true, createdAt: true },
+        take: 5000,
       }),
     ]);
 
