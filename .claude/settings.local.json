@@ -6,7 +6,8 @@
       "WebFetch(domain:maplestar.io)",
       "WebFetch(domain:maplestory.io)",
       "Bash(netstat:*)",
-      "Bash(Start-Process:*)"
+      "Bash(Start-Process:*)",
+      "Bash(findstr:*)"
     ]
   },
   "enabledMcpjsonServers": [
