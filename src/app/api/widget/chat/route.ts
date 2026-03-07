@@ -39,7 +39,7 @@ export async function POST(request: Request) {
       },
     });
   } catch (error) {
-    console.error("[WidgetChatAPI]", error);
+    console.error("[WidgetChatAPI]", error instanceof Error ? error.message : "Unknown error");
     return new Response("Internal server error", { status: 500 });
   }
 
@@ -68,7 +68,13 @@ export async function POST(request: Request) {
     typeof body.visitorId === "string" && body.visitorId.length <= 100
       ? body.visitorId
       : undefined;
-  const { messages, sessionId } = body;
+  // Validate sessionId: same pattern as visitorId — Prisma parameterized queries prevent
+  // SQL injection, but an unbounded string wastes DB index space and query parsing time.
+  const sessionId =
+    typeof body.sessionId === "string" && body.sessionId.length <= 100
+      ? body.sessionId
+      : undefined;
+  const { messages } = body;
 
   if (!Array.isArray(messages) || messages.length === 0) {
     return new Response("messages array is required", { status: 400 });
