@@ -33,6 +33,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { ConversationDetail } from "./conversation-detail";
+import { ExportButton } from "./export-button";
 import { toast } from "sonner";
 
 type ChatSession = {
@@ -107,6 +108,9 @@ export function ConversationList({ sessions, activeSource }: Props) {
             <SelectItem value="api">API</SelectItem>
           </SelectContent>
         </Select>
+        <div className="ml-auto">
+          <ExportButton activeSource={activeSource} />
+        </div>
       </div>
 
       {sessions.length === 0 ? (

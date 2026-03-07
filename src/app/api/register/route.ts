@@ -15,7 +15,8 @@ const registerSchema = z.object({
   email: z.string().email(),
   password: passwordSchema,
   name: z.string().min(1),
-  orgName: z.string().min(1),
+  orgName: z.string().min(1).optional(), // Not required when joining via invite
+  inviteToken: z.string().optional(),
 });
 
 export async function POST(request: Request) {
@@ -26,7 +27,7 @@ export async function POST(request: Request) {
 
   try {
     const body = await request.json();
-    const { email, password, name, orgName } = registerSchema.parse(body);
+    const { email, password, name, orgName, inviteToken } = registerSchema.parse(body);
 
     // Anti-enumeration: always perform bcrypt work and return the same 201 response
     // regardless of whether the email already exists. This eliminates:
@@ -43,21 +44,39 @@ export async function POST(request: Request) {
       );
     }
 
-    // Create org then user in a transaction (return value unused — userId intentionally
-    // excluded from response to prevent internal ID leakage)
+    // Create user in a transaction.
+    // If inviteToken is provided, join the invited org; otherwise create a new org.
     await prisma.$transaction(async (tx) => {
-      const rawApiKey = generateApiKey();
-      const org = await tx.organization.create({
-        data: { name: orgName, apiKey: rawApiKey, apiKeyHash: hashApiKey(rawApiKey) },
-      });
+      let targetOrgId: string;
+      let userRole: string = "owner";
+
+      if (inviteToken) {
+        // Joining via invitation — validate token and resolve org
+        const invitation = await tx.invitation.findUnique({ where: { token: inviteToken } });
+        if (!invitation || invitation.email !== email || invitation.expires < new Date()) {
+          throw new Error("INVALID_INVITE");
+        }
+        targetOrgId = invitation.orgId;
+        userRole = invitation.role;
+        // Clean up used invitation
+        await tx.invitation.delete({ where: { token: inviteToken } });
+      } else {
+        // Creating a new organization
+        if (!orgName) throw new Error("Organization name is required");
+        const rawApiKey = generateApiKey();
+        const org = await tx.organization.create({
+          data: { name: orgName, apiKey: rawApiKey, apiKeyHash: hashApiKey(rawApiKey) },
+        });
+        targetOrgId = org.id;
+      }
 
       return tx.user.create({
         data: {
           email,
           password: hashedPassword,
           name,
-          orgId: org.id,
-          role: "owner",
+          orgId: targetOrgId,
+          role: userRole,
           // emailVerified is intentionally null until they click the link
         },
       });
@@ -83,6 +102,9 @@ export async function POST(request: Request) {
     if (error instanceof z.ZodError) {
       // Return a generic message — exposing error.issues leaks Zod schema structure
       return NextResponse.json({ error: "Invalid input" }, { status: 400 });
+    }
+    if (error instanceof Error && error.message === "INVALID_INVITE") {
+      return NextResponse.json({ error: "Invalid or expired invitation" }, { status: 400 });
     }
     console.error("[Register]", error);
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });

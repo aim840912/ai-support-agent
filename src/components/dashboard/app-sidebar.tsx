@@ -11,6 +11,9 @@ import {
   BarChart3,
   Settings,
   LogOut,
+  Package,
+  ShoppingCart,
+  TicketCheck,
 } from "lucide-react";
 import {
   Sidebar,
@@ -37,9 +40,24 @@ const navItems = [
     icon: FileText,
   },
   {
+    title: "Products",
+    href: "/products",
+    icon: Package,
+  },
+  {
+    title: "Orders",
+    href: "/orders",
+    icon: ShoppingCart,
+  },
+  {
     title: "Conversations",
     href: "/conversations",
     icon: MessageSquare,
+  },
+  {
+    title: "Tickets",
+    href: "/tickets",
+    icon: TicketCheck,
   },
   {
     title: "Playground",

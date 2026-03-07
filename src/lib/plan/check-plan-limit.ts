@@ -93,6 +93,46 @@ export async function checkMessageLimit(
   return { allowed: true };
 }
 
+/** Check whether the org can add another product */
+export async function checkProductLimit(orgId: string): Promise<LimitResult> {
+  const plan = await getOrgPlan(orgId);
+  const limits = getPlanLimits(plan);
+  if (limits.products === -1) return { allowed: true };
+
+  const current = await prisma.product.count({ where: { orgId } });
+
+  if (current >= limits.products) {
+    return {
+      allowed: false,
+      reason: `Product limit reached (${limits.products} on ${plan} plan)`,
+      limit: limits.products,
+      current,
+    };
+  }
+
+  return { allowed: true };
+}
+
+/** Check whether the org can invite another team member */
+export async function checkTeamMemberLimit(orgId: string): Promise<LimitResult> {
+  const plan = await getOrgPlan(orgId);
+  const limits = getPlanLimits(plan);
+  if (limits.teamMembers === -1) return { allowed: true };
+
+  const current = await prisma.user.count({ where: { orgId } });
+
+  if (current >= limits.teamMembers) {
+    return {
+      allowed: false,
+      reason: `Team member limit reached (${limits.teamMembers} on ${plan} plan)`,
+      limit: limits.teamMembers,
+      current,
+    };
+  }
+
+  return { allowed: true };
+}
+
 /**
  * Returns the org's plan and current usage statistics for the settings page.
  * Accepts an optional pre-fetched `plan` to avoid a redundant DB query.
@@ -103,12 +143,13 @@ export async function getOrgUsage(orgId: string, plan?: string) {
 
   const startOfMonth = getStartOfMonth();
 
-  const [documentCount, conversationCount, productCount, ticketCount] =
+  const [documentCount, conversationCount, productCount, ticketCount, teamMemberCount] =
     await Promise.all([
       prisma.document.count({ where: { orgId } }),
       prisma.chatSession.count({ where: { orgId, createdAt: { gte: startOfMonth } } }),
       prisma.product.count({ where: { orgId } }),
       prisma.ticket.count({ where: { orgId, createdAt: { gte: startOfMonth } } }),
+      prisma.user.count({ where: { orgId } }),
     ]);
 
   return {
@@ -119,6 +160,7 @@ export async function getOrgUsage(orgId: string, plan?: string) {
       conversationsThisMonth: conversationCount,
       products: productCount,
       ticketsThisMonth: ticketCount,
+      teamMembers: teamMemberCount,
     },
   };
 }

@@ -15,6 +15,8 @@ export type PlanLimits = {
   products: number;
   /** Max support tickets per calendar month */
   ticketsPerMonth: number;
+  /** Max team members (including owner) */
+  teamMembers: number;
   /** Which AI tools are available */
   enabledTools: string[];
 };
@@ -26,6 +28,7 @@ export const PLAN_LIMITS: Record<PlanKey, PlanLimits> = {
     messagesPerConversation: 20,
     products: 10,
     ticketsPerMonth: 10,
+    teamMembers: 3,
     enabledTools: ["searchKnowledgeBase", "getOrderStatus"],
   },
   pro: {
@@ -34,6 +37,7 @@ export const PLAN_LIMITS: Record<PlanKey, PlanLimits> = {
     messagesPerConversation: -1,
     products: 1000,
     ticketsPerMonth: -1,
+    teamMembers: 20,
     enabledTools: ["searchKnowledgeBase", "getOrderStatus", "checkInventory", "createTicket"],
   },
 };

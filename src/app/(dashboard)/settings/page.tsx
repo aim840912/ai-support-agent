@@ -6,6 +6,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { AgentSettingsForm } from "@/components/dashboard/agent-settings-form";
 import { OrgInfoCard } from "@/components/dashboard/org-info-card";
 import { PlanUsageSection } from "@/components/dashboard/plan-usage-section";
+import { TeamMembers } from "@/components/dashboard/team-members";
 import { getOrgUsage } from "@/lib/plan/check-plan-limit";
 import { UpgradeSuccessToast } from "@/components/dashboard/upgrade-button";
 
@@ -23,9 +24,9 @@ export default async function SettingsPage({
   const orgId = session.user.orgId;
 
   try {
-    // Fetch org (name + apiKey) and agent settings in parallel.
+    // Fetch org, agent settings, team members, and pending invitations in parallel.
     // Pass org.plan to getOrgUsage so it can skip a redundant DB round-trip.
-    const [org, agentSettings] = await Promise.all([
+    const [org, agentSettings, members, invitations] = await Promise.all([
       prisma.organization.findUnique({
         where: { id: orgId },
         select: { name: true, plan: true, apiKey: true, stripeCustomerId: true },
@@ -33,6 +34,16 @@ export default async function SettingsPage({
       prisma.agentSettings.findUnique({
         where: { orgId },
         select: { welcomeMessage: true, systemPrompt: true, enabledTools: true },
+      }),
+      prisma.user.findMany({
+        where: { orgId },
+        select: { id: true, name: true, email: true, role: true, createdAt: true },
+        orderBy: { createdAt: "asc" },
+      }),
+      prisma.invitation.findMany({
+        where: { orgId, expires: { gte: new Date() } },
+        select: { id: true, email: true, role: true, expires: true, createdAt: true },
+        orderBy: { createdAt: "desc" },
       }),
     ]);
 
@@ -66,6 +77,7 @@ export default async function SettingsPage({
             <TabsList className="mb-6">
               <TabsTrigger value="agent">Agent</TabsTrigger>
               <TabsTrigger value="organization">Organization</TabsTrigger>
+              <TabsTrigger value="team">Team</TabsTrigger>
               <TabsTrigger value="plan">Plan & Usage</TabsTrigger>
             </TabsList>
 
@@ -92,6 +104,32 @@ export default async function SettingsPage({
               ) : (
                 <p className="text-sm text-muted-foreground">Organization not found.</p>
               )}
+            </TabsContent>
+
+            <TabsContent value="team">
+              <TeamMembers
+                members={members.map((m) => ({
+                  id: m.id,
+                  name: m.name,
+                  email: m.email,
+                  role: m.role,
+                  joinedAt: m.createdAt.toISOString(),
+                }))}
+                invitations={invitations.map((inv) => ({
+                  id: inv.id,
+                  email: inv.email,
+                  role: inv.role,
+                  expires: inv.expires.toISOString(),
+                  sentAt: inv.createdAt.toISOString(),
+                }))}
+                currentUserId={session.user.id!}
+                currentUserRole={session.user.role ?? "member"}
+                canInviteMore={
+                  usage.limits.teamMembers === -1 ||
+                  members.length < usage.limits.teamMembers
+                }
+                planLimit={usage.limits.teamMembers}
+              />
             </TabsContent>
 
             <TabsContent value="plan">
