@@ -97,9 +97,9 @@ export async function POST(request: Request) {
       }
 
       if (record.expires < new Date()) {
-        await tx.verificationToken.delete({
-          where: { identifier_token: { identifier: email, token } },
-        });
+        // Do NOT delete inside the transaction — throwing here causes Prisma to
+        // rollback the entire transaction, so the delete would be undone anyway.
+        // Cleanup happens in the catch block, outside the transaction.
         throw new Error("EXPIRED_TOKEN");
       }
 
@@ -120,10 +120,15 @@ export async function POST(request: Request) {
         return NextResponse.json({ error: "Invalid verification link" }, { status: 400 });
       }
       if (error.message === "EXPIRED_TOKEN") {
+        // The transaction was rolled back, so the delete inside it was also undone.
+        // Clean up the expired token now, outside the transaction, so it doesn't linger.
+        await prisma.verificationToken
+          .delete({ where: { identifier_token: { identifier: email, token } } })
+          .catch(() => {}); // Ignore: token may have been deleted by a concurrent request
         return NextResponse.json({ error: "Verification link has expired" }, { status: 400 });
       }
     }
-    console.error("[VerifyEmail POST]", error);
+    console.error("[VerifyEmail POST]", error instanceof Error ? error.message : "Unknown error");
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
 }

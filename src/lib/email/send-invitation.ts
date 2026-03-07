@@ -29,11 +29,13 @@ export async function sendInvitationEmail({
   const token = crypto.randomBytes(32).toString("hex");
   const expires = new Date(Date.now() + INVITATION_TTL_MS);
 
-  // Replace any existing invitation for this email+org combination
-  await prisma.invitation.deleteMany({ where: { email, orgId } });
-  await prisma.invitation.create({
-    data: { email, role, token, orgId, invitedBy, expires },
-  });
+  // Replace any existing invitation atomically — prevents stale orphan record if
+  // the process crashes between delete and create (e.g. user gets an email with a
+  // token that was never persisted).
+  await prisma.$transaction([
+    prisma.invitation.deleteMany({ where: { email, orgId } }),
+    prisma.invitation.create({ data: { email, role, token, orgId, invitedBy, expires } }),
+  ]);
 
   const inviteUrl = `${getBaseUrl()}/api/team/accept-invite?token=${token}`;
 
@@ -44,12 +46,12 @@ export async function sendInvitationEmail({
       subject: `You've been invited to join ${orgName} on AI Support Agent`,
       html: inviteMemberTemplate({ inviterName, orgName, role, inviteUrl }),
     });
-  } else {
+  } else if (process.env.NODE_ENV !== "production") {
+    // Guard the entire block — even the truncated token prefix should not appear
+    // in production logs where it could be treated as a leaked secret.
     const tokenPreview = `${token.slice(0, 8)}...`;
     console.log(`[Email - dev] Invitation for ${email} to org ${orgName} — token: ${tokenPreview}`);
-    if (process.env.NODE_ENV !== "production") {
-      console.log(`[Email - dev] Full URL: ${inviteUrl}`);
-    }
+    console.log(`[Email - dev] Full URL: ${inviteUrl}`);
   }
 
   return token;

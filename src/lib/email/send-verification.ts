@@ -23,14 +23,12 @@ export async function sendVerificationEmail(
       subject: "Verify your email address",
       html: verifyEmailTemplate({ userName, verifyUrl }),
     });
-  } else {
-    // Truncate token in log — avoid full token appearing in log aggregation
-    // systems where it could be treated as a secret. Token prefix is enough
-    // for local debugging (copy-paste the full URL from the console isn't needed).
+  } else if (process.env.NODE_ENV !== "production") {
+    // Guard the entire block — even the truncated token prefix should not appear
+    // in production logs (e.g. Docker/custom runtimes where NODE_ENV may differ
+    // from "production" only unexpectedly, but we keep the guard consistent).
     const tokenPreview = `${token.slice(0, 8)}...`;
     console.log(`[Email - dev] Verify email for ${email} — token: ${tokenPreview}`);
-    if (process.env.NODE_ENV !== "production") {
-      console.log(`[Email - dev] Full URL: ${verifyUrl}`);
-    }
+    console.log(`[Email - dev] Full URL: ${verifyUrl}`);
   }
 }

@@ -24,11 +24,11 @@ export async function sendPasswordResetEmail(
       subject: "Reset your password",
       html: resetPasswordTemplate({ userName, resetUrl }),
     });
-  } else {
+  } else if (process.env.NODE_ENV !== "production") {
+    // Guard the entire block — even the truncated token prefix should not appear
+    // in production logs where it could be treated as a leaked secret.
     const tokenPreview = `${token.slice(0, 8)}...`;
     console.log(`[Email - dev] Password reset for ${email} — token: ${tokenPreview}`);
-    if (process.env.NODE_ENV !== "production") {
-      console.log(`[Email - dev] Full URL: ${resetUrl}`);
-    }
+    console.log(`[Email - dev] Full URL: ${resetUrl}`);
   }
 }

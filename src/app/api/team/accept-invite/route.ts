@@ -63,7 +63,7 @@ export async function GET(request: NextRequest) {
     registerUrl.searchParams.set("email", invitation.email);
     return NextResponse.redirect(registerUrl);
   } catch (error) {
-    console.error("[AcceptInvite]", error);
+    console.error("[AcceptInvite]", error instanceof Error ? error.message : "Unknown error");
     return NextResponse.redirect(new URL("/login?error=server_error", request.url));
   }
 }
@@ -109,7 +109,9 @@ export async function POST(request: NextRequest) {
       }
 
       if (invitation.expires < new Date()) {
-        await tx.invitation.delete({ where: { token } });
+        // Do NOT delete inside the transaction — throwing here causes Prisma to
+        // rollback the entire transaction, so the delete would be undone anyway.
+        // Cleanup happens in the catch block, outside the transaction.
         throw new Error("EXPIRED_INVITE");
       }
 
@@ -132,6 +134,13 @@ export async function POST(request: NextRequest) {
   } catch (error) {
     if (error instanceof Error) {
       if (error.message === "INVALID_INVITE" || error.message === "EXPIRED_INVITE") {
+        if (error.message === "EXPIRED_INVITE") {
+          // Transaction was rolled back — delete expired invitation outside the transaction
+          // so it doesn't persist as a phantom invite that can never be accepted.
+          await prisma.invitation
+            .delete({ where: { token } })
+            .catch(() => {}); // Ignore: may have been deleted by a concurrent request
+        }
         return NextResponse.json({ error: "Invalid or expired invite" }, { status: 400 });
       }
       if (error.message === "EMAIL_MISMATCH") {
@@ -141,7 +150,7 @@ export async function POST(request: NextRequest) {
         );
       }
     }
-    console.error("[AcceptInvite POST]", error);
+    console.error("[AcceptInvite POST]", error instanceof Error ? error.message : "Unknown error");
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
 }

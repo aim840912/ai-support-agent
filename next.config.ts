@@ -56,13 +56,27 @@ const nextConfig: NextConfig = {
         headers: [
           { key: "X-Content-Type-Options", value: "nosniff" },
           { key: "Referrer-Policy", value: "no-referrer" },
+          // HSTS: ensures widget iframe content is always served over HTTPS,
+          // preventing MitM on first load even when embedded on HTTP pages.
+          {
+            key: "Strict-Transport-Security",
+            value: "max-age=63072000; includeSubDomains; preload",
+          },
+          // Permissions-Policy: prevents embedded page from triggering browser
+          // features (camera, mic, geolocation) via the widget iframe.
+          {
+            key: "Permissions-Policy",
+            value: "camera=(), microphone=(), geolocation=()",
+          },
           {
             key: "Content-Security-Policy",
             value: [
               "default-src 'self'",
               "script-src 'self' 'unsafe-inline'",
               "style-src 'self' 'unsafe-inline'",
-              "connect-src 'self' https:",
+              // Narrowed from 'self' https: — widget only calls /api/widget/chat.
+              // Removing https: prevents XSS from exfiltrating data to arbitrary origins.
+              "connect-src 'self'",
               "frame-ancestors *",
             ].join("; "),
           },

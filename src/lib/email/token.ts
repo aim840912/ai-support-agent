@@ -16,11 +16,12 @@ export async function createAndStoreToken(
   const token = crypto.randomBytes(32).toString("hex");
   const expires = new Date(Date.now() + ttlMs);
 
-  // One token per identifier at a time
-  await prisma.verificationToken.deleteMany({ where: { identifier } });
-  await prisma.verificationToken.create({
-    data: { identifier, token, expires },
-  });
+  // One token per identifier at a time — batch transaction ensures atomicity:
+  // if the process crashes between delete and create, no stale orphan token survives.
+  await prisma.$transaction([
+    prisma.verificationToken.deleteMany({ where: { identifier } }),
+    prisma.verificationToken.create({ data: { identifier, token, expires } }),
+  ]);
 
   return token;
 }
