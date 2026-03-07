@@ -21,12 +21,14 @@ import { regenerateApiKey } from "@/app/(dashboard)/settings/actions";
 type OrgInfoCardProps = {
   orgName: string;
   plan: string;
-  apiKey: string;
+  /** Masked key for display (e.g. "sk_live_ab..."). Full key never sent to client. */
+  maskedApiKey: string;
 };
 
-export function OrgInfoCard({ orgName, plan, apiKey: initialApiKey }: OrgInfoCardProps) {
+export function OrgInfoCard({ orgName, plan, maskedApiKey }: OrgInfoCardProps) {
   const [copied, setCopied] = useState<"key" | "snippet" | null>(null);
-  const [currentApiKey, setCurrentApiKey] = useState(initialApiKey);
+  // Starts as masked display; replaced with the new full key after regeneration
+  const [currentApiKey, setCurrentApiKey] = useState(maskedApiKey);
   const [isPending, startTransition] = useTransition();
 
   const embedSnippet = `<script src="${typeof window !== "undefined" ? window.location.origin : ""}/widget/embed.js" data-api-key="${currentApiKey}"></script>`;

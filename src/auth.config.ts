@@ -4,6 +4,8 @@ import Google from "next-auth/providers/google";
 import GitHub from "next-auth/providers/github";
 import { z } from "zod";
 import { createRateLimiter, checkRateLimit, getClientIp } from "@/lib/rate-limit";
+import type { Account, Profile, User } from "next-auth";
+import type { AdapterUser } from "next-auth/adapters";
 
 // 5 failed login attempts per IP + email per 15 minutes
 const loginLimiter = createRateLimiter({ limit: 5, window: "15m" });
@@ -33,6 +35,46 @@ export const authConfig: NextAuthConfig = {
     updateAge: 24 * 60 * 60,   // Refresh token once per day
   },
   callbacks: {
+    /**
+     * Guard for allowDangerousEmailAccountLinking.
+     *
+     * Both OAuth providers have allowDangerousEmailAccountLinking: true so that
+     * legitimate users can add Google/GitHub login to an existing account.
+     * The risk: an attacker could create an OAuth account with a victim's email
+     * on a compromised provider and auto-link into the victim's account.
+     *
+     * Mitigation: only allow auto-linking when the existing account has already
+     * verified their email (emailVerified !== null). Unverified accounts cannot
+     * be hijacked since they haven't proven ownership of the email address.
+     *
+     * For OAuth sign-ins: also require the provider to return email_verified=true
+     * (Google always does; GitHub omits this field for some accounts but we treat
+     * absence as unverified to be conservative).
+     */
+    async signIn({ user, account, profile }: { user: User | AdapterUser; account?: Account | null; profile?: Profile }) {
+      // Only applies to OAuth sign-ins — Credentials flow is handled in authorize()
+      if (account?.type !== "oauth") return true;
+
+      // Require the OAuth provider to confirm email ownership
+      const providerVerified = profile?.email_verified === true;
+      if (!providerVerified) return false;
+
+      // If a credentials account already exists with this email, only allow
+      // linking when that account has completed email verification.
+      if (user?.email) {
+        const { prisma } = await import("@/lib/db");
+        const existing = await prisma.user.findUnique({
+          where: { email: user.email },
+          select: { emailVerified: true },
+        });
+        // No existing user → new OAuth sign-up, always allowed
+        if (!existing) return true;
+        // Existing user → only allow OAuth link if email was already verified
+        if (!existing.emailVerified) return false;
+      }
+
+      return true;
+    },
     authorized({ auth, request: { nextUrl } }) {
       const isLoggedIn = !!auth?.user;
 
@@ -50,7 +92,7 @@ export const authConfig: NextAuthConfig = {
       // All other routes require authentication
       return isLoggedIn;
     },
-    jwt({ token, user }) {
+    async jwt({ token, user }) {
       if (user) {
         // First sign-in: persist rememberMe preference and login timestamp
         token.id = user.id;
@@ -66,6 +108,23 @@ export const authConfig: NextAuthConfig = {
         const elapsed = Math.floor(Date.now() / 1000) - (token.loginAt as number);
         if (elapsed > SHORT_MAX_AGE) {
           return {}; // Empty token forces NextAuth to treat session as invalid
+        }
+      }
+
+      // Invalidate sessions issued before a password reset.
+      // token.iat (issued-at) is set by NextAuth when the token is created/refreshed.
+      // If the user changed their password after this token was issued, force re-login.
+      if (token.id && token.iat) {
+        const { prisma } = await import("@/lib/db");
+        const dbUser = await prisma.user.findUnique({
+          where: { id: token.id as string },
+          select: { passwordChangedAt: true },
+        });
+        if (dbUser?.passwordChangedAt) {
+          const passwordChangedAtSec = Math.floor(dbUser.passwordChangedAt.getTime() / 1000);
+          if ((token.iat as number) < passwordChangedAtSec) {
+            return {}; // Token predates password change — force re-login
+          }
         }
       }
 

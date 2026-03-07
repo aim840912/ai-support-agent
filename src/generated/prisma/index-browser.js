@@ -141,7 +141,8 @@ exports.Prisma.UserScalarFieldEnum = {
   name: 'name',
   role: 'role',
   orgId: 'orgId',
-  createdAt: 'createdAt'
+  createdAt: 'createdAt',
+  passwordChangedAt: 'passwordChangedAt'
 };
 
 exports.Prisma.DocumentScalarFieldEnum = {

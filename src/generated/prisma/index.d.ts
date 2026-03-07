@@ -3832,6 +3832,7 @@ export namespace Prisma {
     role: string | null
     orgId: string | null
     createdAt: Date | null
+    passwordChangedAt: Date | null
   }
 
   export type UserMaxAggregateOutputType = {
@@ -3844,6 +3845,7 @@ export namespace Prisma {
     role: string | null
     orgId: string | null
     createdAt: Date | null
+    passwordChangedAt: Date | null
   }
 
   export type UserCountAggregateOutputType = {
@@ -3856,6 +3858,7 @@ export namespace Prisma {
     role: number
     orgId: number
     createdAt: number
+    passwordChangedAt: number
     _all: number
   }
 
@@ -3870,6 +3873,7 @@ export namespace Prisma {
     role?: true
     orgId?: true
     createdAt?: true
+    passwordChangedAt?: true
   }
 
   export type UserMaxAggregateInputType = {
@@ -3882,6 +3886,7 @@ export namespace Prisma {
     role?: true
     orgId?: true
     createdAt?: true
+    passwordChangedAt?: true
   }
 
   export type UserCountAggregateInputType = {
@@ -3894,6 +3899,7 @@ export namespace Prisma {
     role?: true
     orgId?: true
     createdAt?: true
+    passwordChangedAt?: true
     _all?: true
   }
 
@@ -3979,6 +3985,7 @@ export namespace Prisma {
     role: string
     orgId: string
     createdAt: Date
+    passwordChangedAt: Date | null
     _count: UserCountAggregateOutputType | null
     _min: UserMinAggregateOutputType | null
     _max: UserMaxAggregateOutputType | null
@@ -4008,6 +4015,7 @@ export namespace Prisma {
     role?: boolean
     orgId?: boolean
     createdAt?: boolean
+    passwordChangedAt?: boolean
     org?: boolean | OrganizationDefaultArgs<ExtArgs>
     accounts?: boolean | User$accountsArgs<ExtArgs>
     sessions?: boolean | User$sessionsArgs<ExtArgs>
@@ -4024,6 +4032,7 @@ export namespace Prisma {
     role?: boolean
     orgId?: boolean
     createdAt?: boolean
+    passwordChangedAt?: boolean
     org?: boolean | OrganizationDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["user"]>
 
@@ -4037,6 +4046,7 @@ export namespace Prisma {
     role?: boolean
     orgId?: boolean
     createdAt?: boolean
+    passwordChangedAt?: boolean
     org?: boolean | OrganizationDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["user"]>
 
@@ -4050,9 +4060,10 @@ export namespace Prisma {
     role?: boolean
     orgId?: boolean
     createdAt?: boolean
+    passwordChangedAt?: boolean
   }
 
-  export type UserOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "email" | "emailVerified" | "image" | "password" | "name" | "role" | "orgId" | "createdAt", ExtArgs["result"]["user"]>
+  export type UserOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "email" | "emailVerified" | "image" | "password" | "name" | "role" | "orgId" | "createdAt" | "passwordChangedAt", ExtArgs["result"]["user"]>
   export type UserInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     org?: boolean | OrganizationDefaultArgs<ExtArgs>
     accounts?: boolean | User$accountsArgs<ExtArgs>
@@ -4083,6 +4094,7 @@ export namespace Prisma {
       role: string
       orgId: string
       createdAt: Date
+      passwordChangedAt: Date | null
     }, ExtArgs["result"]["user"]>
     composites: {}
   }
@@ -4518,6 +4530,7 @@ export namespace Prisma {
     readonly role: FieldRef<"User", 'String'>
     readonly orgId: FieldRef<"User", 'String'>
     readonly createdAt: FieldRef<"User", 'DateTime'>
+    readonly passwordChangedAt: FieldRef<"User", 'DateTime'>
   }
     
 
@@ -20291,7 +20304,8 @@ export namespace Prisma {
     name: 'name',
     role: 'role',
     orgId: 'orgId',
-    createdAt: 'createdAt'
+    createdAt: 'createdAt',
+    passwordChangedAt: 'passwordChangedAt'
   };
 
   export type UserScalarFieldEnum = (typeof UserScalarFieldEnum)[keyof typeof UserScalarFieldEnum]
@@ -20703,6 +20717,7 @@ export namespace Prisma {
     role?: StringFilter<"User"> | string
     orgId?: StringFilter<"User"> | string
     createdAt?: DateTimeFilter<"User"> | Date | string
+    passwordChangedAt?: DateTimeNullableFilter<"User"> | Date | string | null
     org?: XOR<OrganizationScalarRelationFilter, OrganizationWhereInput>
     accounts?: AccountListRelationFilter
     sessions?: SessionListRelationFilter
@@ -20718,6 +20733,7 @@ export namespace Prisma {
     role?: SortOrder
     orgId?: SortOrder
     createdAt?: SortOrder
+    passwordChangedAt?: SortOrderInput | SortOrder
     org?: OrganizationOrderByWithRelationInput
     accounts?: AccountOrderByRelationAggregateInput
     sessions?: SessionOrderByRelationAggregateInput
@@ -20736,6 +20752,7 @@ export namespace Prisma {
     role?: StringFilter<"User"> | string
     orgId?: StringFilter<"User"> | string
     createdAt?: DateTimeFilter<"User"> | Date | string
+    passwordChangedAt?: DateTimeNullableFilter<"User"> | Date | string | null
     org?: XOR<OrganizationScalarRelationFilter, OrganizationWhereInput>
     accounts?: AccountListRelationFilter
     sessions?: SessionListRelationFilter
@@ -20751,6 +20768,7 @@ export namespace Prisma {
     role?: SortOrder
     orgId?: SortOrder
     createdAt?: SortOrder
+    passwordChangedAt?: SortOrderInput | SortOrder
     _count?: UserCountOrderByAggregateInput
     _max?: UserMaxOrderByAggregateInput
     _min?: UserMinOrderByAggregateInput
@@ -20769,6 +20787,7 @@ export namespace Prisma {
     role?: StringWithAggregatesFilter<"User"> | string
     orgId?: StringWithAggregatesFilter<"User"> | string
     createdAt?: DateTimeWithAggregatesFilter<"User"> | Date | string
+    passwordChangedAt?: DateTimeNullableWithAggregatesFilter<"User"> | Date | string | null
   }
 
   export type DocumentWhereInput = {
@@ -21819,6 +21838,7 @@ export namespace Prisma {
     name?: string | null
     role?: string
     createdAt?: Date | string
+    passwordChangedAt?: Date | string | null
     org: OrganizationCreateNestedOneWithoutUsersInput
     accounts?: AccountCreateNestedManyWithoutUserInput
     sessions?: SessionCreateNestedManyWithoutUserInput
@@ -21834,6 +21854,7 @@ export namespace Prisma {
     role?: string
     orgId: string
     createdAt?: Date | string
+    passwordChangedAt?: Date | string | null
     accounts?: AccountUncheckedCreateNestedManyWithoutUserInput
     sessions?: SessionUncheckedCreateNestedManyWithoutUserInput
   }
@@ -21847,6 +21868,7 @@ export namespace Prisma {
     name?: NullableStringFieldUpdateOperationsInput | string | null
     role?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    passwordChangedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     org?: OrganizationUpdateOneRequiredWithoutUsersNestedInput
     accounts?: AccountUpdateManyWithoutUserNestedInput
     sessions?: SessionUpdateManyWithoutUserNestedInput
@@ -21862,6 +21884,7 @@ export namespace Prisma {
     role?: StringFieldUpdateOperationsInput | string
     orgId?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    passwordChangedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     accounts?: AccountUncheckedUpdateManyWithoutUserNestedInput
     sessions?: SessionUncheckedUpdateManyWithoutUserNestedInput
   }
@@ -21876,6 +21899,7 @@ export namespace Prisma {
     role?: string
     orgId: string
     createdAt?: Date | string
+    passwordChangedAt?: Date | string | null
   }
 
   export type UserUpdateManyMutationInput = {
@@ -21887,6 +21911,7 @@ export namespace Prisma {
     name?: NullableStringFieldUpdateOperationsInput | string | null
     role?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    passwordChangedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   }
 
   export type UserUncheckedUpdateManyInput = {
@@ -21899,6 +21924,7 @@ export namespace Prisma {
     role?: StringFieldUpdateOperationsInput | string
     orgId?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    passwordChangedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   }
 
   export type DocumentCreateInput = {
@@ -23141,6 +23167,7 @@ export namespace Prisma {
     role?: SortOrder
     orgId?: SortOrder
     createdAt?: SortOrder
+    passwordChangedAt?: SortOrder
   }
 
   export type UserMaxOrderByAggregateInput = {
@@ -23153,6 +23180,7 @@ export namespace Prisma {
     role?: SortOrder
     orgId?: SortOrder
     createdAt?: SortOrder
+    passwordChangedAt?: SortOrder
   }
 
   export type UserMinOrderByAggregateInput = {
@@ -23165,6 +23193,7 @@ export namespace Prisma {
     role?: SortOrder
     orgId?: SortOrder
     createdAt?: SortOrder
+    passwordChangedAt?: SortOrder
   }
 
   export type DateTimeNullableWithAggregatesFilter<$PrismaModel = never> = {
@@ -24954,6 +24983,7 @@ export namespace Prisma {
     name?: string | null
     role?: string
     createdAt?: Date | string
+    passwordChangedAt?: Date | string | null
     accounts?: AccountCreateNestedManyWithoutUserInput
     sessions?: SessionCreateNestedManyWithoutUserInput
   }
@@ -24967,6 +24997,7 @@ export namespace Prisma {
     name?: string | null
     role?: string
     createdAt?: Date | string
+    passwordChangedAt?: Date | string | null
     accounts?: AccountUncheckedCreateNestedManyWithoutUserInput
     sessions?: SessionUncheckedCreateNestedManyWithoutUserInput
   }
@@ -25223,6 +25254,7 @@ export namespace Prisma {
     role?: StringFilter<"User"> | string
     orgId?: StringFilter<"User"> | string
     createdAt?: DateTimeFilter<"User"> | Date | string
+    passwordChangedAt?: DateTimeNullableFilter<"User"> | Date | string | null
   }
 
   export type DocumentUpsertWithWhereUniqueWithoutOrgInput = {
@@ -26110,6 +26142,7 @@ export namespace Prisma {
     name?: string | null
     role?: string
     createdAt?: Date | string
+    passwordChangedAt?: Date | string | null
     org: OrganizationCreateNestedOneWithoutUsersInput
     sessions?: SessionCreateNestedManyWithoutUserInput
   }
@@ -26124,6 +26157,7 @@ export namespace Prisma {
     role?: string
     orgId: string
     createdAt?: Date | string
+    passwordChangedAt?: Date | string | null
     sessions?: SessionUncheckedCreateNestedManyWithoutUserInput
   }
 
@@ -26152,6 +26186,7 @@ export namespace Prisma {
     name?: NullableStringFieldUpdateOperationsInput | string | null
     role?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    passwordChangedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     org?: OrganizationUpdateOneRequiredWithoutUsersNestedInput
     sessions?: SessionUpdateManyWithoutUserNestedInput
   }
@@ -26166,6 +26201,7 @@ export namespace Prisma {
     role?: StringFieldUpdateOperationsInput | string
     orgId?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    passwordChangedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     sessions?: SessionUncheckedUpdateManyWithoutUserNestedInput
   }
 
@@ -26178,6 +26214,7 @@ export namespace Prisma {
     name?: string | null
     role?: string
     createdAt?: Date | string
+    passwordChangedAt?: Date | string | null
     org: OrganizationCreateNestedOneWithoutUsersInput
     accounts?: AccountCreateNestedManyWithoutUserInput
   }
@@ -26192,6 +26229,7 @@ export namespace Prisma {
     role?: string
     orgId: string
     createdAt?: Date | string
+    passwordChangedAt?: Date | string | null
     accounts?: AccountUncheckedCreateNestedManyWithoutUserInput
   }
 
@@ -26220,6 +26258,7 @@ export namespace Prisma {
     name?: NullableStringFieldUpdateOperationsInput | string | null
     role?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    passwordChangedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     org?: OrganizationUpdateOneRequiredWithoutUsersNestedInput
     accounts?: AccountUpdateManyWithoutUserNestedInput
   }
@@ -26234,6 +26273,7 @@ export namespace Prisma {
     role?: StringFieldUpdateOperationsInput | string
     orgId?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    passwordChangedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     accounts?: AccountUncheckedUpdateManyWithoutUserNestedInput
   }
 
@@ -27076,6 +27116,7 @@ export namespace Prisma {
     name?: string | null
     role?: string
     createdAt?: Date | string
+    passwordChangedAt?: Date | string | null
   }
 
   export type DocumentCreateManyOrgInput = {
@@ -27147,6 +27188,7 @@ export namespace Prisma {
     name?: NullableStringFieldUpdateOperationsInput | string | null
     role?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    passwordChangedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     accounts?: AccountUpdateManyWithoutUserNestedInput
     sessions?: SessionUpdateManyWithoutUserNestedInput
   }
@@ -27160,6 +27202,7 @@ export namespace Prisma {
     name?: NullableStringFieldUpdateOperationsInput | string | null
     role?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    passwordChangedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     accounts?: AccountUncheckedUpdateManyWithoutUserNestedInput
     sessions?: SessionUncheckedUpdateManyWithoutUserNestedInput
   }
@@ -27173,6 +27216,7 @@ export namespace Prisma {
     name?: NullableStringFieldUpdateOperationsInput | string | null
     role?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    passwordChangedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   }
 
   export type DocumentUpdateWithoutOrgInput = {

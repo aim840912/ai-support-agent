@@ -52,7 +52,8 @@ export async function POST(request: Request) {
         where: { email },
         data: {
           password: hashedPassword,
-          emailVerified: new Date(), // Clicking reset link proves email ownership
+          emailVerified: new Date(),     // Clicking reset link proves email ownership
+          passwordChangedAt: new Date(), // Invalidates any JWT tokens issued before this moment
         },
       }),
       prisma.verificationToken.delete({

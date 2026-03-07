@@ -37,6 +37,12 @@ export async function updateAgentSettings(input: UpdateAgentSettingsInput) {
     throw new Error("Unauthorized");
   }
 
+  // Only owners and admins can change agent settings
+  const role = session.user.role;
+  if (role !== "owner" && role !== "admin") {
+    throw new Error("Forbidden: insufficient permissions");
+  }
+
   const { orgId } = session.user;
 
   // safeParse avoids throwing a raw ZodError — invalid input is handled
@@ -75,6 +81,13 @@ export async function regenerateApiKey() {
   const session = await auth();
   if (!session?.user?.orgId) {
     throw new Error("Unauthorized");
+  }
+
+  // Only the org owner can regenerate the API key — this is a destructive action
+  // that immediately breaks all existing widget embed scripts.
+  const role = session.user.role;
+  if (role !== "owner") {
+    throw new Error("Forbidden: only the organization owner can regenerate the API key");
   }
 
   const { orgId } = session.user;

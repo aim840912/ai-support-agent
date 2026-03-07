@@ -99,7 +99,7 @@ export default async function SettingsPage({
                 <OrgInfoCard
                   orgName={org.name}
                   plan={org.plan}
-                  apiKey={org.apiKey}
+                  maskedApiKey={org.apiKey.slice(0, 8) + "..."}
                 />
               ) : (
                 <p className="text-sm text-muted-foreground">Organization not found.</p>

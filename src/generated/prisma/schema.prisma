@@ -31,16 +31,17 @@ model Organization {
 }
 
 model User {
-  id            String       @id @default(cuid())
-  email         String       @unique
-  emailVerified DateTime?
-  image         String?
-  password      String? // hashed, null if OAuth
-  name          String?
-  role          String       @default("member") // owner | admin | member
-  orgId         String
-  org           Organization @relation(fields: [orgId], references: [id])
-  createdAt     DateTime     @default(now())
+  id                String       @id @default(cuid())
+  email             String       @unique
+  emailVerified     DateTime?
+  image             String?
+  password          String? // hashed, null if OAuth
+  name              String?
+  role              String       @default("member") // owner | admin | member
+  orgId             String
+  org               Organization @relation(fields: [orgId], references: [id])
+  createdAt         DateTime     @default(now())
+  passwordChangedAt DateTime? // Set on password reset; JWT tokens issued before this timestamp are invalidated
 
   accounts Account[] // NextAuth
   sessions Session[] // NextAuth

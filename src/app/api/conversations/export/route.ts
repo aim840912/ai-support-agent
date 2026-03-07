@@ -37,6 +37,9 @@ export async function GET(request: NextRequest) {
         ...(source ? { source } : {}),
       },
       orderBy: { createdAt: "desc" },
+      // Limit to 500 sessions to prevent memory exhaustion on large datasets.
+      // For larger exports, implement cursor-based pagination.
+      take: 500,
       include: {
         messages: {
           orderBy: { createdAt: "asc" },

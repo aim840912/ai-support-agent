@@ -50,9 +50,10 @@ export async function POST(request: Request) {
   const orgId = org.id;
   const plan = org.plan ?? "free";
 
-  // Rate limit by API key + IP — isolates widget tenants while protecting per-visitor
+  // Rate limit by org ID + IP — isolates widget tenants while protecting per-visitor.
+  // Using org.id (not apiKey) avoids storing the raw API key in the rate-limit store.
   const ip = getClientIp(request);
-  const rl = await checkRateLimit(widgetChatLimiter, `widget:${apiKey}:${ip}`);
+  const rl = await checkRateLimit(widgetChatLimiter, `widget:${orgId}:${ip}`);
   if (!rl.success) return rateLimitResponse(rl.reset);
 
   let body: { messages: UIMessage[]; visitorId?: string; sessionId?: string };
