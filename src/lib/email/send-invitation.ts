@@ -47,7 +47,9 @@ export async function sendInvitationEmail({
   } else {
     const tokenPreview = `${token.slice(0, 8)}...`;
     console.log(`[Email - dev] Invitation for ${email} to org ${orgName} — token: ${tokenPreview}`);
-    console.log(`[Email - dev] Full URL: ${inviteUrl}`);
+    if (process.env.NODE_ENV !== "production") {
+      console.log(`[Email - dev] Full URL: ${inviteUrl}`);
+    }
   }
 
   return token;

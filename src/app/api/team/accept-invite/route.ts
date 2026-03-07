@@ -98,36 +98,49 @@ export async function POST(request: NextRequest) {
   }
 
   try {
-    const invitation = await prisma.invitation.findUnique({ where: { token } });
+    // Interactive transaction: findUnique + all validation + mutation in one
+    // atomic operation — prevents TOCTOU race where two concurrent requests
+    // with the same token could both pass the findUnique check.
+    await prisma.$transaction(async (tx) => {
+      const invitation = await tx.invitation.findUnique({ where: { token } });
 
-    if (!invitation) {
-      return NextResponse.json({ error: "Invalid or expired invite" }, { status: 400 });
-    }
+      if (!invitation) {
+        throw new Error("INVALID_INVITE");
+      }
 
-    if (invitation.expires < new Date()) {
-      await prisma.invitation.delete({ where: { token } });
-      return NextResponse.json({ error: "Invalid or expired invite" }, { status: 400 });
-    }
+      if (invitation.expires < new Date()) {
+        await tx.invitation.delete({ where: { token } });
+        throw new Error("EXPIRED_INVITE");
+      }
 
-    // Critical: ensure the authenticated user's email matches the invite recipient.
-    // Prevents a logged-in user from accepting an invite meant for someone else.
-    if (session.user.email !== invitation.email) {
-      return NextResponse.json(
-        { error: "This invite was sent to a different email address" },
-        { status: 403 }
-      );
-    }
+      // Critical: ensure the authenticated user's email matches the invite recipient.
+      // Prevents a logged-in user from accepting an invite meant for someone else.
+      // Case-insensitive comparison handles email casing variations (RFC 5321).
+      if (session.user.email!.toLowerCase() !== invitation.email.toLowerCase()) {
+        throw new Error("EMAIL_MISMATCH");
+      }
 
-    await prisma.$transaction([
-      prisma.user.update({
+      await tx.user.update({
         where: { id: session.user.id },
         data: { orgId: invitation.orgId, role: invitation.role },
-      }),
-      prisma.invitation.delete({ where: { token } }),
-    ]);
+      });
+
+      await tx.invitation.delete({ where: { token } });
+    });
 
     return NextResponse.json({ message: "Invite accepted" });
   } catch (error) {
+    if (error instanceof Error) {
+      if (error.message === "INVALID_INVITE" || error.message === "EXPIRED_INVITE") {
+        return NextResponse.json({ error: "Invalid or expired invite" }, { status: 400 });
+      }
+      if (error.message === "EMAIL_MISMATCH") {
+        return NextResponse.json(
+          { error: "This invite was sent to a different email address" },
+          { status: 403 }
+        );
+      }
+    }
     console.error("[AcceptInvite POST]", error);
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }

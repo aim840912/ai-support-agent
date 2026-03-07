@@ -49,10 +49,23 @@ const nextConfig: NextConfig = {
       },
       {
         // Widget is intentionally embeddable via iframe — skip X-Frame-Options
-        // but still protect against MIME sniffing
+        // but still protect against MIME sniffing.
+        // no-referrer prevents API keys in the URL path from leaking via Referer
+        // header when users click external links inside the widget chat.
         source: "/widget/:path*",
         headers: [
           { key: "X-Content-Type-Options", value: "nosniff" },
+          { key: "Referrer-Policy", value: "no-referrer" },
+          {
+            key: "Content-Security-Policy",
+            value: [
+              "default-src 'self'",
+              "script-src 'self' 'unsafe-inline'",
+              "style-src 'self' 'unsafe-inline'",
+              "connect-src 'self' https:",
+              "frame-ancestors *",
+            ].join("; "),
+          },
         ],
       },
     ];

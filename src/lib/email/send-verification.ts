@@ -29,6 +29,8 @@ export async function sendVerificationEmail(
     // for local debugging (copy-paste the full URL from the console isn't needed).
     const tokenPreview = `${token.slice(0, 8)}...`;
     console.log(`[Email - dev] Verify email for ${email} — token: ${tokenPreview}`);
-    console.log(`[Email - dev] Full URL: ${verifyUrl}`);
+    if (process.env.NODE_ENV !== "production") {
+      console.log(`[Email - dev] Full URL: ${verifyUrl}`);
+    }
   }
 }

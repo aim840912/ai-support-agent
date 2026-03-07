@@ -27,6 +27,8 @@ export async function sendPasswordResetEmail(
   } else {
     const tokenPreview = `${token.slice(0, 8)}...`;
     console.log(`[Email - dev] Password reset for ${email} — token: ${tokenPreview}`);
-    console.log(`[Email - dev] Full URL: ${resetUrl}`);
+    if (process.env.NODE_ENV !== "production") {
+      console.log(`[Email - dev] Full URL: ${resetUrl}`);
+    }
   }
 }

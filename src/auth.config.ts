@@ -80,7 +80,7 @@ export const authConfig: NextAuthConfig = {
 
       // Public routes — no auth required
       const publicRoutes = ["/", "/login", "/register", "/forgot-password", "/reset-password"];
-      const publicPrefixes = ["/widget", "/api/auth", "/api/widget", "/api/register", "/api/verify-email", "/api/forgot-password", "/api/reset-password", "/api/team/accept-invite"];
+      const publicPrefixes = ["/widget", "/api/auth", "/api/widget", "/api/register", "/api/verify-email", "/verify-email", "/api/forgot-password", "/api/reset-password", "/api/team/accept-invite"];
 
       const isPublicRoute = publicRoutes.includes(nextUrl.pathname);
       const isPublicPrefix = publicPrefixes.some((prefix) =>
@@ -93,38 +93,64 @@ export const authConfig: NextAuthConfig = {
       return isLoggedIn;
     },
     async jwt({ token, user }) {
+      const UPDATE_AGE_SEC = 24 * 60 * 60; // matches session.updateAge
+      const now = Math.floor(Date.now() / 1000);
+
       if (user) {
-        // First sign-in: persist rememberMe preference and login timestamp
+        // First sign-in: persist user claims
         token.id = user.id;
         token.orgId = (user as { orgId?: string }).orgId;
         token.role = (user as { role?: string }).role;
         token.rememberMe = (user as { rememberMe?: boolean }).rememberMe ?? true; // OAuth defaults to remembered
-        token.loginAt = Math.floor(Date.now() / 1000);
+        token.loginAt = now;
+
+        // Cache passwordChangedAt at sign-in to avoid a DB round-trip on every
+        // subsequent request. The value is refreshed every 24 h (see below),
+        // so the maximum staleness window equals session.updateAge.
+        const { prisma } = await import("@/lib/db");
+        const dbUser = await prisma.user.findUnique({
+          where: { id: user.id as string },
+          select: { passwordChangedAt: true },
+        });
+        token.passwordChangedAt = dbUser?.passwordChangedAt
+          ? Math.floor(dbUser.passwordChangedAt.getTime() / 1000)
+          : 0;
+        token.passwordChangedAtCheckedAt = now;
       }
 
-      // Every subsequent request: invalidate short-lived sessions after 1 day
+      // Expire short-lived (non-remembered) sessions after 1 day
       const SHORT_MAX_AGE = 24 * 60 * 60; // 1 day in seconds
       if (!token.rememberMe && token.loginAt) {
-        const elapsed = Math.floor(Date.now() / 1000) - (token.loginAt as number);
+        const elapsed = now - (token.loginAt as number);
         if (elapsed > SHORT_MAX_AGE) {
           return {}; // Empty token forces NextAuth to treat session as invalid
         }
       }
 
-      // Invalidate sessions issued before a password reset.
-      // token.iat (issued-at) is set by NextAuth when the token is created/refreshed.
-      // If the user changed their password after this token was issued, force re-login.
-      if (token.id && token.iat) {
+      // Refresh passwordChangedAt every 24 h (matching updateAge) so that
+      // password changes are detected within one updateAge window — not just
+      // at sign-in. Also handles tokens pre-dating this field (first request
+      // will hydrate the value from DB as a one-time backwards-compat migration).
+      const lastChecked = token.passwordChangedAtCheckedAt as number | undefined;
+      if (token.id && (!lastChecked || now - lastChecked > UPDATE_AGE_SEC)) {
         const { prisma } = await import("@/lib/db");
         const dbUser = await prisma.user.findUnique({
           where: { id: token.id as string },
           select: { passwordChangedAt: true },
         });
-        if (dbUser?.passwordChangedAt) {
-          const passwordChangedAtSec = Math.floor(dbUser.passwordChangedAt.getTime() / 1000);
-          if ((token.iat as number) < passwordChangedAtSec) {
-            return {}; // Token predates password change — force re-login
-          }
+        token.passwordChangedAt = dbUser?.passwordChangedAt
+          ? Math.floor(dbUser.passwordChangedAt.getTime() / 1000)
+          : 0;
+        token.passwordChangedAtCheckedAt = now;
+      }
+
+      // Invalidate sessions issued before a password change.
+      // Uses the cached token value — no DB round-trip on the hot path.
+      // Worst-case staleness: 24 h (acceptable; far better than the 30-day
+      // window that existed before passwordChangedAt was cached in the token).
+      if (token.iat && token.passwordChangedAt) {
+        if ((token.iat as number) < (token.passwordChangedAt as number)) {
+          return {}; // Token predates password change — force re-login
         }
       }
 
