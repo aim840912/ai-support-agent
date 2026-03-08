@@ -83,10 +83,10 @@ export function AppSidebar({ userEmail }: { userEmail?: string }) {
     <Sidebar>
       <SidebarHeader className="border-b border-sidebar-border px-4 py-3">
         <div className="flex items-center gap-2">
-          <Bot className="h-5 w-5 text-foreground" aria-hidden="true" />
-          <span className="text-sm font-semibold text-foreground">
-            AI Support Agent
-          </span>
+          <div className="flex h-7 w-7 items-center justify-center rounded-md bg-primary">
+            <Bot className="h-4 w-4 text-primary-foreground" aria-hidden="true" />
+          </div>
+          <span className="text-sm font-semibold text-foreground">AI Support Agent</span>
         </div>
       </SidebarHeader>
 
@@ -100,11 +100,20 @@ export function AppSidebar({ userEmail }: { userEmail?: string }) {
                     asChild
                     isActive={pathname === item.href || pathname.startsWith(item.href + "/")}
                     className={cn(
-                      (pathname === item.href || pathname.startsWith(item.href + "/")) && "bg-accent font-medium"
+                      (pathname === item.href || pathname.startsWith(item.href + "/")) &&
+                        "bg-accent font-medium"
                     )}
                   >
                     <Link href={item.href}>
-                      <item.icon className="h-4 w-4" aria-hidden="true" />
+                      <item.icon
+                        className={cn(
+                          "h-4 w-4",
+                          pathname === item.href || pathname.startsWith(item.href + "/")
+                            ? "text-primary"
+                            : ""
+                        )}
+                        aria-hidden="true"
+                      />
                       <span>{item.title}</span>
                     </Link>
                   </SidebarMenuButton>

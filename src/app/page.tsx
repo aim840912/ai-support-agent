@@ -49,7 +49,7 @@ const features = [
     icon: Package,
     title: "Order & Inventory",
     description:
-      "Connect your product catalog and order data. The AI agent answers \"where's my order?\" and inventory questions instantly.",
+      'Connect your product catalog and order data. The AI agent answers "where\'s my order?" and inventory questions instantly.',
   },
   {
     icon: ShieldCheck,
@@ -96,9 +96,9 @@ export default function Home() {
       </header>
 
       {/* Hero */}
-      <section className="bg-muted px-4 py-20 sm:px-6 sm:py-28">
+      <section className="bg-muted dot-pattern px-4 py-20 sm:px-6 sm:py-28">
         <div className="mx-auto max-w-3xl text-center">
-          <div className="mb-4 inline-flex items-center rounded-full border border-border bg-background px-3 py-1 text-xs text-muted-foreground">
+          <div className="mb-4 inline-flex items-center rounded-full border border-primary/20 bg-primary/5 px-3 py-1 text-xs text-primary">
             Production-ready · Multi-tenant · Open source
           </div>
           <h1 className="text-3xl font-bold tracking-tight text-foreground sm:text-4xl lg:text-5xl">
@@ -120,7 +120,7 @@ export default function Home() {
             </Link>
             <Link
               href="/login"
-              className="flex w-full items-center justify-center gap-2 rounded-lg border border-border px-6 py-2.5 text-sm font-medium text-foreground hover:bg-accent transition-colors sm:w-auto"
+              className="flex w-full items-center justify-center gap-2 rounded-lg border border-border px-6 py-2.5 text-sm font-medium text-foreground transition-colors hover:border-primary/30 hover:bg-accent sm:w-auto"
             >
               Sign In
             </Link>
@@ -149,10 +149,10 @@ export default function Home() {
             {features.map(({ icon: Icon, title, description }) => (
               <div
                 key={title}
-                className="rounded-xl border border-border bg-card p-6 shadow-sm"
+                className="rounded-xl border border-border bg-card p-6 shadow-sm transition-shadow hover:shadow-md"
               >
-                <div className="mb-4 inline-flex rounded-lg bg-muted p-2.5">
-                  <Icon className="h-5 w-5 text-foreground" aria-hidden="true" />
+                <div className="mb-4 inline-flex rounded-lg bg-primary/10 p-2.5">
+                  <Icon className="h-5 w-5 text-primary" aria-hidden="true" />
                 </div>
                 <h3 className="mb-2 text-sm font-semibold text-foreground">{title}</h3>
                 <p className="text-sm text-muted-foreground leading-relaxed">{description}</p>
@@ -178,8 +178,8 @@ export default function Home() {
             Ready to Automate Your Support?
           </h2>
           <p className="mt-4 text-sm text-muted-foreground sm:text-base">
-            Join teams using AI Support Agent to handle customer queries 24/7.
-            Set up takes under 5 minutes.
+            Join teams using AI Support Agent to handle customer queries 24/7. Set up takes under 5
+            minutes.
           </p>
           <div className="mt-8 flex flex-col items-center gap-3 sm:flex-row sm:justify-center">
             <Link

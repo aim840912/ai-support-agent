@@ -21,12 +21,7 @@ const TOOL_DISPLAY: Record<string, { label: string; requiresPro: boolean }> = {
 };
 
 // Canonical tool order for the status card
-const TOOL_ORDER = [
-  "searchKnowledgeBase",
-  "getOrderStatus",
-  "checkInventory",
-  "createTicket",
-];
+const TOOL_ORDER = ["searchKnowledgeBase", "getOrderStatus", "checkInventory", "createTicket"];
 
 export default async function OverviewPage() {
   const session = await auth();
@@ -60,8 +55,7 @@ export default async function OverviewPage() {
       }),
     ]);
 
-    const { conversationsThisMonth, documents, products, ticketsThisMonth } =
-      usage.usage;
+    const { conversationsThisMonth, documents, products, ticketsThisMonth } = usage.usage;
     const hasDocuments = documents > 0;
 
     // Conversation limit display (–1 = unlimited)
@@ -72,29 +66,21 @@ export default async function OverviewPage() {
 
     // Document limit display
     const docDisplay =
-      limits.documents === -1
-        ? String(documents)
-        : `${documents} / ${limits.documents}`;
+      limits.documents === -1 ? String(documents) : `${documents} / ${limits.documents}`;
 
     // Product limit display
     const prodDisplay =
-      limits.products === -1
-        ? String(products)
-        : `${products} / ${limits.products}`;
+      limits.products === -1 ? String(products) : `${products} / ${limits.products}`;
 
     // Ticket limit display
     const ticketLimit =
-      limits.ticketsPerMonth === -1
-        ? "unlimited"
-        : `of ${limits.ticketsPerMonth}/month`;
+      limits.ticketsPerMonth === -1 ? "unlimited" : `of ${limits.ticketsPerMonth}/month`;
 
     return (
       <div>
         {/* ── Header ─────────────────────────────────────────────────────── */}
         <h1 className="text-2xl font-semibold text-foreground">Overview</h1>
-        <p className="mt-1 text-sm text-muted-foreground">
-          Your AI support agent at a glance
-        </p>
+        <p className="mt-1 text-sm text-muted-foreground">Your AI support agent at a glance</p>
 
         {/* ── Stat cards ─────────────────────────────────────────────────── */}
         <div className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
@@ -103,33 +89,38 @@ export default async function OverviewPage() {
             value={conversationsThisMonth}
             description={convLimit}
             Icon={MessageSquare}
+            iconBg="bg-indigo-100 dark:bg-indigo-950/50"
+            iconColor="text-indigo-600 dark:text-indigo-400"
           />
           <StatCard
             title="Documents"
             value={docDisplay}
             description="Knowledge base files"
             Icon={FileText}
+            iconBg="bg-emerald-100 dark:bg-emerald-950/50"
+            iconColor="text-emerald-600 dark:text-emerald-400"
           />
           <StatCard
             title="Products"
             value={prodDisplay}
             description="Inventory items"
             Icon={Package}
+            iconBg="bg-amber-100 dark:bg-amber-950/50"
+            iconColor="text-amber-600 dark:text-amber-400"
           />
           <StatCard
             title="Tickets"
             value={ticketsThisMonth}
             description={ticketLimit}
             Icon={Ticket}
+            iconBg="bg-rose-100 dark:bg-rose-950/50"
+            iconColor="text-rose-600 dark:text-rose-400"
           />
         </div>
 
         {/* ── Quick Start ─────────────────────────────────────────────────── */}
         <div className="mt-6">
-          <QuickStartCard
-            enabledTools={limits.enabledTools}
-            hasDocuments={hasDocuments}
-          />
+          <QuickStartCard enabledTools={limits.enabledTools} hasDocuments={hasDocuments} />
         </div>
 
         {/* ── Two-column: Recent Conversations + AI Tool Status ──────────── */}
@@ -151,10 +142,7 @@ export default async function OverviewPage() {
               {recentSessions.length === 0 ? (
                 <p className="text-sm text-muted-foreground">
                   No conversations yet. Try the{" "}
-                  <Link
-                    href="/playground"
-                    className="font-medium text-foreground hover:underline"
-                  >
+                  <Link href="/playground" className="font-medium text-foreground hover:underline">
                     Playground
                   </Link>{" "}
                   to start chatting.
@@ -164,8 +152,7 @@ export default async function OverviewPage() {
                   {recentSessions.map((s) => {
                     const firstMsg = s.messages[0];
                     const preview = firstMsg
-                      ? firstMsg.content.slice(0, 60) +
-                        (firstMsg.content.length > 60 ? "…" : "")
+                      ? firstMsg.content.slice(0, 60) + (firstMsg.content.length > 60 ? "…" : "")
                       : "No messages";
 
                     return (
@@ -183,8 +170,7 @@ export default async function OverviewPage() {
                         </div>
                         <p className="pl-1 text-xs text-muted-foreground">
                           {s._count.messages} msg
-                          {s._count.messages !== 1 ? "s" : ""} &middot;{" "}
-                          {formatTimeAgo(s.createdAt)}
+                          {s._count.messages !== 1 ? "s" : ""} &middot; {formatTimeAgo(s.createdAt)}
                         </p>
                       </li>
                     );
@@ -216,10 +202,7 @@ export default async function OverviewPage() {
                   const isEnabled = limits.enabledTools.includes(toolKey);
 
                   return (
-                    <li
-                      key={toolKey}
-                      className="flex items-center justify-between"
-                    >
+                    <li key={toolKey} className="flex items-center justify-between">
                       <div className="flex items-center gap-2">
                         <span
                           className={`h-2 w-2 rounded-full ${
@@ -227,14 +210,9 @@ export default async function OverviewPage() {
                           }`}
                           aria-hidden="true"
                         />
-                        <span className="text-sm text-foreground">
-                          {meta.label}
-                        </span>
+                        <span className="text-sm text-foreground">{meta.label}</span>
                       </div>
-                      <Badge
-                        variant={isEnabled ? "secondary" : "outline"}
-                        className="text-xs"
-                      >
+                      <Badge variant={isEnabled ? "secondary" : "outline"} className="text-xs">
                         {isEnabled ? "Active" : "Pro"}
                       </Badge>
                     </li>
@@ -251,9 +229,7 @@ export default async function OverviewPage() {
     return (
       <div>
         <h1 className="text-2xl font-semibold text-foreground">Overview</h1>
-        <p className="mt-1 text-sm text-muted-foreground">
-          Your AI support agent at a glance
-        </p>
+        <p className="mt-1 text-sm text-muted-foreground">Your AI support agent at a glance</p>
         <p className="mt-8 text-sm text-destructive">
           Failed to load overview data. Please try again later.
         </p>

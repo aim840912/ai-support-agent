@@ -11,9 +11,7 @@ import {
 import { logError } from "@/lib/error-logger";
 
 // JS-side aggregation helpers
-function getDailyConversations(
-  sessions: { createdAt: Date }[]
-): { date: string; count: number }[] {
+function getDailyConversations(sessions: { createdAt: Date }[]): { date: string; count: number }[] {
   const dailyMap: Record<string, number> = {};
   for (const s of sessions) {
     const date = s.createdAt.toISOString().slice(0, 10);
@@ -35,15 +33,11 @@ function getSourceDistribution(
   return Object.entries(map).map(([source, count]) => ({ source, count }));
 }
 
-function getToolUsage(
-  messages: { toolCalls: unknown }[]
-): { tool: string; count: number }[] {
+function getToolUsage(messages: { toolCalls: unknown }[]): { tool: string; count: number }[] {
   const map: Record<string, number> = {};
   for (const msg of messages) {
     if (!msg.toolCalls) continue;
-    const calls = Array.isArray(msg.toolCalls)
-      ? msg.toolCalls
-      : [msg.toolCalls];
+    const calls = Array.isArray(msg.toolCalls) ? msg.toolCalls : [msg.toolCalls];
     for (const call of calls as { toolName?: string; name?: string }[]) {
       const name = call.toolName ?? call.name ?? "unknown";
       map[name] = (map[name] ?? 0) + 1;
@@ -79,9 +73,7 @@ export default async function AnalyticsPage() {
     const totalSessions = sessions.length;
     const totalMessages = sessions.reduce((acc, s) => acc + s._count.messages, 0);
     const avgMessages =
-      totalSessions > 0
-        ? Math.round((totalMessages / totalSessions) * 10) / 10
-        : 0;
+      totalSessions > 0 ? Math.round((totalMessages / totalSessions) * 10) / 10 : 0;
 
     const dailyConversations = getDailyConversations(sessions);
     const sourceDistribution = getSourceDistribution(sessions);
@@ -90,9 +82,7 @@ export default async function AnalyticsPage() {
     return (
       <div>
         <h1 className="text-2xl font-semibold text-foreground">Analytics</h1>
-        <p className="mt-1 text-sm text-muted-foreground">
-          Conversation metrics and insights
-        </p>
+        <p className="mt-1 text-sm text-muted-foreground">Conversation metrics and insights</p>
 
         {/* Overview stat cards */}
         <div className="mt-8 grid gap-4 sm:grid-cols-3">
@@ -101,18 +91,24 @@ export default async function AnalyticsPage() {
             value={totalSessions}
             description="All sessions across sources"
             Icon={MessageSquare}
+            iconBg="bg-indigo-100 dark:bg-indigo-950/50"
+            iconColor="text-indigo-600 dark:text-indigo-400"
           />
           <StatCard
             title="Total Messages"
             value={totalMessages}
             description="User + assistant messages"
             Icon={MessagesSquare}
+            iconBg="bg-emerald-100 dark:bg-emerald-950/50"
+            iconColor="text-emerald-600 dark:text-emerald-400"
           />
           <StatCard
             title="Avg Messages / Session"
             value={avgMessages}
             description="Average depth per conversation"
             Icon={Wrench}
+            iconBg="bg-amber-100 dark:bg-amber-950/50"
+            iconColor="text-amber-600 dark:text-amber-400"
           />
         </div>
 
@@ -126,16 +122,12 @@ export default async function AnalyticsPage() {
           </div>
 
           <div className="rounded-lg border border-border bg-card p-4">
-            <h2 className="mb-4 text-sm font-medium text-foreground">
-              Source Distribution
-            </h2>
+            <h2 className="mb-4 text-sm font-medium text-foreground">Source Distribution</h2>
             <SourceDistribution data={sourceDistribution} />
           </div>
 
           <div className="rounded-lg border border-border bg-card p-4 lg:col-span-2">
-            <h2 className="mb-4 text-sm font-medium text-foreground">
-              Tool Usage
-            </h2>
+            <h2 className="mb-4 text-sm font-medium text-foreground">Tool Usage</h2>
             <ToolUsageChart data={toolUsage} />
           </div>
         </div>
@@ -146,9 +138,7 @@ export default async function AnalyticsPage() {
     return (
       <div>
         <h1 className="text-2xl font-semibold text-foreground">Analytics</h1>
-        <p className="mt-1 text-sm text-muted-foreground">
-          Conversation metrics and insights
-        </p>
+        <p className="mt-1 text-sm text-muted-foreground">Conversation metrics and insights</p>
         <p className="mt-8 text-sm text-destructive">
           Failed to load analytics data. Please try again later.
         </p>

@@ -4,12 +4,14 @@ import { useEffect, useState } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { cn } from "@/lib/utils";
+import { ToolCallBadges } from "@/components/chat/tool-call-badge";
 
 type Message = {
   id: string;
   role: string;
   content: string;
   createdAt: string;
+  toolCalls?: { toolName: string }[] | null;
 };
 
 type ConversationDetailProps = {
@@ -74,6 +76,9 @@ export function ConversationDetail({ sessionId, onClose }: ConversationDetailPro
                         : "bg-muted text-foreground"
                     )}
                   >
+                    {msg.role === "assistant" && msg.toolCalls && msg.toolCalls.length > 0 && (
+                      <ToolCallBadges toolCalls={msg.toolCalls} />
+                    )}
                     <p className="whitespace-pre-wrap break-words">{msg.content}</p>
                     <p
                       className={cn(

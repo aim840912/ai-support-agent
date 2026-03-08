@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { ChevronDown, ChevronRight, Loader2, CheckCircle, XCircle } from "lucide-react";
+import { TOOL_LABELS } from "@/lib/ai/tool-metadata";
 
 type ToolPartLike = {
   type: string; // 'tool-getOrderStatus' | 'dynamic-tool' | ...
@@ -11,14 +12,6 @@ type ToolPartLike = {
   input?: unknown;
   output?: unknown;
   errorText?: string;
-};
-
-// Human-readable labels per tool name
-const TOOL_LABELS: Record<string, string> = {
-  searchKnowledgeBase: "Searching knowledge base",
-  getOrderStatus: "Checking order status",
-  checkInventory: "Checking inventory",
-  createTicket: "Creating support ticket",
 };
 
 function getToolName(part: ToolPartLike): string {

@@ -35,9 +35,9 @@ try {
 const adapter = new PrismaNeon({ connectionString: process.env.DATABASE_URL! });
 const prisma = new PrismaClient({ adapter });
 
-/** Returns a Date N days before 2026-03-08 at the given UTC hour. */
+/** Returns a Date N days before today at the given UTC hour. */
 function makeDate(daysAgo: number, hour = 12): Date {
-  const d = new Date("2026-03-08T00:00:00Z");
+  const d = new Date();
   d.setUTCDate(d.getUTCDate() - daysAgo);
   d.setUTCHours(hour, 0, 0, 0);
   return d;
@@ -838,7 +838,7 @@ async function main() {
         status: "in_progress",
         orderId: orders[0].id,
         orgId: org.id,
-        createdAt: new Date("2024-01-16"),
+        createdAt: makeDate(4, 11),
       },
     }),
     prisma.ticket.upsert({
@@ -853,7 +853,7 @@ async function main() {
         status: "open",
         orderId: ord006.id,
         orgId: org.id,
-        createdAt: makeDate(8, 11),
+        createdAt: makeDate(2, 11),
       },
     }),
     prisma.ticket.upsert({
@@ -943,7 +943,7 @@ async function main() {
         status: "open",
         orderId: ord005.id,
         orgId: org.id,
-        createdAt: makeDate(12, 13),
+        createdAt: makeDate(6, 13),
       },
     }),
   ]);
@@ -963,14 +963,14 @@ async function main() {
             "Customer confirmed the issue started after the latest macOS 14.3 update. Reproducing in-house. Escalating to firmware team.",
           authorId: noteAuthorId,
           ticketId: tickets[0].id,
-          createdAt: makeDate(14, 11),
+          createdAt: makeDate(4, 11),
         },
         {
           content:
             "Firmware team identified a Bluetooth stack regression in v2.4.1. Hotfix in progress, ETA 48 hours. Will notify customer.",
           authorId: noteAuthorId,
           ticketId: tickets[0].id,
-          createdAt: makeDate(13, 15),
+          createdAt: makeDate(3, 15),
         },
         // TKT-1001 (open — damaged webcam)
         {
@@ -978,7 +978,7 @@ async function main() {
             "Customer sent photos. Damage is consistent with rough handling during transit, not manufacturing defect. Approved immediate replacement. Notified warehouse.",
           authorId: noteAuthorId,
           ticketId: tickets[1].id,
-          createdAt: makeDate(7, 10),
+          createdAt: makeDate(1, 10),
         },
         // TKT-1002 (open — wrong item)
         {
@@ -1022,10 +1022,10 @@ async function main() {
         // TKT-1007 (open — refund delay)
         {
           content:
-            "Confirmed return received in warehouse on March 1st. Refund was delayed due to bank processing backlog. Manually escalated to billing team — refund issued today.",
+            "Confirmed return received in warehouse. Refund was delayed due to bank processing backlog. Manually escalated to billing team — refund issued today.",
           authorId: noteAuthorId,
           ticketId: tickets[7].id,
-          createdAt: makeDate(1, 14),
+          createdAt: makeDate(5, 14),
         },
       ],
     });

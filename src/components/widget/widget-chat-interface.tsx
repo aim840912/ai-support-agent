@@ -86,7 +86,7 @@ export function WidgetChatInterface({
   return (
     <div className="flex flex-col h-screen bg-white">
       {/* Header */}
-      <div className="flex items-center gap-2 border-b border-zinc-200 px-4 py-3 bg-zinc-900">
+      <div className="flex items-center gap-2 border-b border-indigo-700 px-4 py-3 bg-indigo-600 dark:bg-indigo-700">
         <div className="h-2 w-2 rounded-full bg-green-400" aria-hidden="true" />
         <span className="text-sm font-medium text-white">{orgName}</span>
       </div>
@@ -113,7 +113,7 @@ export function WidgetChatInterface({
                   className={cn(
                     "max-w-[85%] rounded-2xl px-3 py-2 text-sm",
                     message.role === "user"
-                      ? "bg-zinc-900 text-white rounded-br-sm"
+                      ? "bg-indigo-600 text-white rounded-br-sm"
                       : "bg-zinc-100 text-zinc-900 rounded-bl-sm"
                   )}
                 >
@@ -162,7 +162,7 @@ export function WidgetChatInterface({
             onClick={handleSubmit}
             disabled={!input.trim() || isLoading}
             aria-label="Send message"
-            className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-zinc-900 text-white transition-colors hover:bg-zinc-700 disabled:opacity-40"
+            className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-indigo-600 text-white transition-colors hover:bg-indigo-700 disabled:opacity-40"
           >
             <Send className="h-4 w-4" aria-hidden="true" />
           </button>
