@@ -1,12 +1,7 @@
 "use client";
 
-import { useState } from "react";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
+import { useEffect, useState } from "react";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { cn } from "@/lib/utils";
 
@@ -22,35 +17,34 @@ type ConversationDetailProps = {
   onClose: () => void;
 };
 
-export function ConversationDetail({
-  sessionId,
-  onClose,
-}: ConversationDetailProps) {
+export function ConversationDetail({ sessionId, onClose }: ConversationDetailProps) {
   const [messages, setMessages] = useState<Message[]>([]);
   const [loading, setLoading] = useState(false);
 
-  // Fetch messages when dialog opens
-  const handleOpenChange = async (open: boolean) => {
-    if (!open) {
-      onClose();
+  // Fetch messages whenever sessionId changes.
+  // NOTE: onOpenChange only fires for *internal* Radix state changes (Escape,
+  // overlay click) — it does NOT fire when the controlled `open` prop changes
+  // from outside. useEffect is the correct way to react to prop-driven opens.
+  useEffect(() => {
+    if (!sessionId) {
+      setMessages([]);
       return;
     }
-    if (sessionId && open) {
-      setLoading(true);
-      try {
-        const res = await fetch(`/api/conversations/${sessionId}`);
-        const data = await res.json();
-        setMessages(data.messages ?? []);
-      } catch {
-        setMessages([]);
-      } finally {
-        setLoading(false);
-      }
-    }
-  };
+    setLoading(true);
+    fetch(`/api/conversations/${sessionId}`)
+      .then((res) => res.json())
+      .then((data) => setMessages(data.messages ?? []))
+      .catch(() => setMessages([]))
+      .finally(() => setLoading(false));
+  }, [sessionId]);
 
   return (
-    <Dialog open={!!sessionId} onOpenChange={handleOpenChange}>
+    <Dialog
+      open={!!sessionId}
+      onOpenChange={(open) => {
+        if (!open) onClose();
+      }}
+    >
       <DialogContent className="max-w-2xl">
         <DialogHeader>
           <DialogTitle className="text-foreground">Conversation History</DialogTitle>
@@ -70,10 +64,7 @@ export function ConversationDetail({
               {messages.map((msg) => (
                 <div
                   key={msg.id}
-                  className={cn(
-                    "flex",
-                    msg.role === "user" ? "justify-end" : "justify-start"
-                  )}
+                  className={cn("flex", msg.role === "user" ? "justify-end" : "justify-start")}
                 >
                   <div
                     className={cn(

@@ -135,7 +135,7 @@ prisma/
 
 ```bash
 # 1. Clone and install
-git clone https://github.com/yourusername/ai-support-agent
+git clone https://github.com/aim840912/ai-support-agent
 cd ai-support-agent
 pnpm install
 

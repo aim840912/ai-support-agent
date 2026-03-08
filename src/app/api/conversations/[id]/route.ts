@@ -2,10 +2,7 @@ import { auth } from "@/auth";
 import { prisma } from "@/lib/db";
 import { logError } from "@/lib/error-logger";
 
-export async function DELETE(
-  _request: Request,
-  context: { params: Promise<{ id: string }> }
-) {
+export async function DELETE(_request: Request, context: { params: Promise<{ id: string }> }) {
   const session = await auth();
   if (!session?.user?.orgId) {
     return new Response("Unauthorized", { status: 401 });
@@ -34,10 +31,7 @@ export async function DELETE(
   }
 }
 
-export async function GET(
-  _request: Request,
-  context: { params: Promise<{ id: string }> }
-) {
+export async function GET(_request: Request, context: { params: Promise<{ id: string }> }) {
   const session = await auth();
   if (!session?.user?.orgId) {
     return new Response("Unauthorized", { status: 401 });
@@ -47,10 +41,9 @@ export async function GET(
   const { id } = await context.params;
 
   try {
-    // Include orgId in the where clause to prevent the 404 vs 403 information
-    // leak — a different org's session now returns 404 instead of 403, which
-    // prevents attackers from enumerating valid session IDs across organisations.
-    const chatSession = await prisma.chatSession.findUnique({
+    // findFirst with both id + orgId: prevents 404 vs 403 information leak and
+    // is safe in Prisma 7 where findUnique rejects non-unique compound filters.
+    const chatSession = await prisma.chatSession.findFirst({
       where: { id, orgId },
       include: {
         messages: {
