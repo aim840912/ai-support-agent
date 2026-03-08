@@ -39,7 +39,6 @@ function VerifyEmailContent() {
         setStatus("error");
         setErrorMsg("Network error. Please try again.");
       });
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [token, email]);
 
   if (status === "loading" || status === "idle") {
@@ -55,10 +54,7 @@ function VerifyEmailContent() {
       <div className="flex min-h-screen items-center justify-center">
         <div className="text-center">
           <p className="text-sm text-foreground">Email verified successfully!</p>
-          <a
-            href="/login?verified=1"
-            className="mt-4 block text-sm text-primary underline"
-          >
+          <a href="/login?verified=1" className="mt-4 block text-sm text-primary underline">
             Continue to login
           </a>
         </div>

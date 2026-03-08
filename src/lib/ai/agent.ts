@@ -40,9 +40,11 @@ function getModel() {
         chunks: [
           { type: "stream-start", warnings: [] },
           { type: "text-start", id: "t1" },
-          ...demoText.split(" ").flatMap((word, i) => [
-            { type: "text-delta", id: "t1", delta: (i === 0 ? "" : " ") + word },
-          ]),
+          ...demoText
+            .split(" ")
+            .flatMap((word, i) => [
+              { type: "text-delta", id: "t1", delta: (i === 0 ? "" : " ") + word },
+            ]),
           { type: "text-end", id: "t1" },
           { type: "finish", finishReason: "stop", usage: mockUsage },
         ],
@@ -74,8 +76,11 @@ function getModel() {
  *                             overridden — see buildSystemPrompt() in prompts.ts.
  */
 // Return type intentionally inferred — ToolLoopAgent<never, {tools}, never> is caller-dependent
-// eslint-disable-next-line @typescript-eslint/explicit-function-return-type
-export function createSupportAgent(orgId: string, plan = "free", customSystemPrompt?: string | null) {
+export function createSupportAgent(
+  orgId: string,
+  plan = "free",
+  customSystemPrompt?: string | null
+) {
   const limits = getPlanLimits(plan);
   const allowed = new Set(limits.enabledTools);
 

@@ -1,19 +1,7 @@
 "use client";
 
-import {
-  Bar,
-  BarChart,
-  ResponsiveContainer,
-  XAxis,
-  YAxis,
-  Tooltip,
-  Area,
-  AreaChart,
-} from "recharts";
-import {
-  ChartContainer,
-  ChartTooltipContent,
-} from "@/components/ui/chart";
+import { Bar, BarChart, XAxis, YAxis, Tooltip, Area, AreaChart } from "recharts";
+import { ChartContainer, ChartTooltipContent } from "@/components/ui/chart";
 
 type DailyData = { date: string; count: number };
 type SourceData = { source: string; count: number };
@@ -67,12 +55,7 @@ export function SourceDistribution({ data }: { data: SourceData[] }) {
     <ChartContainer config={chartConfig} className="h-48 w-full">
       <BarChart data={data} layout="vertical">
         <XAxis type="number" tick={{ fontSize: 11 }} allowDecimals={false} />
-        <YAxis
-          type="category"
-          dataKey="source"
-          tick={{ fontSize: 11 }}
-          width={80}
-        />
+        <YAxis type="category" dataKey="source" tick={{ fontSize: 11 }} width={80} />
         <Tooltip content={<ChartTooltipContent />} />
         <Bar dataKey="count" fill="hsl(var(--chart-2))" radius={4} />
       </BarChart>
@@ -89,12 +72,7 @@ export function ToolUsageChart({ data }: { data: ToolData[] }) {
     <ChartContainer config={chartConfig} className="h-48 w-full">
       <BarChart data={data} layout="vertical">
         <XAxis type="number" tick={{ fontSize: 11 }} allowDecimals={false} />
-        <YAxis
-          type="category"
-          dataKey="tool"
-          tick={{ fontSize: 11 }}
-          width={130}
-        />
+        <YAxis type="category" dataKey="tool" tick={{ fontSize: 11 }} width={130} />
         <Tooltip content={<ChartTooltipContent />} />
         <Bar dataKey="count" fill="hsl(var(--chart-3))" radius={4} />
       </BarChart>

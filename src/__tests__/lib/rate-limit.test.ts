@@ -1,9 +1,5 @@
-import { describe, it, expect, beforeEach, vi } from "vitest";
-import {
-  createRateLimiter,
-  checkRateLimit,
-  getClientIp,
-} from "@/lib/rate-limit";
+import { describe, it, expect } from "vitest";
+import { createRateLimiter, checkRateLimit, getClientIp } from "@/lib/rate-limit";
 
 // Use a unique prefix per test to avoid cross-test pollution in the shared store
 let testPrefix = 0;

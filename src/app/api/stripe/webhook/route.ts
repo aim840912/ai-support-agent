@@ -27,8 +27,8 @@ export async function POST(request: Request) {
   let event: Stripe.Event;
   try {
     event = stripe.webhooks.constructEvent(body, signature, webhookSecret);
-  } catch (err) {
-    // Return a generic message — Stripe SDK internals (err.message) may leak
+  } catch (_err) {
+    // Return a generic message — Stripe SDK internals may leak
     // implementation details that help an attacker craft valid-looking payloads.
     return new Response("Webhook signature verification failed", {
       status: 400,
@@ -67,9 +67,7 @@ export async function POST(request: Request) {
 
       case "customer.subscription.updated": {
         const subscription = event.data.object as Stripe.Subscription;
-        const isActive =
-          subscription.status === "active" ||
-          subscription.status === "trialing";
+        const isActive = subscription.status === "active" || subscription.status === "trialing";
 
         await prisma.organization.updateMany({
           where: { stripeCustomerId: subscription.customer as string },
