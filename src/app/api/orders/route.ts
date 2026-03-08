@@ -56,7 +56,7 @@ export async function GET(request: NextRequest) {
       status: o.status,
       trackingNumber: o.trackingNumber,
       estimatedDelivery: o.estimatedDelivery?.toISOString() ?? null,
-      totalPrice: o.totalPrice,
+      totalPrice: o.totalPrice.toNumber(),
       customerId: o.customerId,
       ticketCount: o._count.tickets,
       itemCount: o.items.reduce((sum, item) => sum + item.quantity, 0),
@@ -121,7 +121,7 @@ export async function POST(request: NextRequest) {
     });
 
     return Response.json(
-      { id: order.id, orderNumber: order.orderNumber, totalPrice: order.totalPrice },
+      { id: order.id, orderNumber: order.orderNumber, totalPrice: order.totalPrice.toNumber() },
       { status: 201 }
     );
   } catch (error) {

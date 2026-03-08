@@ -49,7 +49,7 @@ export async function GET(
       status: order.status,
       trackingNumber: order.trackingNumber,
       estimatedDelivery: order.estimatedDelivery?.toISOString() ?? null,
-      totalPrice: order.totalPrice,
+      totalPrice: order.totalPrice.toNumber(),
       customerId: order.customerId,
       createdAt: order.createdAt.toISOString(),
       items: order.items.map((item) => ({
@@ -58,8 +58,8 @@ export async function GET(
         productName: item.product.name,
         sku: item.product.sku,
         quantity: item.quantity,
-        unitPrice: item.unitPrice,
-        subtotal: item.quantity * item.unitPrice,
+        unitPrice: item.unitPrice.toNumber(),
+        subtotal: item.quantity * item.unitPrice.toNumber(),
       })),
       tickets: order.tickets.map((t) => ({
         id: t.id,

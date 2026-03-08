@@ -12,6 +12,9 @@ vi.mock("@/lib/db", () => ({
 import { createGetOrderStatusTool } from "@/lib/ai/tools/get-order-status";
 import { prisma } from "@/lib/db";
 
+/** Minimal Decimal stub that satisfies .toNumber() calls after the Float→Decimal migration */
+const decimal = (n: number) => ({ toNumber: () => n }) as unknown as { toNumber(): number };
+
 const mockFindFirst = vi.mocked(prisma.order.findFirst);
 
 describe("createGetOrderStatusTool", () => {
@@ -37,7 +40,7 @@ describe("createGetOrderStatusTool", () => {
     const fakeOrder = {
       orderNumber: "ORD-001",
       status: "shipped",
-      totalPrice: 99.99,
+      totalPrice: decimal(99.99),
       trackingNumber: "TRACK-XYZ",
       estimatedDelivery: new Date("2026-03-15"),
       createdAt: new Date("2026-03-01"),
@@ -79,7 +82,7 @@ describe("createGetOrderStatusTool", () => {
     const fakeOrder = {
       orderNumber: "ORD-002",
       status: "pending",
-      totalPrice: 50,
+      totalPrice: decimal(50),
       trackingNumber: null,
       estimatedDelivery: null,
       createdAt: new Date("2026-03-08"),

@@ -1,30 +1,67 @@
 import Link from "next/link";
-import { Bot, FileText, MessageSquare, BarChart3, Code, ArrowRight } from "lucide-react";
+import {
+  Bot,
+  FileText,
+  MessageSquare,
+  BarChart3,
+  Code,
+  ArrowRight,
+  ShieldCheck,
+  Users,
+  Package,
+} from "lucide-react";
+import { HowItWorks } from "@/components/landing/how-it-works";
+import { Pricing } from "@/components/landing/pricing";
+import { LiveDemo } from "@/components/landing/live-demo";
 
 const features = [
   {
     icon: FileText,
-    title: "Knowledge Base",
+    title: "RAG Knowledge Base",
     description:
-      "Upload documents, FAQs, and product guides. Your AI agent learns from your content instantly.",
+      "Upload PDFs and documents. Auto-chunked, embedded, and indexed for semantic vector search via pgvector.",
   },
   {
     icon: MessageSquare,
-    title: "AI Chat",
+    title: "AI Chat Agent",
     description:
-      "Deploy an intelligent chat widget that answers customer questions 24/7 without human intervention.",
+      "Tool-calling agent powered by Groq Llama 3. Looks up orders, checks inventory, and escalates tickets automatically.",
+  },
+  {
+    icon: Code,
+    title: "1-Line Embed",
+    description:
+      "Paste one iframe snippet to deploy your support widget on any website. API-key authenticated, zero dependencies.",
   },
   {
     icon: BarChart3,
     title: "Analytics",
     description:
-      "Track conversation volume, resolution rates, and customer satisfaction across all interactions.",
+      "Track conversation volume, resolution rates, and response times. Spot trends before they become problems.",
   },
   {
-    icon: Code,
-    title: "Easy Integration",
+    icon: Users,
+    title: "Team Management",
     description:
-      "Embed your support agent with a single line of code. Works with any website or web app.",
+      "Invite teammates via email with role-based access. Collaborate on knowledge base and ticket reviews.",
+  },
+  {
+    icon: Package,
+    title: "Order & Inventory",
+    description:
+      "Connect your product catalog and order data. The AI agent answers \"where's my order?\" and inventory questions instantly.",
+  },
+  {
+    icon: ShieldCheck,
+    title: "Enterprise Security",
+    description:
+      "SHA-256 API key hashing, CSP/HSTS headers, rate limiting, bcrypt auth, and full multi-tenant data isolation.",
+  },
+  {
+    icon: Bot,
+    title: "Multi-tenant SaaS",
+    description:
+      "Every organization's data is fully isolated. Free and Pro plans with usage limits enforced automatically.",
   },
 ];
 
@@ -34,7 +71,6 @@ export default function Home() {
       {/* Navbar */}
       <header className="sticky top-0 z-50 border-b border-border bg-background/80 backdrop-blur-sm">
         <div className="mx-auto flex h-14 max-w-6xl items-center justify-between px-4 sm:px-6">
-          {/* Logo */}
           <div className="flex items-center gap-2">
             <div className="flex h-7 w-7 items-center justify-center rounded-md bg-primary">
               <Bot className="h-4 w-4 text-primary-foreground" aria-hidden="true" />
@@ -42,7 +78,6 @@ export default function Home() {
             <span className="text-sm font-semibold text-foreground">AI Support Agent</span>
           </div>
 
-          {/* Nav Actions */}
           <div className="flex items-center gap-2">
             <Link
               href="/login"
@@ -54,7 +89,7 @@ export default function Home() {
               href="/register"
               className="rounded-lg bg-primary px-3 py-1.5 text-sm font-medium text-primary-foreground hover:bg-primary/80 transition-colors"
             >
-              Register
+              Get Started Free
             </Link>
           </div>
         </div>
@@ -63,21 +98,24 @@ export default function Home() {
       {/* Hero */}
       <section className="bg-muted px-4 py-20 sm:px-6 sm:py-28">
         <div className="mx-auto max-w-3xl text-center">
+          <div className="mb-4 inline-flex items-center rounded-full border border-border bg-background px-3 py-1 text-xs text-muted-foreground">
+            Production-ready · Multi-tenant · Open source
+          </div>
           <h1 className="text-3xl font-bold tracking-tight text-foreground sm:text-4xl lg:text-5xl">
-            AI-Powered Customer Support
+            AI Customer Support
             <br />
             That Never Sleeps
           </h1>
           <p className="mx-auto mt-6 max-w-xl text-base text-muted-foreground sm:text-lg">
-            Resolve customer queries instantly with an intelligent AI agent trained on your
-            knowledge base.
+            Train an AI agent on your knowledge base. Embed it on your website in under 5 minutes.
+            Let it handle 80% of your support tickets automatically.
           </p>
           <div className="mt-8 flex flex-col items-center gap-3 sm:flex-row sm:justify-center">
             <Link
               href="/register"
               className="flex w-full items-center justify-center gap-2 rounded-lg bg-primary px-6 py-2.5 text-sm font-medium text-primary-foreground hover:bg-primary/80 transition-colors sm:w-auto"
             >
-              Get Started
+              Get Started Free
               <ArrowRight className="h-4 w-4" aria-hidden="true" />
             </Link>
             <Link
@@ -87,17 +125,24 @@ export default function Home() {
               Sign In
             </Link>
           </div>
+
+          {/* Social proof strip */}
+          <div className="mt-10 flex flex-wrap items-center justify-center gap-x-8 gap-y-3 text-xs text-muted-foreground">
+            <span>No credit card required</span>
+            <span>50 conversations / month free</span>
+            <span>Deploy in &lt; 5 minutes</span>
+          </div>
         </div>
       </section>
 
       {/* Features */}
       <section className="bg-background px-4 py-16 sm:px-6 sm:py-20">
         <div className="mx-auto max-w-6xl">
-          <h2 className="text-center text-2xl font-bold text-foreground sm:text-3xl">
-            Everything You Need
+          <h2 className="text-center text-2xl font-bold tracking-tight text-foreground sm:text-3xl">
+            Everything You Need, Nothing You Don&apos;t
           </h2>
           <p className="mt-3 text-center text-sm text-muted-foreground sm:text-base">
-            A complete platform to automate your customer support
+            A complete, production-grade support platform — not just a chatbot wrapper
           </p>
 
           <div className="mt-10 grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4">
@@ -117,16 +162,26 @@ export default function Home() {
         </div>
       </section>
 
-      {/* CTA */}
+      {/* How It Works */}
+      <HowItWorks />
+
+      {/* Live Demo (only renders if NEXT_PUBLIC_DEMO_API_KEY is set) */}
+      <LiveDemo />
+
+      {/* Pricing */}
+      <Pricing />
+
+      {/* Final CTA */}
       <section className="bg-muted px-4 py-16 sm:px-6 sm:py-20">
         <div className="mx-auto max-w-xl text-center">
-          <h2 className="text-2xl font-bold text-foreground sm:text-3xl">
-            Ready to Transform Your Customer Support?
+          <h2 className="text-2xl font-bold tracking-tight text-foreground sm:text-3xl">
+            Ready to Automate Your Support?
           </h2>
           <p className="mt-4 text-sm text-muted-foreground sm:text-base">
-            Set up your AI agent in minutes. No coding required.
+            Join teams using AI Support Agent to handle customer queries 24/7.
+            Set up takes under 5 minutes.
           </p>
-          <div className="mt-8">
+          <div className="mt-8 flex flex-col items-center gap-3 sm:flex-row sm:justify-center">
             <Link
               href="/register"
               className="inline-flex items-center gap-2 rounded-lg bg-primary px-6 py-2.5 text-sm font-medium text-primary-foreground hover:bg-primary/80 transition-colors"
@@ -141,7 +196,7 @@ export default function Home() {
       {/* Footer */}
       <footer className="border-t border-border bg-background px-4 py-6 sm:px-6">
         <div className="mx-auto flex max-w-6xl flex-col items-center gap-2 text-xs text-muted-foreground sm:flex-row sm:justify-between">
-          <span>© 2026 AI Support Agent</span>
+          <span>© 2026 AI Support Agent. Open source.</span>
           <div className="flex gap-4">
             <Link href="/login" className="hover:text-foreground transition-colors">
               Sign In

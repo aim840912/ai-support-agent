@@ -58,7 +58,7 @@ export async function PATCH(
       stockLevel: product!.stockLevel,
       warehouse: product!.warehouse,
       reorderThreshold: product!.reorderThreshold,
-      price: product!.price,
+      price: product!.price.toNumber(),
       createdAt: product!.createdAt.toISOString(),
     });
   } catch (error) {

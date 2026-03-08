@@ -46,7 +46,7 @@ export async function GET(_request: NextRequest) {
       stockLevel: p.stockLevel,
       warehouse: p.warehouse,
       reorderThreshold: p.reorderThreshold,
-      price: p.price,
+      price: p.price.toNumber(),
       createdAt: p.createdAt.toISOString(),
     }));
 
@@ -99,7 +99,7 @@ export async function POST(request: NextRequest) {
         stockLevel: product.stockLevel,
         warehouse: product.warehouse,
         reorderThreshold: product.reorderThreshold,
-        price: product.price,
+        price: product.price.toNumber(),
         createdAt: product.createdAt.toISOString(),
       },
       { status: 201 }

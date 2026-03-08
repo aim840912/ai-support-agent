@@ -9,6 +9,7 @@ import { PlanUsageSection } from "@/components/dashboard/plan-usage-section";
 import { TeamMembers } from "@/components/dashboard/team-members";
 import { getOrgUsage } from "@/lib/plan/check-plan-limit";
 import { UpgradeSuccessToast } from "@/components/dashboard/upgrade-button";
+import { WidgetIntegration } from "@/components/dashboard/widget-integration";
 import { logError } from "@/lib/error-logger";
 
 export default async function SettingsPage({
@@ -78,6 +79,7 @@ export default async function SettingsPage({
             <TabsList className="mb-6">
               <TabsTrigger value="agent">Agent</TabsTrigger>
               <TabsTrigger value="organization">Organization</TabsTrigger>
+              <TabsTrigger value="widget">Widget</TabsTrigger>
               <TabsTrigger value="team">Team</TabsTrigger>
               <TabsTrigger value="plan">Plan & Usage</TabsTrigger>
             </TabsList>
@@ -101,6 +103,17 @@ export default async function SettingsPage({
                   orgName={org.name}
                   plan={org.plan}
                   maskedApiKey={org.apiKey.slice(0, 8) + "..."}
+                />
+              ) : (
+                <p className="text-sm text-muted-foreground">Organization not found.</p>
+              )}
+            </TabsContent>
+
+            <TabsContent value="widget">
+              {org ? (
+                <WidgetIntegration
+                  apiKey={org.apiKey}
+                  appUrl={process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000"}
                 />
               ) : (
                 <p className="text-sm text-muted-foreground">Organization not found.</p>

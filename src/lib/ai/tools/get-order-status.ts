@@ -47,7 +47,7 @@ export function createGetOrderStatusTool(orgId: string) {
         status: order.status,
         product: primaryItem?.product.name ?? "Unknown product",
         quantity: primaryItem?.quantity ?? 0,
-        price: order.totalPrice,
+        price: order.totalPrice.toNumber(),
         trackingNumber: order.trackingNumber,
         estimatedDelivery: order.estimatedDelivery
           ? order.estimatedDelivery.toISOString().split("T")[0]
