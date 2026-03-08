@@ -10,7 +10,21 @@ A production-grade, multi-tenant AI customer support SaaS. Train an intelligent 
 
 <img src="docs/images/landing-hero.png" width="900" alt="Landing page — hero, features, how-it-works, pricing" />
 
-<img src="docs/images/dashboard-overview.png" width="900" alt="Dashboard — sidebar navigation, stats cards, quick-start guide, AI tool status" />
+<img src="docs/images/dashboard-overview.png" width="900" alt="Dashboard overview — stat cards, recent conversations, all 4 AI tools active" />
+
+<img src="docs/images/analytics.png" width="900" alt="Analytics — daily conversation trend, source breakdown, tool usage charts" />
+
+<img src="docs/images/conversation-detail.png" width="900" alt="Conversation history dialog — AI tool-calling in action (order status + inventory check)" />
+
+<img src="docs/images/conversations.png" width="900" alt="Conversations list — 50 sessions across widget, dashboard, and API sources" />
+
+<img src="docs/images/products.png" width="900" alt="Products — 8 items with low-stock badges for items below reorder threshold" />
+
+<img src="docs/images/orders.png" width="900" alt="Orders — 10 orders with all 5 status types and linked ticket counts" />
+
+<img src="docs/images/tickets.png" width="900" alt="Tickets — 8 support tickets with priority and status badges, linked to orders" />
+
+<img src="docs/images/knowledge-base.png" width="900" alt="Knowledge Base — 5 documents in ready state with chunk counts for RAG" />
 
 <img src="docs/images/widget-chat.png" width="900" alt="Playground — AI agent chat interface with tool-calling capabilities" />
 
