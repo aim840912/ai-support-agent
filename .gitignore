@@ -49,3 +49,4 @@ next-env.d.ts
 # accidentally created literal ~/ directory
 /~/
 .playwright-mcp/
+.dev-server.log
