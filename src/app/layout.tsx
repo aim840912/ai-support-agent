@@ -15,9 +15,35 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
+const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? "https://ai-support-agent.vercel.app";
+
 export const metadata: Metadata = {
-  title: "AI Support Agent",
-  description: "AI-powered customer support platform. Train an intelligent agent on your knowledge base to resolve customer queries instantly.",
+  title: {
+    default: "AI Support Agent",
+    template: "%s | AI Support Agent",
+  },
+  description:
+    "Train an AI agent on your knowledge base and embed a chat widget on any website. Resolve customer queries instantly — with order lookup, inventory check, and ticket escalation built in.",
+  metadataBase: new URL(appUrl),
+  openGraph: {
+    type: "website",
+    locale: "en_US",
+    url: appUrl,
+    siteName: "AI Support Agent",
+    title: "AI Support Agent — AI Customer Support That Never Sleeps",
+    description:
+      "Train an AI agent on your knowledge base and embed a chat widget on any website. Resolve 80% of support queries automatically.",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "AI Support Agent — AI Customer Support That Never Sleeps",
+    description:
+      "Train an AI agent on your knowledge base and embed a chat widget on any website. Resolve 80% of support queries automatically.",
+  },
+  robots: {
+    index: true,
+    follow: true,
+  },
 };
 
 export default function RootLayout({
@@ -27,9 +53,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" suppressHydrationWarning>
-      <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
-      >
+      <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
         <ThemeProvider
           attribute="class"
           defaultTheme="system"

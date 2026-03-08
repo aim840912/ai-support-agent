@@ -21,8 +21,7 @@ export default async function OrdersPage({
 
   const resolvedParams = await searchParams;
   const rawStatus = resolvedParams.status;
-  const status =
-    typeof rawStatus === "string" && isValidStatus(rawStatus) ? rawStatus : undefined;
+  const status = typeof rawStatus === "string" && isValidStatus(rawStatus) ? rawStatus : undefined;
 
   try {
     const orders = await prisma.order.findMany({
@@ -43,7 +42,7 @@ export default async function OrdersPage({
       status: o.status,
       trackingNumber: o.trackingNumber,
       estimatedDelivery: o.estimatedDelivery?.toISOString() ?? null,
-      totalPrice: o.totalPrice,
+      totalPrice: o.totalPrice.toNumber(),
       customerId: o.customerId,
       ticketCount: o._count.tickets,
       itemCount: o.items.reduce((sum, item) => sum + item.quantity, 0),
@@ -53,9 +52,7 @@ export default async function OrdersPage({
     return (
       <div>
         <h1 className="text-2xl font-semibold text-foreground">Orders</h1>
-        <p className="mt-1 text-sm text-muted-foreground">
-          View and manage customer orders
-        </p>
+        <p className="mt-1 text-sm text-muted-foreground">View and manage customer orders</p>
 
         <div className="mt-8">
           <OrderList orders={serialized} activeStatus={status} />
@@ -67,9 +64,7 @@ export default async function OrdersPage({
     return (
       <div>
         <h1 className="text-2xl font-semibold text-foreground">Orders</h1>
-        <p className="mt-1 text-sm text-muted-foreground">
-          View and manage customer orders
-        </p>
+        <p className="mt-1 text-sm text-muted-foreground">View and manage customer orders</p>
         <p className="mt-8 text-sm text-destructive">
           Failed to load orders. Please try again later.
         </p>

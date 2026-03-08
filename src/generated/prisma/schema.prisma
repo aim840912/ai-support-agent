@@ -147,7 +147,7 @@ model Product {
   stockLevel       Int          @default(0)
   warehouse        String
   reorderThreshold Int          @default(10)
-  price            Float        @default(0)
+  price            Decimal      @default(0) @db.Decimal(10, 2)
   orgId            String
   org              Organization @relation(fields: [orgId], references: [id])
   createdAt        DateTime     @default(now())
@@ -163,7 +163,7 @@ model Order {
   status            String       @default("pending") // pending | processing | shipped | delivered | cancelled
   trackingNumber    String?
   estimatedDelivery DateTime?
-  totalPrice        Float        @default(0)
+  totalPrice        Decimal      @default(0) @db.Decimal(10, 2)
   customerId        String? // external customer identifier
   orgId             String
   org               Organization @relation(fields: [orgId], references: [id])
@@ -178,7 +178,7 @@ model Order {
 model OrderItem {
   id        String  @id @default(cuid())
   quantity  Int     @default(1)
-  unitPrice Float   @default(0)
+  unitPrice Decimal @default(0) @db.Decimal(10, 2)
   orderId   String
   order     Order   @relation(fields: [orderId], references: [id], onDelete: Cascade)
   productId String

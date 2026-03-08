@@ -34,7 +34,7 @@ export default async function ProductsPage() {
       stockLevel: p.stockLevel,
       warehouse: p.warehouse,
       reorderThreshold: p.reorderThreshold,
-      price: p.price,
+      price: p.price.toNumber(),
       createdAt: p.createdAt.toISOString(),
     }));
 
@@ -46,11 +46,7 @@ export default async function ProductsPage() {
         </p>
 
         <div className="mt-8">
-          <ProductList
-            products={serialized}
-            canAddMore={canAddMore}
-            planLimit={planLimit}
-          />
+          <ProductList products={serialized} canAddMore={canAddMore} planLimit={planLimit} />
         </div>
       </div>
     );
