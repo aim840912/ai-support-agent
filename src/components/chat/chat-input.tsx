@@ -41,7 +41,7 @@ export function ChatInput({
         onKeyDown={handleKeyDown}
         placeholder={placeholder}
         rows={1}
-        className="flex-1 resize-none min-h-[40px] max-h-[160px] overflow-y-auto focus-visible:ring-1"
+        className="flex-1 resize-none min-h-[40px] max-h-[160px] overflow-y-auto scrollbar-hidden focus-visible:ring-1"
         aria-label="Chat message input"
         disabled={isLoading}
       />

@@ -93,27 +93,21 @@ export function WidgetChatInterface({
 
       {/* Messages */}
       <ScrollArea
-        className="flex-1 min-h-0 px-3 py-3"
+        className="flex-1 min-h-0 px-3 py-3 scrollbar-hidden"
         ref={scrollRef as React.Ref<HTMLDivElement>}
       >
         <div className="space-y-3">
           {messages.map((message) => {
             const textContent =
               message.parts
-                ?.filter(
-                  (p): p is Extract<typeof p, { type: "text" }> =>
-                    p.type === "text"
-                )
+                ?.filter((p): p is Extract<typeof p, { type: "text" }> => p.type === "text")
                 .map((p) => p.text)
                 .join("") ?? "";
 
             return (
               <div
                 key={message.id}
-                className={cn(
-                  "flex",
-                  message.role === "user" ? "justify-end" : "justify-start"
-                )}
+                className={cn("flex", message.role === "user" ? "justify-end" : "justify-start")}
               >
                 <div
                   className={cn(

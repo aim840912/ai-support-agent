@@ -58,10 +58,7 @@ export function ToolCallDisplay({ part }: ToolCallDisplayProps) {
       >
         {/* Status icon */}
         {isRunning ? (
-          <Loader2
-            className="w-3.5 h-3.5 text-blue-500 animate-spin shrink-0"
-            aria-hidden="true"
-          />
+          <Loader2 className="w-3.5 h-3.5 text-blue-500 animate-spin shrink-0" aria-hidden="true" />
         ) : isError ? (
           <XCircle className="w-3.5 h-3.5 text-red-500 shrink-0" aria-hidden="true" />
         ) : (
@@ -83,7 +80,7 @@ export function ToolCallDisplay({ part }: ToolCallDisplayProps) {
           {part.input !== undefined && (
             <div>
               <p className="text-xs font-medium text-muted-foreground mb-1">Input</p>
-              <pre className="text-xs text-foreground whitespace-pre-wrap break-all bg-background rounded border border-border p-2 overflow-auto max-h-40">
+              <pre className="text-xs text-foreground whitespace-pre-wrap break-all bg-background rounded border border-border p-2 overflow-auto max-h-40 scrollbar-hidden">
                 {JSON.stringify(part.input, null, 2)}
               </pre>
             </div>
@@ -92,7 +89,7 @@ export function ToolCallDisplay({ part }: ToolCallDisplayProps) {
           {isComplete && part.output !== undefined && (
             <div>
               <p className="text-xs font-medium text-muted-foreground mb-1">Output</p>
-              <pre className="text-xs text-foreground whitespace-pre-wrap break-all bg-background rounded border border-border p-2 overflow-auto max-h-40">
+              <pre className="text-xs text-foreground whitespace-pre-wrap break-all bg-background rounded border border-border p-2 overflow-auto max-h-40 scrollbar-hidden">
                 {JSON.stringify(part.output, null, 2)}
               </pre>
             </div>
