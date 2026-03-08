@@ -24,7 +24,7 @@ Deployed on Vercel. Auth via NextAuth v5 (email/password + email verification).
 | Embeddings | Google Gemini        | `text-embedding-004`, 768 dims                               |
 | Payments   | Stripe               | Checkout + webhook at `/api/stripe/`                         |
 | Email      | Resend               | Falls back to console.log in dev when `RESEND_API_KEY` unset |
-| Testing    | Vitest 4             | `pnpm test` — 71 tests; config in `vitest.config.ts`         |
+| Testing    | Vitest 4             | `pnpm test` — 93 tests; config in `vitest.config.ts`         |
 
 ---
 
@@ -131,7 +131,7 @@ price: product.price,            // ❌ serializes as string "99.99"
 ```bash
 pnpm dev           # Dev server (Turbopack)
 pnpm build         # Production build
-pnpm test          # 71 Vitest tests
+pnpm test          # 93 Vitest tests
 pnpm lint          # ESLint
 pnpm type-check    # tsc --noEmit
 pnpm format        # Prettier --write

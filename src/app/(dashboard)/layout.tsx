@@ -1,18 +1,10 @@
 import { auth } from "@/auth";
 import { AppSidebar } from "@/components/dashboard/app-sidebar";
-import {
-  SidebarInset,
-  SidebarProvider,
-  SidebarTrigger,
-} from "@/components/ui/sidebar";
+import { SidebarInset, SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { ThemeToggle } from "@/components/theme-toggle";
 
-export default async function DashboardLayout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
-  // Auth guard is handled by middleware (src/middleware.ts).
+export default async function DashboardLayout({ children }: { children: React.ReactNode }) {
+  // Auth guard is handled by proxy (src/proxy.ts).
   // We still fetch the session to pass user info to the sidebar.
   const session = await auth();
 

@@ -6,6 +6,16 @@ A production-grade, multi-tenant AI customer support SaaS. Train an intelligent 
 
 ---
 
+## Screenshots
+
+<img src="docs/images/landing-hero.png" width="900" alt="Landing page — hero, features, how-it-works, pricing" />
+
+<img src="docs/images/dashboard-overview.png" width="900" alt="Dashboard — sidebar navigation, stats cards, quick-start guide, AI tool status" />
+
+<img src="docs/images/widget-chat.png" width="900" alt="Playground — AI agent chat interface with tool-calling capabilities" />
+
+---
+
 ## Architecture
 
 ```
@@ -48,38 +58,38 @@ A production-grade, multi-tenant AI customer support SaaS. Train an intelligent 
 
 ## Features
 
-| Feature | Details |
-|---------|---------|
-| **RAG Knowledge Base** | Upload PDF/TXT/MD → auto-chunk → embed → pgvector semantic search |
+| Feature                     | Details                                                                              |
+| --------------------------- | ------------------------------------------------------------------------------------ |
+| **RAG Knowledge Base**      | Upload PDF/TXT/MD → auto-chunk → embed → pgvector semantic search                    |
 | **AI Agent (Tool-calling)** | Groq Llama 3 with 4 tools: KB search, order lookup, inventory check, ticket creation |
-| **Embeddable Widget** | 1-line iframe embed, API key authenticated, streaming responses |
-| **Stripe Billing** | Free / Pro plans with usage limits and checkout flow |
-| **Team Management** | Invite members via email, role-based access (owner / member) |
-| **Order Management** | Track orders with status, tracking number, estimated delivery |
-| **Product Inventory** | SKU-based inventory with stock levels and reorder thresholds |
-| **Support Tickets** | AI-created tickets with priority, SLA, and escalation notes |
-| **Analytics** | Conversation volume, resolution rate, response time charts |
-| **Auth** | NextAuth v5 — email/password with verification, OAuth-ready |
-| **Security** | Rate limiting, CSP/HSTS headers, SHA-256 API key hashing, input sanitization |
-| **Multi-tenant** | Full org isolation — all queries scoped by `orgId` |
+| **Embeddable Widget**       | 1-line iframe embed, API key authenticated, streaming responses                      |
+| **Stripe Billing**          | Free / Pro plans with usage limits and checkout flow                                 |
+| **Team Management**         | Invite members via email, role-based access (owner / member)                         |
+| **Order Management**        | Track orders with status, tracking number, estimated delivery                        |
+| **Product Inventory**       | SKU-based inventory with stock levels and reorder thresholds                         |
+| **Support Tickets**         | AI-created tickets with priority, SLA, and escalation notes                          |
+| **Analytics**               | Conversation volume, resolution rate, response time charts                           |
+| **Auth**                    | NextAuth v5 — email/password with verification, OAuth-ready                          |
+| **Security**                | Rate limiting, CSP/HSTS headers, SHA-256 API key hashing, input sanitization         |
+| **Multi-tenant**            | Full org isolation — all queries scoped by `orgId`                                   |
 
 ---
 
 ## Tech Stack
 
-| Layer | Technology |
-|-------|-----------|
-| **Framework** | Next.js 16 (App Router) + React 19 |
-| **Styling** | Tailwind CSS v4 + Radix UI |
-| **Auth** | NextAuth v5 (beta) — email verification + magic links |
-| **Database** | Prisma 7 + Neon PostgreSQL (pgvector) |
-| **LLM** | Vercel AI SDK + Groq (Llama 3.3 70B) |
-| **Embeddings** | Google Gemini (text-embedding-004) |
-| **Payments** | Stripe — checkout + webhook |
-| **Email** | Resend — verification + password reset |
-| **UI** | Lucide React + Recharts + shadcn/ui |
-| **Testing** | Vitest (71 tests) |
-| **CI/CD** | GitHub Actions — lint + type-check + test + build |
+| Layer          | Technology                                            |
+| -------------- | ----------------------------------------------------- |
+| **Framework**  | Next.js 16 (App Router) + React 19                    |
+| **Styling**    | Tailwind CSS v4 + Radix UI                            |
+| **Auth**       | NextAuth v5 (beta) — email verification + magic links |
+| **Database**   | Prisma 7 + Neon PostgreSQL (pgvector)                 |
+| **LLM**        | Vercel AI SDK + Groq (Llama 3.3 70B)                  |
+| **Embeddings** | Google Gemini (text-embedding-004)                    |
+| **Payments**   | Stripe — checkout + webhook                           |
+| **Email**      | Resend — verification + password reset                |
+| **UI**         | Lucide React + Recharts + shadcn/ui                   |
+| **Testing**    | Vitest (93 tests)                                     |
+| **CI/CD**      | GitHub Actions — lint + type-check + test + build     |
 
 ---
 
@@ -167,7 +177,7 @@ Open [http://localhost:3000](http://localhost:3000).
 ```bash
 pnpm dev           # Start dev server (Turbopack)
 pnpm build         # Production build
-pnpm test          # Run 71 Vitest tests
+pnpm test          # Run 93 Vitest tests
 pnpm test:watch    # Watch mode
 pnpm lint          # ESLint
 pnpm type-check    # TypeScript (no emit)
@@ -195,14 +205,14 @@ The widget authenticates via the API key, isolates all conversations to your org
 
 ## Plan Limits
 
-| Feature | Free | Pro |
-|---------|------|-----|
-| Documents | 5 | 100 |
-| Conversations / month | 50 | Unlimited |
-| Messages / conversation | 20 | Unlimited |
-| Products | 10 | 1,000 |
-| Team members | 3 | 20 |
-| AI Tools | KB search + Orders | + Inventory + Tickets |
+| Feature                 | Free               | Pro                   |
+| ----------------------- | ------------------ | --------------------- |
+| Documents               | 5                  | 100                   |
+| Conversations / month   | 50                 | Unlimited             |
+| Messages / conversation | 20                 | Unlimited             |
+| Products                | 10                 | 1,000                 |
+| Team members            | 3                  | 20                    |
+| AI Tools                | KB search + Orders | + Inventory + Tickets |
 
 ---
 
