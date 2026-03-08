@@ -50,3 +50,4 @@ next-env.d.ts
 /~/
 .playwright-mcp/
 .dev-server.log
+dev-server.log
