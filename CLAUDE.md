@@ -162,3 +162,4 @@ pnpm prisma migrate deploy # Apply pending migrations (production/CI)
 5. **Rate limiter is in-memory**: Per-serverless-instance — not global. Acceptable for current scale; switch to Upstash Redis before high-traffic production.
 6. **Widget API key is stored raw** for display in Settings. `apiKeyHash` is what's used for authentication lookups. Both are set at org creation time in `/api/register`.
 7. **Decimal serialization**: `.toNumber()` required on all Decimal fields before `Response.json()`. Prisma Decimal objects serialize as strings otherwise.
+8. **Prisma migrate dev in non-interactive env**: Refuses to run even with `--create-only`. Use `prisma migrate diff --from-config-datasource --to-schema prisma/schema.prisma --script` to generate SQL, manually create `migrations/<timestamp>_<name>/migration.sql`, then `prisma migrate deploy`.
