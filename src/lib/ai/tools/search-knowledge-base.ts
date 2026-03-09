@@ -41,14 +41,12 @@ export function createSearchKnowledgeBaseTool(orgId: string) {
         ),
       limit: z
         .number()
-        .int()
         .min(1)
         .max(5)
         .optional()
-        .default(3)
-        .describe("Number of results to return (1-5, default 3)"),
+        .describe("Number of results to return (1-5, default: 3)"),
     }),
-    execute: async ({ query, limit }) => {
+    execute: async ({ query, limit = 3 }) => {
       if (isMockMode()) {
         // Return mock results in demo mode (no Gemini key needed)
         const results = MOCK_FAQ_RESULTS.slice(0, limit).map((r) => ({

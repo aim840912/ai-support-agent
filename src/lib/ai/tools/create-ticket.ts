@@ -63,9 +63,10 @@ export function createCreateTicketTool(orgId: string) {
         ),
       orderId: z
         .string()
-        .nullable()
         .optional()
-        .describe("Related order number (e.g., ORD-001) if applicable"),
+        .describe(
+          "Related order number (e.g., ORD-001) if applicable, or omit if not related to an order"
+        ),
     }),
     execute: async ({ subject, description, priority, orderId }) => {
       // Resolve order DB ID from order number if provided
