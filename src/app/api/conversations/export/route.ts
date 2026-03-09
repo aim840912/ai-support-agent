@@ -2,6 +2,7 @@ import { auth } from "@/auth";
 import { prisma } from "@/lib/db";
 import { NextRequest } from "next/server";
 import { logError } from "@/lib/error-logger";
+import { isValidSource, type ValidSource } from "@/lib/constants";
 
 type ExportFormat = "csv" | "json";
 
@@ -24,12 +25,8 @@ export async function GET(request: NextRequest) {
   const format: ExportFormat = rawFormat === "csv" ? "csv" : "json";
 
   const rawSource = request.nextUrl.searchParams.get("source");
-  const VALID_SOURCES = ["widget", "dashboard", "api"] as const;
-  type ValidSource = (typeof VALID_SOURCES)[number];
   const source: ValidSource | undefined =
-    rawSource && VALID_SOURCES.includes(rawSource as ValidSource)
-      ? (rawSource as ValidSource)
-      : undefined;
+    rawSource && isValidSource(rawSource) ? rawSource : undefined;
 
   try {
     const sessions = await prisma.chatSession.findMany({
@@ -83,7 +80,16 @@ export async function GET(request: NextRequest) {
     // CSV: one row per message, sessions flattened
     const rows: string[] = [
       // Header
-      ["sessionId", "source", "visitorId", "sessionCreatedAt", "messageId", "role", "content", "messageCreatedAt"].join(","),
+      [
+        "sessionId",
+        "source",
+        "visitorId",
+        "sessionCreatedAt",
+        "messageId",
+        "role",
+        "content",
+        "messageCreatedAt",
+      ].join(","),
     ];
 
     for (const s of sessions) {

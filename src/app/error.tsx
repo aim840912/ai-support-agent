@@ -3,6 +3,7 @@
 import { useEffect } from "react";
 import { AlertTriangle, RefreshCw } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { logError } from "@/lib/error-logger";
 
 export default function GlobalError({
   error,
@@ -12,8 +13,7 @@ export default function GlobalError({
   reset: () => void;
 }) {
   useEffect(() => {
-    // Log to error monitoring in production
-    console.error("[GlobalError]", error);
+    logError("[GlobalError]", error);
   }, [error]);
 
   return (
@@ -25,13 +25,11 @@ export default function GlobalError({
       <div className="space-y-2">
         <h1 className="text-2xl font-semibold tracking-tight">Something went wrong</h1>
         <p className="text-muted-foreground max-w-md">
-          An unexpected error occurred. Our team has been notified. You can try
-          refreshing the page or come back later.
+          An unexpected error occurred. Our team has been notified. You can try refreshing the page
+          or come back later.
         </p>
         {error.digest && (
-          <p className="text-xs text-muted-foreground font-mono">
-            Error ID: {error.digest}
-          </p>
+          <p className="text-xs text-muted-foreground font-mono">Error ID: {error.digest}</p>
         )}
       </div>
 

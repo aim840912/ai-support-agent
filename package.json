@@ -81,14 +81,10 @@
     "typescript": "^5",
     "vitest": "^4.0.18"
   },
-  "prisma": {
-    "seed": "ts-node --compiler-options '{\"module\":\"CommonJS\"}' prisma/seed.ts"
-  },
   "pnpm": {
     "onlyBuiltDependencies": [
       "@prisma/client",
       "prisma",
-      "sharp",
       "unrs-resolver"
     ]
   }

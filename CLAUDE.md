@@ -13,18 +13,18 @@ Deployed on Vercel. Auth via NextAuth v5 (email/password + email verification).
 
 ## Stack & Key Libraries
 
-| Purpose    | Library              | Notes                                                        |
-| ---------- | -------------------- | ------------------------------------------------------------ |
-| Framework  | Next.js 16           | App Router only — no pages/ directory                        |
-| Styling    | Tailwind CSS v4      | No v3 syntax (`theme()` calls)                               |
-| Auth       | NextAuth v5 beta     | `src/auth.ts` + `src/auth.config.ts`                         |
-| DB ORM     | Prisma 7             | Client at `src/lib/db.ts` — dynamic import for edge compat   |
-| DB         | Neon PostgreSQL      | pgvector enabled; `db push` (no migrations dir)              |
-| LLM        | Vercel AI SDK + Groq | `ai` package v6                                              |
-| Embeddings | Google Gemini        | `text-embedding-004`, 768 dims                               |
-| Payments   | Stripe               | Checkout + webhook at `/api/stripe/`                         |
-| Email      | Resend               | Falls back to console.log in dev when `RESEND_API_KEY` unset |
-| Testing    | Vitest 4             | `pnpm test` — 93 tests; config in `vitest.config.ts`         |
+| Purpose    | Library              | Notes                                                                                                                 |
+| ---------- | -------------------- | --------------------------------------------------------------------------------------------------------------------- |
+| Framework  | Next.js 16           | App Router only — no pages/ directory                                                                                 |
+| Styling    | Tailwind CSS v4      | No v3 syntax (`theme()` calls)                                                                                        |
+| Auth       | NextAuth v5 beta     | `src/auth.ts` + `src/auth.config.ts`                                                                                  |
+| DB ORM     | Prisma 7             | Client at `src/lib/db.ts` — dynamic import for edge compat                                                            |
+| DB         | Neon PostgreSQL      | pgvector enabled; `prisma migrate dev` (local), `prisma migrate deploy` (prod) — 6 migrations in `prisma/migrations/` |
+| LLM        | Vercel AI SDK + Groq | `ai` package v6                                                                                                       |
+| Embeddings | Google Gemini        | `text-embedding-004`, 768 dims                                                                                        |
+| Payments   | Stripe               | Checkout + webhook at `/api/stripe/`                                                                                  |
+| Email      | Resend               | Falls back to console.log in dev when `RESEND_API_KEY` unset                                                          |
+| Testing    | Vitest 4             | `pnpm test` — 93 tests; config in `vitest.config.ts`                                                                  |
 
 ---
 
@@ -48,6 +48,8 @@ async function getInstance() {
 ```
 
 **Never** switch back to a static top-level `import { PrismaClient }` — it will crash.
+
+**Generated client** (`src/generated/prisma/`) is gitignored (~10MB WASM binaries). It's regenerated automatically by `prisma generate` which runs as the first step of `vercel.json` `buildCommand`. In local dev, run `pnpm prisma generate` after schema changes.
 
 ### Multi-tenant Data Isolation
 
@@ -135,8 +137,9 @@ pnpm test          # 93 Vitest tests
 pnpm lint          # ESLint
 pnpm type-check    # tsc --noEmit
 pnpm format        # Prettier --write
-pnpm prisma studio # DB GUI
-pnpm prisma db push # Sync schema → DB (project uses db push, not migrate)
+pnpm prisma studio        # DB GUI
+pnpm prisma migrate dev   # Create + apply migration (local dev)
+pnpm prisma migrate deploy # Apply pending migrations (production/CI)
 ```
 
 ---

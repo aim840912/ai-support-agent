@@ -3,13 +3,7 @@ import { redirect } from "next/navigation";
 import { prisma } from "@/lib/db";
 import { ConversationList } from "@/components/dashboard/conversation-list";
 import { logError } from "@/lib/error-logger";
-
-const VALID_SOURCES = ["widget", "dashboard", "api"] as const;
-type Source = (typeof VALID_SOURCES)[number];
-
-function isValidSource(s: string): s is Source {
-  return VALID_SOURCES.includes(s as Source);
-}
+import { isValidSource, type ValidSource } from "@/lib/constants";
 
 export default async function ConversationsPage({
   searchParams,
@@ -22,10 +16,8 @@ export default async function ConversationsPage({
   const resolvedParams = await searchParams;
 
   const rawSource = resolvedParams.source;
-  const source =
-    typeof rawSource === "string" && isValidSource(rawSource)
-      ? rawSource
-      : undefined;
+  const source: ValidSource | undefined =
+    typeof rawSource === "string" && isValidSource(rawSource) ? rawSource : undefined;
 
   try {
     const sessions = await prisma.chatSession.findMany({
@@ -57,9 +49,7 @@ export default async function ConversationsPage({
     return (
       <div>
         <h1 className="text-2xl font-semibold text-foreground">Conversations</h1>
-        <p className="mt-1 text-sm text-muted-foreground">
-          View all customer conversations
-        </p>
+        <p className="mt-1 text-sm text-muted-foreground">View all customer conversations</p>
 
         <div className="mt-8">
           <ConversationList sessions={serialized} activeSource={source} />
@@ -71,9 +61,7 @@ export default async function ConversationsPage({
     return (
       <div>
         <h1 className="text-2xl font-semibold text-foreground">Conversations</h1>
-        <p className="mt-1 text-sm text-muted-foreground">
-          View all customer conversations
-        </p>
+        <p className="mt-1 text-sm text-muted-foreground">View all customer conversations</p>
         <p className="mt-8 text-sm text-destructive">
           Failed to load conversations. Please try again later.
         </p>

@@ -2,6 +2,7 @@ import { auth } from "@/auth";
 import { prisma } from "@/lib/db";
 import { NextRequest } from "next/server";
 import { logError } from "@/lib/error-logger";
+import { VALID_SOURCES, isValidSource, type ValidSource } from "@/lib/constants";
 
 export async function GET(request: NextRequest) {
   const session = await auth();
@@ -11,15 +12,9 @@ export async function GET(request: NextRequest) {
 
   const { orgId } = session.user;
 
-  // Whitelist valid sources — reject arbitrary strings to prevent unintended
-  // Prisma filter behaviour and avoid leaking schema-level source values.
-  const VALID_SOURCES = ["widget", "dashboard", "api"] as const;
-  type ValidSource = (typeof VALID_SOURCES)[number];
   const rawSource = request.nextUrl.searchParams.get("source");
   const source: ValidSource | undefined =
-    rawSource && VALID_SOURCES.includes(rawSource as ValidSource)
-      ? (rawSource as ValidSource)
-      : undefined;
+    rawSource && isValidSource(rawSource) ? rawSource : undefined;
 
   try {
     const sessions = await prisma.chatSession.findMany({

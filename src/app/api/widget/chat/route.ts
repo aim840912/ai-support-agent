@@ -1,15 +1,18 @@
 import { prisma } from "@/lib/db";
 import { hashApiKey } from "@/lib/api-key";
 import { createChatStream } from "@/lib/chat/create-chat-stream";
+import { validateAndSanitizeMessages } from "@/lib/chat/validate-messages";
 import type { UIMessage } from "ai";
-import { createRateLimiter, checkRateLimit, getClientIp, rateLimitResponse } from "@/lib/rate-limit";
+import {
+  createRateLimiter,
+  checkRateLimit,
+  getClientIp,
+  rateLimitResponse,
+} from "@/lib/rate-limit";
 import { logError } from "@/lib/error-logger";
 
 // 20 widget messages per API key + IP per minute
 const widgetChatLimiter = createRateLimiter({ limit: 20, window: "1m" });
-
-const MAX_MESSAGES = 50;
-const MAX_MESSAGE_LENGTH = 4000;
 
 export async function POST(request: Request) {
   // Widget auth: API key in header instead of session cookie
@@ -24,13 +27,17 @@ export async function POST(request: Request) {
   // Fallback to plaintext lookup for orgs created before the hash migration —
   // remove the fallback once all records have been backfilled.
   const keyHash = hashApiKey(apiKey);
-  let org: { id: string; plan: string; agentSettings: { systemPrompt: string | null } | null } | null;
+  let org: {
+    id: string;
+    plan: string;
+    agentSettings: { systemPrompt: string | null } | null;
+  } | null;
   try {
     org = await prisma.organization.findFirst({
       where: {
         OR: [
-          { apiKeyHash: keyHash },  // preferred — hash-based lookup
-          { apiKeyHash: null, apiKey: apiKey },  // migration fallback for pre-hash orgs
+          { apiKeyHash: keyHash }, // preferred — hash-based lookup
+          { apiKeyHash: null, apiKey: apiKey }, // migration fallback for pre-hash orgs
         ],
       },
       select: {
@@ -66,42 +73,16 @@ export async function POST(request: Request) {
 
   // Validate visitorId to prevent injection via this field
   const visitorId =
-    typeof body.visitorId === "string" && body.visitorId.length <= 100
-      ? body.visitorId
-      : undefined;
+    typeof body.visitorId === "string" && body.visitorId.length <= 100 ? body.visitorId : undefined;
   // Validate sessionId: same pattern as visitorId — Prisma parameterized queries prevent
   // SQL injection, but an unbounded string wastes DB index space and query parsing time.
   const sessionId =
-    typeof body.sessionId === "string" && body.sessionId.length <= 100
-      ? body.sessionId
-      : undefined;
-  const { messages } = body;
-
-  if (!Array.isArray(messages) || messages.length === 0) {
-    return new Response("messages array is required", { status: 400 });
+    typeof body.sessionId === "string" && body.sessionId.length <= 100 ? body.sessionId : undefined;
+  const validation = validateAndSanitizeMessages(body.messages);
+  if (!validation.ok) {
+    return new Response(validation.error, { status: validation.status });
   }
-
-  if (messages.length > MAX_MESSAGES) {
-    return new Response(`Too many messages (max ${MAX_MESSAGES})`, { status: 400 });
-  }
-
-  for (const msg of messages) {
-    const text = msg.parts
-      ?.filter((p): p is Extract<typeof p, { type: "text" }> => p.type === "text")
-      .map((p) => p.text)
-      .join("") ?? "";
-    if (text.length > MAX_MESSAGE_LENGTH) {
-      return new Response(`Message exceeds maximum length of ${MAX_MESSAGE_LENGTH} characters`, { status: 400 });
-    }
-  }
-
-  // Strip any messages with disallowed roles — prevents a widget client from
-  // injecting role:"system" messages that could bypass the server-side system prompt.
-  const ALLOWED_ROLES = new Set(["user", "assistant"]);
-  const sanitizedMessages = messages.filter((msg) => ALLOWED_ROLES.has(msg.role));
-  if (sanitizedMessages.length === 0) {
-    return new Response("No valid messages", { status: 400 });
-  }
+  const sanitizedMessages = validation.messages;
 
   return createChatStream({
     orgId,
