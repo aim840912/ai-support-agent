@@ -15,8 +15,11 @@
  */
 
 import { PrismaClient } from "../src/generated/prisma";
+import { PrismaNeon } from "@prisma/adapter-neon";
 
-const prisma = new PrismaClient();
+// Must use PrismaNeon adapter — same as src/lib/db.ts
+const adapter = new PrismaNeon({ connectionString: process.env.DATABASE_URL! });
+const prisma = new PrismaClient({ adapter });
 
 async function main() {
   console.log("Starting data migration: UserOrganization backfill...");
