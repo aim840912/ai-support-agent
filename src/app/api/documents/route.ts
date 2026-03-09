@@ -1,5 +1,5 @@
 import path from "path";
-import { NextResponse } from "next/server";
+import { NextResponse, after } from "next/server";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/db";
 import { processDocument } from "@/lib/rag/process-document";
@@ -128,9 +128,12 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
 
-  // Fire-and-forget: process in background (no await)
-  processDocument(document.id, buffer, sanitizedFilename, session.user.orgId).catch((err) =>
-    logError("[processDocument]", err)
+  // Use after() so Vercel keeps the function alive until processing completes.
+  // Plain fire-and-forget (no await) gets killed when the response is sent.
+  after(() =>
+    processDocument(document.id, buffer, sanitizedFilename, session.user.orgId).catch((err) =>
+      logError("[processDocument]", err)
+    )
   );
 
   return NextResponse.json(document, { status: 201 });
