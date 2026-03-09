@@ -116,7 +116,9 @@ export async function checkTeamMemberLimit(orgId: string): Promise<LimitResult> 
   const limits = getPlanLimits(plan);
   if (limits.teamMembers === -1) return { allowed: true };
 
-  const current = await prisma.user.count({ where: { orgId } });
+  // Count from UserOrganization — correctly handles multi-org users
+  // (User.orgId alone would miscount users whose active org differs from their original org).
+  const current = await prisma.userOrganization.count({ where: { orgId } });
 
   if (current >= limits.teamMembers) {
     return {
@@ -146,7 +148,8 @@ export async function getOrgUsage(orgId: string, plan?: string) {
       prisma.chatSession.count({ where: { orgId, createdAt: { gte: startOfMonth } } }),
       prisma.product.count({ where: { orgId } }),
       prisma.ticket.count({ where: { orgId, createdAt: { gte: startOfMonth } } }),
-      prisma.user.count({ where: { orgId } }),
+      // Count from UserOrganization for accurate multi-org member counts
+      prisma.userOrganization.count({ where: { orgId } }),
     ]);
 
   return {

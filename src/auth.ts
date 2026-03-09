@@ -47,7 +47,7 @@ async function getInstance(): Promise<NextAuthInstance> {
           },
         });
 
-        return tx.user.create({
+        const user = await tx.user.create({
           data: {
             email: data.email!,
             name: data.name ?? null,
@@ -58,9 +58,18 @@ async function getInstance(): Promise<NextAuthInstance> {
             // emailVerified and unable to access gated features.
             emailVerified: data.emailVerified ?? new Date(),
             orgId: org.id,
+            activeOrgId: org.id, // Multi-org: active org = the newly created org
             role: "owner",
           },
         });
+
+        // Create the UserOrganization join record (multi-org support).
+        // This is the authoritative source for role per org.
+        await tx.userOrganization.create({
+          data: { userId: user.id, orgId: org.id, role: "owner" },
+        });
+
+        return user;
       });
     };
 
@@ -86,11 +95,22 @@ async function getInstance(): Promise<NextAuthInstance> {
             // prisma captured from closure — same instance used throughout
             const dbUser = await prisma.user.findUnique({
               where: { id: token.id as string },
-              select: { orgId: true, role: true },
+              select: {
+                activeOrgId: true,
+                orgId: true,
+                role: true,
+                organizations: {
+                  orderBy: { createdAt: "asc" },
+                  select: { orgId: true, role: true },
+                  take: 1,
+                },
+              },
             });
             if (dbUser) {
-              token.orgId = dbUser.orgId;
-              token.role = dbUser.role;
+              // Prefer activeOrgId (multi-org), fall back to legacy orgId
+              token.orgId = dbUser.activeOrgId ?? dbUser.orgId;
+              // Prefer role from UserOrganization, fall back to legacy User.role
+              token.role = dbUser.organizations[0]?.role ?? dbUser.role;
             }
           }
 

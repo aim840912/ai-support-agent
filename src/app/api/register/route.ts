@@ -76,16 +76,24 @@ export async function POST(request: Request) {
         targetOrgId = org.id;
       }
 
-      return tx.user.create({
+      const user = await tx.user.create({
         data: {
           email,
           password: hashedPassword,
           name,
           orgId: targetOrgId,
+          activeOrgId: targetOrgId, // Multi-org: active org = the org they're joining
           role: userRole,
           // emailVerified is intentionally null until they click the link
         },
       });
+
+      // Create the UserOrganization join record (authoritative role per org).
+      await tx.userOrganization.create({
+        data: { userId: user.id, orgId: targetOrgId, role: userRole },
+      });
+
+      return user;
     });
 
     // Await the email send — fire-and-forget is unreliable in serverless (Vercel

@@ -41,10 +41,10 @@ export async function PATCH(request: NextRequest, context: { params: Promise<{ i
       return Response.json({ error: "Invalid input" }, { status: 400 });
     }
 
-    // updateMany with orgId in the where clause eliminates the TOCTOU race
-    // between the pre-check findFirst and the actual update.
-    const { count } = await prisma.user.updateMany({
-      where: { id: targetUserId, orgId },
+    // Update role in UserOrganization (the authoritative per-org role store).
+    // updateMany with both userId and orgId eliminates TOCTOU races.
+    const { count } = await prisma.userOrganization.updateMany({
+      where: { userId: targetUserId, orgId },
       data: { role: parsed.data.role },
     });
 
@@ -82,13 +82,16 @@ export async function DELETE(_request: NextRequest, context: { params: Promise<{
   }
 
   try {
-    const target = await prisma.user.findFirst({ where: { id: targetUserId, orgId } });
-    if (!target) {
+    // Fetch the target's membership from UserOrganization to get their per-org role.
+    const targetMembership = await prisma.userOrganization.findUnique({
+      where: { userId_orgId: { userId: targetUserId, orgId } },
+    });
+    if (!targetMembership) {
       return Response.json({ error: "Member not found" }, { status: 404 });
     }
 
     // Admins can only remove members, not other admins or owners
-    if (currentRole === "admin" && ["admin", "owner"].includes(target.role)) {
+    if (currentRole === "admin" && ["admin", "owner"].includes(targetMembership.role)) {
       return Response.json(
         { error: "Insufficient permissions to remove this member" },
         { status: 403 }
@@ -101,14 +104,15 @@ export async function DELETE(_request: NextRequest, context: { params: Promise<{
     }
 
     // Cannot remove the owner
-    if (target.role === "owner") {
+    if (targetMembership.role === "owner") {
       return Response.json({ error: "Cannot remove the organization owner" }, { status: 400 });
     }
 
-    // deleteMany with orgId in the where clause eliminates the TOCTOU race
-    // between the pre-check findFirst and the actual delete.  The findFirst
-    // above is still required here to read target.role for permission checks.
-    const { count } = await prisma.user.deleteMany({ where: { id: targetUserId, orgId } });
+    // Delete the membership record from UserOrganization.
+    // deleteMany with both userId and orgId eliminates TOCTOU races.
+    const { count } = await prisma.userOrganization.deleteMany({
+      where: { userId: targetUserId, orgId },
+    });
 
     if (count === 0) {
       return Response.json({ error: "Member not found" }, { status: 404 });

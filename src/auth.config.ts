@@ -107,30 +107,67 @@ export const authConfig: NextAuthConfig = {
       // All other routes require authentication
       return isLoggedIn;
     },
-    async jwt({ token, user }) {
+    async jwt({ token, user, trigger, session }) {
       const UPDATE_AGE_SEC = 24 * 60 * 60; // matches session.updateAge
       const now = Math.floor(Date.now() / 1000);
 
       if (user) {
-        // First sign-in: persist user claims
+        // First sign-in: persist user claims.
+        // Prefer activeOrgId (multi-org) over legacy orgId; fall back for
+        // users who existed before the data migration ran.
+        const resolvedOrgId =
+          (user as { activeOrgId?: string | null }).activeOrgId ??
+          (user as { orgId?: string }).orgId;
+
         token.id = user.id;
-        token.orgId = (user as { orgId?: string }).orgId;
-        token.role = (user as { role?: string }).role;
+        token.orgId = resolvedOrgId;
+        token.role = (user as { role?: string }).role; // preliminary — overwritten below from UserOrganization
         token.rememberMe = (user as { rememberMe?: boolean }).rememberMe ?? true; // OAuth defaults to remembered
         token.loginAt = now;
 
-        // Cache passwordChangedAt at sign-in to avoid a DB round-trip on every
-        // subsequent request. The value is refreshed every 24 h (see below),
-        // so the maximum staleness window equals session.updateAge.
+        // Fetch passwordChangedAt + authoritative role from UserOrganization.
+        // UserOrganization.role is the source of truth for role-per-org;
+        // User.role is only kept as a legacy fallback (pre-migration users).
         const { prisma } = await import("@/lib/db");
         const dbUser = await prisma.user.findUnique({
           where: { id: user.id as string },
-          select: { passwordChangedAt: true },
+          select: {
+            passwordChangedAt: true,
+            organizations: resolvedOrgId
+              ? { where: { orgId: resolvedOrgId }, select: { role: true }, take: 1 }
+              : false,
+          },
         });
         token.passwordChangedAt = dbUser?.passwordChangedAt
           ? Math.floor(dbUser.passwordChangedAt.getTime() / 1000)
           : 0;
         token.passwordChangedAtCheckedAt = now;
+        // Override with per-org role from UserOrganization when available
+        const membership = Array.isArray(dbUser?.organizations)
+          ? (dbUser.organizations as { role: string }[])[0]
+          : undefined;
+        if (membership?.role) {
+          token.role = membership.role;
+        }
+      }
+
+      // Handle immediate org-switch: the OrgSwitcher calls useSession().update()
+      // with { activeOrgId } which triggers trigger === "update" here.
+      // We validate membership before changing the token to prevent privilege escalation.
+      if (trigger === "update" && (session as { activeOrgId?: string })?.activeOrgId) {
+        const newOrgId = (session as { activeOrgId: string }).activeOrgId;
+        const { prisma } = await import("@/lib/db");
+        const membership = await prisma.userOrganization.findUnique({
+          where: { userId_orgId: { userId: token.id as string, orgId: newOrgId } },
+          select: { role: true },
+        });
+        if (membership) {
+          token.orgId = newOrgId;
+          token.role = membership.role;
+        }
+        // If no membership found, silently ignore — attacker cannot escalate by
+        // passing an arbitrary orgId; the token stays on the current org.
+        return token;
       }
 
       // Expire short-lived (non-remembered) sessions after 1 day
@@ -149,17 +186,32 @@ export const authConfig: NextAuthConfig = {
       const lastChecked = token.passwordChangedAtCheckedAt as number | undefined;
       if (token.id && (!lastChecked || now - lastChecked > UPDATE_AGE_SEC)) {
         const { prisma } = await import("@/lib/db");
+        const currentOrgId = token.orgId as string | undefined;
         const dbUser = await prisma.user.findUnique({
           where: { id: token.id as string },
-          select: { passwordChangedAt: true, role: true, orgId: true },
+          select: {
+            passwordChangedAt: true,
+            activeOrgId: true,
+            organizations: currentOrgId
+              ? { where: { orgId: currentOrgId }, select: { role: true }, take: 1 }
+              : false,
+          },
         });
         token.passwordChangedAt = dbUser?.passwordChangedAt
           ? Math.floor(dbUser.passwordChangedAt.getTime() / 1000)
           : 0;
-        // Propagate fresh role and orgId — handles role changes and org transfers
-        // made between sign-ins without requiring a manual re-login.
-        token.role = dbUser?.role;
-        token.orgId = dbUser?.orgId;
+        // Propagate fresh orgId from activeOrgId (multi-org) — handles org-switches
+        // made server-side (e.g. accept-invite auto-switches active org).
+        if (dbUser?.activeOrgId) {
+          token.orgId = dbUser.activeOrgId;
+        }
+        // Propagate fresh role from UserOrganization
+        const freshMembership = Array.isArray(dbUser?.organizations)
+          ? (dbUser.organizations as { role: string }[])[0]
+          : undefined;
+        if (freshMembership?.role) {
+          token.role = freshMembership.role;
+        }
         token.passwordChangedAtCheckedAt = now;
       }
 
@@ -223,6 +275,7 @@ export const authConfig: NextAuthConfig = {
             name: true,
             password: true,
             orgId: true,
+            activeOrgId: true, // Multi-org: prefer activeOrgId over legacy orgId
             role: true,
             emailVerified: true,
           },
@@ -248,6 +301,7 @@ export const authConfig: NextAuthConfig = {
           email: user.email,
           name: user.name,
           orgId: user.orgId,
+          activeOrgId: user.activeOrgId, // Passed to JWT callback for multi-org support
           role: user.role,
           rememberMe: parsed.data.rememberMe === "true",
         };

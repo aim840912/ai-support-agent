@@ -128,9 +128,18 @@ export async function POST(request: NextRequest) {
         throw new Error("EMAIL_MISMATCH");
       }
 
+      // Add membership in the new org (multi-org: do NOT overwrite User.orgId).
+      // upsert handles the edge case of re-accepting an already-accepted invite.
+      await tx.userOrganization.upsert({
+        where: { userId_orgId: { userId: session.user.id, orgId: invitation.orgId } },
+        update: { role: invitation.role }, // Update role in case it changed
+        create: { userId: session.user.id, orgId: invitation.orgId, role: invitation.role },
+      });
+
+      // Switch the user's active org to the newly joined org.
       await tx.user.update({
         where: { id: session.user.id },
-        data: { orgId: invitation.orgId, role: invitation.role },
+        data: { activeOrgId: invitation.orgId },
       });
 
       await tx.invitation.delete({ where: { token } });

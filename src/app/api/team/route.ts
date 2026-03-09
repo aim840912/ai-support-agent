@@ -27,10 +27,15 @@ export async function GET() {
   const { orgId } = session.user;
 
   try {
-    const [members, invitations, org] = await Promise.all([
-      prisma.user.findMany({
+    // Use UserOrganization as the source of truth for membership.
+    // This correctly handles multi-org users (User.orgId alone is insufficient
+    // because a user's legacy orgId might point to a different org).
+    const [memberships, invitations, org] = await Promise.all([
+      prisma.userOrganization.findMany({
         where: { orgId },
-        select: { id: true, name: true, email: true, role: true, createdAt: true },
+        include: {
+          user: { select: { id: true, name: true, email: true, createdAt: true } },
+        },
         orderBy: { createdAt: "asc" },
       }),
       prisma.invitation.findMany({
@@ -46,11 +51,11 @@ export async function GET() {
 
     return Response.json({
       orgName: org?.name ?? "",
-      members: members.map((m) => ({
-        id: m.id,
-        name: m.name,
-        email: m.email,
-        role: m.role,
+      members: memberships.map((m) => ({
+        id: m.user.id,
+        name: m.user.name,
+        email: m.user.email,
+        role: m.role, // Role from UserOrganization (per-org, authoritative)
         joinedAt: m.createdAt.toISOString(),
       })),
       invitations: invitations.map((inv) => ({
@@ -100,9 +105,15 @@ export async function POST(request: NextRequest) {
       return Response.json({ error: "Only the owner can invite admins" }, { status: 403 });
     }
 
-    // Check if user already exists in this org
-    const existingUser = await prisma.user.findFirst({ where: { email, orgId } });
-    if (existingUser) {
+    // Check if the email already has an active membership in this org.
+    // We check UserOrganization (not User.orgId) to correctly handle multi-org users.
+    const existingMember = await prisma.user.findFirst({
+      where: {
+        email,
+        organizations: { some: { orgId } },
+      },
+    });
+    if (existingMember) {
       return Response.json({ error: "This user is already a team member" }, { status: 409 });
     }
 

@@ -5,6 +5,7 @@ import { describe, it, expect, vi, beforeEach } from "vitest";
 vi.mock("@/lib/db", () => ({
   prisma: {
     user: { findUnique: vi.fn() },
+    userOrganization: { create: vi.fn() },
     $transaction: vi.fn(),
   },
 }));

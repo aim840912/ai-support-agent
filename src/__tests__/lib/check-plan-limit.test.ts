@@ -9,6 +9,8 @@ vi.mock("@/lib/db", () => ({
     product: { count: vi.fn() },
     user: { count: vi.fn() },
     ticket: { count: vi.fn() },
+    // Multi-org: team member counts now come from UserOrganization
+    userOrganization: { count: vi.fn() },
   },
 }));
 
@@ -24,7 +26,8 @@ const mockOrgFindUnique = vi.mocked(prisma.organization.findUnique);
 const mockDocumentCount = vi.mocked(prisma.document.count);
 const mockSessionCount = vi.mocked(prisma.chatSession.count);
 const mockProductCount = vi.mocked(prisma.product.count);
-const mockUserCount = vi.mocked(prisma.user.count);
+const mockUserCount = vi.mocked(prisma.user.count); // kept for completeness; no longer used by checkTeamMemberLimit
+const mockUserOrgCount = vi.mocked(prisma.userOrganization.count);
 
 function mockPlan(plan: "free" | "pro") {
   mockOrgFindUnique.mockResolvedValue({ plan } as any);
@@ -138,7 +141,8 @@ describe("checkTeamMemberLimit", () => {
 
   it("allows team member invitation under free limit", async () => {
     mockPlan("free");
-    mockUserCount.mockResolvedValue(2); // limit is 3
+    // Multi-org: count comes from UserOrganization (not User.orgId)
+    mockUserOrgCount.mockResolvedValue(2); // limit is 3
 
     const result = await checkTeamMemberLimit("org-1");
     expect(result.allowed).toBe(true);
@@ -146,7 +150,7 @@ describe("checkTeamMemberLimit", () => {
 
   it("blocks invitation at free team member limit", async () => {
     mockPlan("free");
-    mockUserCount.mockResolvedValue(3);
+    mockUserOrgCount.mockResolvedValue(3);
 
     const result = await checkTeamMemberLimit("org-1");
     expect(result.allowed).toBe(false);

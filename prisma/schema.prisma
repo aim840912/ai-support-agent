@@ -20,7 +20,9 @@ model Organization {
   stripeSubscriptionId String?
   createdAt   DateTime @default(now())
 
-  users         User[]
+  users         User[]             // Legacy: users whose orgId FK points here
+  activeUsers   User[]             @relation("activeOrg") // Users with this as their active org
+  members       UserOrganization[] // Multi-org membership join table
   documents     Document[]
   chatSessions  ChatSession[]
   agentSettings AgentSettings?
@@ -37,14 +39,35 @@ model User {
   image             String?
   password          String?      // hashed, null if OAuth
   name              String?
-  role              String       @default("member") // owner | admin | member
-  orgId             String
+  role              String       @default("member") // owner | admin | member (legacy — role is now per-org in UserOrganization)
+  orgId             String       // Legacy: original org this user was created with
   org               Organization @relation(fields: [orgId], references: [id])
+  activeOrgId       String?      // Current active org; drives session.user.orgId
+  activeOrg         Organization? @relation("activeOrg", fields: [activeOrgId], references: [id])
   createdAt         DateTime     @default(now())
   passwordChangedAt DateTime?    // Set on password reset; JWT tokens issued before this timestamp are invalidated
 
-  accounts Account[] // NextAuth
-  sessions Session[] // NextAuth
+  organizations UserOrganization[] // All org memberships (multi-org support)
+  accounts      Account[] // NextAuth
+  sessions      Session[] // NextAuth
+}
+
+// Join table: one user can belong to many organizations with different roles.
+// role field shadows User.role (which is kept for backward compat during Migration A).
+model UserOrganization {
+  id     String @id @default(cuid())
+  userId String
+  orgId  String
+  role   String @default("member") // owner | admin | member
+
+  user User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  org  Organization @relation(fields: [orgId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+
+  @@unique([userId, orgId]) // One membership record per user-org pair
+  @@index([userId])
+  @@index([orgId])
 }
 
 model Document {

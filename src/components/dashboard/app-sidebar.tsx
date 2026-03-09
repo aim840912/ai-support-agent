@@ -15,6 +15,7 @@ import {
   ShoppingCart,
   TicketCheck,
 } from "lucide-react";
+import { OrgSwitcher } from "@/components/dashboard/org-switcher";
 import {
   Sidebar,
   SidebarContent,
@@ -76,18 +77,21 @@ const navItems = [
   },
 ];
 
-export function AppSidebar({ userEmail }: { userEmail?: string }) {
+export function AppSidebar({ userEmail, orgName }: { userEmail?: string; orgName?: string }) {
   const pathname = usePathname();
 
   return (
     <Sidebar>
-      <SidebarHeader className="border-b border-sidebar-border px-4 py-3">
+      <SidebarHeader className="border-b border-sidebar-border px-4 py-3 space-y-2">
+        {/* App brand */}
         <div className="flex items-center gap-2">
           <div className="flex h-7 w-7 items-center justify-center rounded-md bg-primary">
             <Bot className="h-4 w-4 text-primary-foreground" aria-hidden="true" />
           </div>
           <span className="text-sm font-semibold text-foreground">AI Support Agent</span>
         </div>
+        {/* Organization switcher */}
+        <OrgSwitcher currentOrgName={orgName} />
       </SidebarHeader>
 
       <SidebarContent>
