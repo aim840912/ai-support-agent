@@ -4,7 +4,12 @@ import { z } from "zod";
 import { prisma } from "@/lib/db";
 import { sendVerificationEmail } from "@/lib/email/send-verification";
 import { isResendConfigured } from "@/lib/mock-mode";
-import { createRateLimiter, checkRateLimit, getClientIp, rateLimitResponse } from "@/lib/rate-limit";
+import {
+  createRateLimiter,
+  checkRateLimit,
+  getClientIp,
+  rateLimitResponse,
+} from "@/lib/rate-limit";
 import { passwordSchema } from "@/lib/validation";
 import { generateApiKey, hashApiKey } from "@/lib/api-key";
 import { logError } from "@/lib/error-logger";

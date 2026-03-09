@@ -3,10 +3,7 @@ import { auth } from "@/auth";
 import { prisma } from "@/lib/db";
 import { logError } from "@/lib/error-logger";
 
-export async function DELETE(
-  _request: Request,
-  context: { params: Promise<{ id: string }> }
-) {
+export async function DELETE(_request: Request, context: { params: Promise<{ id: string }> }) {
   const session = await auth();
   if (!session?.user) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });

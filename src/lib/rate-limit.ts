@@ -44,9 +44,9 @@ export type RateLimiter = {
 };
 
 export type RateLimitResult = {
-  success: boolean;  // false → request should be rejected with 429
+  success: boolean; // false → request should be rejected with 429
   remaining: number; // how many requests are left in the current window
-  reset: number;     // Unix timestamp (seconds) when the window resets
+  reset: number; // Unix timestamp (seconds) when the window resets
 };
 
 // ─── Factory ──────────────────────────────────────────────────────────────────
@@ -56,10 +56,7 @@ export type RateLimitResult = {
  * @param limit   Number of allowed requests per window
  * @param window  Window duration: "30s" | "1m" | "15m" | "1h"
  */
-export function createRateLimiter(opts: {
-  limit: number;
-  window: string;
-}): RateLimiter {
+export function createRateLimiter(opts: { limit: number; window: string }): RateLimiter {
   return { limit: opts.limit, windowMs: parseWindow(opts.window) };
 }
 
@@ -118,17 +115,14 @@ export async function checkRateLimit(
  */
 export function rateLimitResponse(reset: number): Response {
   const retryAfter = Math.max(0, reset - Math.floor(Date.now() / 1000));
-  return new Response(
-    JSON.stringify({ error: "Too many requests. Please try again later." }),
-    {
-      status: 429,
-      headers: {
-        "Content-Type": "application/json",
-        "Retry-After": String(retryAfter),
-        "X-RateLimit-Reset": String(reset),
-      },
-    }
-  );
+  return new Response(JSON.stringify({ error: "Too many requests. Please try again later." }), {
+    status: 429,
+    headers: {
+      "Content-Type": "application/json",
+      "Retry-After": String(retryAfter),
+      "X-RateLimit-Reset": String(reset),
+    },
+  });
 }
 
 /**

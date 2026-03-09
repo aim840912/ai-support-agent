@@ -1,6 +1,11 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
-import { createRateLimiter, checkRateLimit, getClientIp, rateLimitResponse } from "@/lib/rate-limit";
+import {
+  createRateLimiter,
+  checkRateLimit,
+  getClientIp,
+  rateLimitResponse,
+} from "@/lib/rate-limit";
 import { logError } from "@/lib/error-logger";
 
 // 10 verification attempts per IP per 15 minutes — prevents token brute-forcing
@@ -27,9 +32,7 @@ export async function GET(request: Request) {
   const email = searchParams.get("email");
 
   if (!token || !email) {
-    return NextResponse.redirect(
-      new URL("/login?error=invalid-verification-link", request.url)
-    );
+    return NextResponse.redirect(new URL("/login?error=invalid-verification-link", request.url));
   }
 
   // Lightweight existence check — does NOT consume the token.
@@ -38,15 +41,11 @@ export async function GET(request: Request) {
   });
 
   if (!record) {
-    return NextResponse.redirect(
-      new URL("/login?error=invalid-verification-link", request.url)
-    );
+    return NextResponse.redirect(new URL("/login?error=invalid-verification-link", request.url));
   }
 
   if (record.expires < new Date()) {
-    return NextResponse.redirect(
-      new URL("/login?error=verification-link-expired", request.url)
-    );
+    return NextResponse.redirect(new URL("/login?error=verification-link-expired", request.url));
   }
 
   // Token looks valid — hand off to the confirm page which will POST to mutate.
@@ -74,8 +73,10 @@ export async function POST(request: Request) {
   try {
     const body = await request.json();
     if (
-      !body.token || typeof body.token !== "string" ||
-      !body.email || typeof body.email !== "string"
+      !body.token ||
+      typeof body.token !== "string" ||
+      !body.email ||
+      typeof body.email !== "string"
     ) {
       return NextResponse.json({ error: "Invalid request" }, { status: 400 });
     }

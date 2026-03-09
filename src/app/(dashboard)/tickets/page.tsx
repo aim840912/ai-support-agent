@@ -31,15 +31,10 @@ export default async function TicketsPage({
   const rawStatus = resolvedParams.status;
   const rawPriority = resolvedParams.priority;
 
-  const status =
-    typeof rawStatus === "string" && isValidStatus(rawStatus)
-      ? rawStatus
-      : undefined;
+  const status = typeof rawStatus === "string" && isValidStatus(rawStatus) ? rawStatus : undefined;
 
   const priority =
-    typeof rawPriority === "string" && isValidPriority(rawPriority)
-      ? rawPriority
-      : undefined;
+    typeof rawPriority === "string" && isValidPriority(rawPriority) ? rawPriority : undefined;
 
   try {
     const tickets = await prisma.ticket.findMany({
@@ -77,11 +72,7 @@ export default async function TicketsPage({
         </p>
 
         <div className="mt-8">
-          <TicketList
-            tickets={serialized}
-            activeStatus={status}
-            activePriority={priority}
-          />
+          <TicketList tickets={serialized} activeStatus={status} activePriority={priority} />
         </div>
       </div>
     );

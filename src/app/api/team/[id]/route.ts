@@ -14,10 +14,7 @@ const patchSchema = z.object({
  * PATCH /api/team/:id — Update a member's role.
  * Only the owner can change roles.
  */
-export async function PATCH(
-  request: NextRequest,
-  context: { params: Promise<{ id: string }> }
-) {
+export async function PATCH(request: NextRequest, context: { params: Promise<{ id: string }> }) {
   const session = await auth();
   if (!session?.user?.orgId || !session?.user?.id) {
     return new Response("Unauthorized", { status: 401 });
@@ -68,10 +65,7 @@ export async function PATCH(
  * Only owner can remove admins.
  * Cannot remove yourself (use account deletion instead).
  */
-export async function DELETE(
-  _request: NextRequest,
-  context: { params: Promise<{ id: string }> }
-) {
+export async function DELETE(_request: NextRequest, context: { params: Promise<{ id: string }> }) {
   const session = await auth();
   if (!session?.user?.orgId || !session?.user?.id) {
     return new Response("Unauthorized", { status: 401 });
@@ -95,7 +89,10 @@ export async function DELETE(
 
     // Admins can only remove members, not other admins or owners
     if (currentRole === "admin" && ["admin", "owner"].includes(target.role)) {
-      return Response.json({ error: "Insufficient permissions to remove this member" }, { status: 403 });
+      return Response.json(
+        { error: "Insufficient permissions to remove this member" },
+        { status: 403 }
+      );
     }
 
     // Members cannot remove anyone

@@ -23,8 +23,7 @@ function LoginForm() {
   const errorMessages: Record<string, string> = {
     OAuthAccountNotLinked:
       "This email is already linked to another sign-in method. Please use your original method.",
-    Configuration:
-      "There is a problem with the server configuration. Please try again later.",
+    Configuration: "There is a problem with the server configuration. Please try again later.",
     AccessDenied: "Access denied. You do not have permission to sign in.",
     Default: "An error occurred during sign-in. Please try again.",
   };
@@ -63,7 +62,10 @@ function LoginForm() {
         </p>
       )}
       {authError && (
-        <p className="mb-4 rounded-lg bg-destructive/10 px-4 py-3 text-sm text-destructive" role="alert">
+        <p
+          className="mb-4 rounded-lg bg-destructive/10 px-4 py-3 text-sm text-destructive"
+          role="alert"
+        >
           {errorMessages[authError] ?? errorMessages.Default}
         </p>
       )}
@@ -78,10 +80,7 @@ function LoginForm() {
 
       <form onSubmit={handleSubmit} className="space-y-4">
         <div>
-          <label
-            htmlFor="email"
-            className="mb-1 block text-sm font-medium text-foreground"
-          >
+          <label htmlFor="email" className="mb-1 block text-sm font-medium text-foreground">
             Email
           </label>
           <input
@@ -98,10 +97,7 @@ function LoginForm() {
 
         <div>
           <div className="mb-1 flex items-center justify-between">
-            <label
-              htmlFor="password"
-              className="block text-sm font-medium text-foreground"
-            >
+            <label htmlFor="password" className="block text-sm font-medium text-foreground">
               Password
             </label>
             <Link
@@ -165,9 +161,7 @@ export default function LoginPage() {
   return (
     <div className="rounded-xl border border-border bg-card p-8 shadow-sm">
       <h1 className="mb-1 text-2xl font-semibold text-foreground">Sign in</h1>
-      <p className="mb-6 text-sm text-muted-foreground">
-        Access your AI Support Agent dashboard
-      </p>
+      <p className="mb-6 text-sm text-muted-foreground">Access your AI Support Agent dashboard</p>
 
       <Suspense fallback={<div className="text-sm text-muted-foreground">Loading...</div>}>
         <LoginForm />

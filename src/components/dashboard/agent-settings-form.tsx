@@ -29,9 +29,7 @@ export function AgentSettingsForm({
 }: AgentSettingsFormProps) {
   const [welcomeMessage, setWelcomeMessage] = useState(initialWelcome);
   const [systemPrompt, setSystemPrompt] = useState(initialPrompt ?? "");
-  const [enabledTools, setEnabledTools] = useState<Set<string>>(
-    new Set(initialTools)
-  );
+  const [enabledTools, setEnabledTools] = useState<Set<string>>(new Set(initialTools));
   const [saved, setSaved] = useState(false);
   const [isPending, startTransition] = useTransition();
 

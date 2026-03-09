@@ -13,9 +13,7 @@ export function createGetOrderStatusTool(orgId: string) {
     inputSchema: z.object({
       orderId: z
         .string()
-        .describe(
-          "The order number to look up (e.g., ORD-001). If unknown, ask the customer."
-        ),
+        .describe("The order number to look up (e.g., ORD-001). If unknown, ask the customer."),
     }),
     execute: async ({ orderId }) => {
       const order = await prisma.order.findFirst({

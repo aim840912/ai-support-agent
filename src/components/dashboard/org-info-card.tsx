@@ -99,16 +99,19 @@ export function OrgInfoCard({ orgName, plan, maskedApiKey }: OrgInfoCardProps) {
                 className="shrink-0"
                 disabled={isPending}
               >
-                <RefreshCw className={`h-3.5 w-3.5 ${isPending ? "animate-spin" : ""}`} aria-hidden="true" />
+                <RefreshCw
+                  className={`h-3.5 w-3.5 ${isPending ? "animate-spin" : ""}`}
+                  aria-hidden="true"
+                />
               </Button>
             </AlertDialogTrigger>
             <AlertDialogContent>
               <AlertDialogHeader>
                 <AlertDialogTitle>Regenerate API Key?</AlertDialogTitle>
                 <AlertDialogDescription>
-                  This will invalidate your current key immediately. Any website using the
-                  old embed snippet will stop working until you update it with the new key.
-                  This action cannot be undone.
+                  This will invalidate your current key immediately. Any website using the old embed
+                  snippet will stop working until you update it with the new key. This action cannot
+                  be undone.
                 </AlertDialogDescription>
               </AlertDialogHeader>
               <AlertDialogFooter>
@@ -130,9 +133,7 @@ export function OrgInfoCard({ orgName, plan, maskedApiKey }: OrgInfoCardProps) {
 
       {/* Embed snippet */}
       <div className="space-y-2">
-        <label className="text-sm font-medium text-foreground">
-          Widget Embed Code
-        </label>
+        <label className="text-sm font-medium text-foreground">Widget Embed Code</label>
         <div className="relative">
           <pre className="overflow-x-auto rounded-md border border-border bg-muted px-3 py-3 font-mono text-xs text-muted-foreground whitespace-pre-wrap break-all">
             {embedSnippet}

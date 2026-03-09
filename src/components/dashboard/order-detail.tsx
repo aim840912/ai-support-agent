@@ -1,12 +1,7 @@
 "use client";
 
 import { useState, useTransition } from "react";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import {
   Select,
   SelectContent,
@@ -62,10 +57,22 @@ type OrderDetailData = {
 
 const statusConfig: Record<string, { label: string; className: string }> = {
   pending: { label: "Pending", className: "bg-muted text-muted-foreground" },
-  processing: { label: "Processing", className: "bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300" },
-  shipped: { label: "Shipped", className: "bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300" },
-  delivered: { label: "Delivered", className: "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300" },
-  cancelled: { label: "Cancelled", className: "bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300" },
+  processing: {
+    label: "Processing",
+    className: "bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300",
+  },
+  shipped: {
+    label: "Shipped",
+    className: "bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300",
+  },
+  delivered: {
+    label: "Delivered",
+    className: "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300",
+  },
+  cancelled: {
+    label: "Cancelled",
+    className: "bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300",
+  },
 };
 
 type Props = {
@@ -114,7 +121,7 @@ export function OrderDetail({ orderId, onClose, onUpdate }: Props) {
           body: JSON.stringify({ status: newStatus }),
         });
         if (!res.ok) throw new Error("Update failed");
-        setOrder((prev) => prev ? { ...prev, status: newStatus } : prev);
+        setOrder((prev) => (prev ? { ...prev, status: newStatus } : prev));
         toast.success("Status updated");
         onUpdate();
       } catch {
@@ -133,7 +140,7 @@ export function OrderDetail({ orderId, onClose, onUpdate }: Props) {
           body: JSON.stringify({ trackingNumber: trackingInput.trim() }),
         });
         if (!res.ok) throw new Error("Update failed");
-        setOrder((prev) => prev ? { ...prev, trackingNumber: trackingInput.trim() } : prev);
+        setOrder((prev) => (prev ? { ...prev, trackingNumber: trackingInput.trim() } : prev));
         toast.success("Tracking number saved");
         onUpdate();
       } catch {
@@ -142,7 +149,9 @@ export function OrderDetail({ orderId, onClose, onUpdate }: Props) {
     });
   }
 
-  const status = order ? (statusConfig[order.status] ?? { label: order.status, className: "bg-muted text-foreground" }) : null;
+  const status = order
+    ? (statusConfig[order.status] ?? { label: order.status, className: "bg-muted text-foreground" })
+    : null;
 
   return (
     <Dialog open={!!orderId} onOpenChange={handleOpenChange}>
@@ -179,11 +188,7 @@ export function OrderDetail({ orderId, onClose, onUpdate }: Props) {
             {/* Status update */}
             <div className="flex items-center gap-3">
               <span className="text-sm text-muted-foreground">Status:</span>
-              <Select
-                value={order.status}
-                onValueChange={handleStatusChange}
-                disabled={isPending}
-              >
+              <Select value={order.status} onValueChange={handleStatusChange} disabled={isPending}>
                 <SelectTrigger className="w-44" aria-label="Update order status">
                   <SelectValue />
                 </SelectTrigger>
@@ -225,21 +230,39 @@ export function OrderDetail({ orderId, onClose, onUpdate }: Props) {
                 <Table>
                   <TableHeader>
                     <TableRow className="bg-muted/50 hover:bg-muted/50">
-                      <TableHead className="text-xs font-medium text-muted-foreground">Product</TableHead>
-                      <TableHead className="text-xs font-medium text-muted-foreground">SKU</TableHead>
-                      <TableHead className="text-xs font-medium text-muted-foreground text-right">Qty</TableHead>
-                      <TableHead className="text-xs font-medium text-muted-foreground text-right">Unit</TableHead>
-                      <TableHead className="text-xs font-medium text-muted-foreground text-right">Subtotal</TableHead>
+                      <TableHead className="text-xs font-medium text-muted-foreground">
+                        Product
+                      </TableHead>
+                      <TableHead className="text-xs font-medium text-muted-foreground">
+                        SKU
+                      </TableHead>
+                      <TableHead className="text-xs font-medium text-muted-foreground text-right">
+                        Qty
+                      </TableHead>
+                      <TableHead className="text-xs font-medium text-muted-foreground text-right">
+                        Unit
+                      </TableHead>
+                      <TableHead className="text-xs font-medium text-muted-foreground text-right">
+                        Subtotal
+                      </TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
                     {order.items.map((item) => (
                       <TableRow key={item.id}>
-                        <TableCell className="text-sm text-foreground">{item.productName}</TableCell>
-                        <TableCell className="font-mono text-xs text-muted-foreground">{item.sku}</TableCell>
+                        <TableCell className="text-sm text-foreground">
+                          {item.productName}
+                        </TableCell>
+                        <TableCell className="font-mono text-xs text-muted-foreground">
+                          {item.sku}
+                        </TableCell>
                         <TableCell className="text-right text-sm">{item.quantity}</TableCell>
-                        <TableCell className="text-right text-sm">${item.unitPrice.toFixed(2)}</TableCell>
-                        <TableCell className="text-right text-sm font-medium">${item.subtotal.toFixed(2)}</TableCell>
+                        <TableCell className="text-right text-sm">
+                          ${item.unitPrice.toFixed(2)}
+                        </TableCell>
+                        <TableCell className="text-right text-sm font-medium">
+                          ${item.subtotal.toFixed(2)}
+                        </TableCell>
                       </TableRow>
                     ))}
                   </TableBody>
@@ -256,8 +279,13 @@ export function OrderDetail({ orderId, onClose, onUpdate }: Props) {
                 <p className="mb-2 text-sm font-medium text-foreground">Related Tickets</p>
                 <div className="space-y-1.5">
                   {order.tickets.map((ticket) => (
-                    <div key={ticket.id} className="flex items-center gap-2 rounded-md border border-border px-3 py-2 text-sm">
-                      <span className="font-mono text-xs text-muted-foreground">{ticket.ticketNumber}</span>
+                    <div
+                      key={ticket.id}
+                      className="flex items-center gap-2 rounded-md border border-border px-3 py-2 text-sm"
+                    >
+                      <span className="font-mono text-xs text-muted-foreground">
+                        {ticket.ticketNumber}
+                      </span>
                       <span className="flex-1 truncate text-foreground">{ticket.subject}</span>
                       <Badge className="border-0 text-xs">{ticket.status}</Badge>
                     </div>

@@ -41,11 +41,7 @@ export default async function PlaygroundPage() {
 
       {/* Chat fills remaining height */}
       <div className="flex-1 min-h-0">
-        <ChatInterface
-          orgId={orgId}
-          isLlmMock={llmMock}
-          welcomeMessage={welcomeMessage}
-        />
+        <ChatInterface orgId={orgId} isLlmMock={llmMock} welcomeMessage={welcomeMessage} />
       </div>
     </div>
   );

@@ -69,12 +69,8 @@ export function QuickStartCard({ enabledTools, hasDocuments }: QuickStartCardPro
   return (
     <Card className="border border-border shadow-none">
       <CardHeader className="pb-3">
-        <CardTitle className="text-base font-semibold text-foreground">
-          Quick Start
-        </CardTitle>
-        <p className="text-sm text-muted-foreground">
-          Your AI agent can do these right now:
-        </p>
+        <CardTitle className="text-base font-semibold text-foreground">Quick Start</CardTitle>
+        <p className="text-sm text-muted-foreground">Your AI agent can do these right now:</p>
       </CardHeader>
 
       <CardContent className="space-y-4">
@@ -90,9 +86,7 @@ export function QuickStartCard({ enabledTools, hasDocuments }: QuickStartCardPro
                 <p className="text-sm font-medium text-foreground">{cap.label}</p>
                 <p className="text-xs text-muted-foreground">{cap.description}</p>
               </div>
-              <span className="ml-auto shrink-0 text-xs text-muted-foreground">
-                {label}
-              </span>
+              <span className="ml-auto shrink-0 text-xs text-muted-foreground">{label}</span>
             </div>
           );
         })}

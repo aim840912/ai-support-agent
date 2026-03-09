@@ -9,10 +9,7 @@ const RESET_TTL_MS = 60 * 60 * 1000; // 1 hour
  * Generates a password-reset token (stored in VerificationToken with a
  * "reset:" prefix on the identifier), and sends a reset email via Resend.
  */
-export async function sendPasswordResetEmail(
-  email: string,
-  userName: string
-): Promise<void> {
+export async function sendPasswordResetEmail(email: string, userName: string): Promise<void> {
   const identifier = `reset:${email}`;
   const token = await createAndStoreToken(identifier, RESET_TTL_MS);
   const resetUrl = `${getBaseUrl()}/reset-password?token=${token}&email=${encodeURIComponent(email)}`;

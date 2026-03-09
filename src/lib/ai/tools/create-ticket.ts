@@ -38,9 +38,7 @@ async function createTicketWithUniqueNumber(data: {
     }
   }
 
-  throw new Error(
-    `Failed to generate a unique ticket number after ${MAX_ATTEMPTS} attempts`
-  );
+  throw new Error(`Failed to generate a unique ticket number after ${MAX_ATTEMPTS} attempts`);
 }
 
 /**
@@ -89,8 +87,7 @@ export function createCreateTicketTool(orgId: string) {
         orderId: resolvedOrderId,
       });
 
-      const slaHours =
-        priority === "urgent" ? 2 : priority === "high" ? 4 : 24;
+      const slaHours = priority === "urgent" ? 2 : priority === "high" ? 4 : 24;
 
       return {
         success: true,

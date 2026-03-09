@@ -1,7 +1,12 @@
 import { auth } from "@/auth";
 import { prisma } from "@/lib/db";
 import { NextRequest, NextResponse } from "next/server";
-import { createRateLimiter, checkRateLimit, getClientIp, rateLimitResponse } from "@/lib/rate-limit";
+import {
+  createRateLimiter,
+  checkRateLimit,
+  getClientIp,
+  rateLimitResponse,
+} from "@/lib/rate-limit";
 import { logError } from "@/lib/error-logger";
 
 // 10 invite-accept attempts per IP per 15 minutes — prevents token brute-forcing
@@ -138,9 +143,7 @@ export async function POST(request: NextRequest) {
         if (error.message === "EXPIRED_INVITE") {
           // Transaction was rolled back — delete expired invitation outside the transaction
           // so it doesn't persist as a phantom invite that can never be accepted.
-          await prisma.invitation
-            .delete({ where: { token } })
-            .catch(() => {}); // Ignore: may have been deleted by a concurrent request
+          await prisma.invitation.delete({ where: { token } }).catch(() => {}); // Ignore: may have been deleted by a concurrent request
         }
         return NextResponse.json({ error: "Invalid or expired invite" }, { status: 400 });
       }

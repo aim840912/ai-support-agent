@@ -2,7 +2,12 @@ import { NextResponse } from "next/server";
 import bcrypt from "bcryptjs";
 import { z } from "zod";
 import { prisma } from "@/lib/db";
-import { createRateLimiter, checkRateLimit, getClientIp, rateLimitResponse } from "@/lib/rate-limit";
+import {
+  createRateLimiter,
+  checkRateLimit,
+  getClientIp,
+  rateLimitResponse,
+} from "@/lib/rate-limit";
 import { passwordSchema } from "@/lib/validation";
 import { logError } from "@/lib/error-logger";
 
@@ -73,7 +78,7 @@ export async function POST(request: Request) {
         where: { email },
         data: {
           password: hashedPassword,
-          emailVerified: new Date(),     // Clicking reset link proves email ownership
+          emailVerified: new Date(), // Clicking reset link proves email ownership
           passwordChangedAt: new Date(), // Invalidates any JWT tokens issued before this moment
         },
       });

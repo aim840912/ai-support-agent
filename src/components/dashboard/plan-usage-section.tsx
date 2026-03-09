@@ -4,15 +4,7 @@ import { UpgradeButton } from "./upgrade-button";
 
 export type UsageData = Awaited<ReturnType<typeof getOrgUsage>>;
 
-function UsageStat({
-  label,
-  current,
-  limit,
-}: {
-  label: string;
-  current: number;
-  limit: number;
-}) {
+function UsageStat({ label, current, limit }: { label: string; current: number; limit: number }) {
   const unlimited = limit === -1;
   const pct = unlimited ? 0 : Math.min((current / limit) * 100, 100);
   const isNear = !unlimited && pct >= 80;
@@ -86,11 +78,7 @@ export function PlanUsageSection({
           current={stats.conversationsThisMonth}
           limit={limits.conversationsPerMonth}
         />
-        <UsageStat
-          label="Products"
-          current={stats.products}
-          limit={limits.products}
-        />
+        <UsageStat label="Products" current={stats.products} limit={limits.products} />
         <UsageStat
           label="Tickets (this month)"
           current={stats.ticketsThisMonth}

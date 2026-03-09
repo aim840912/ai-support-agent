@@ -1,10 +1,12 @@
 (function () {
   "use strict";
 
-  var script = document.currentScript || (function () {
-    var scripts = document.getElementsByTagName("script");
-    return scripts[scripts.length - 1];
-  })();
+  var script =
+    document.currentScript ||
+    (function () {
+      var scripts = document.getElementsByTagName("script");
+      return scripts[scripts.length - 1];
+    })();
 
   var apiKey = script.getAttribute("data-api-key");
   if (!apiKey) {

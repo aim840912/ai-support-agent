@@ -12,10 +12,7 @@ const patchSchema = z.object({
   estimatedDelivery: z.string().datetime().optional(),
 });
 
-export async function GET(
-  _request: NextRequest,
-  context: { params: Promise<{ id: string }> }
-) {
+export async function GET(_request: NextRequest, context: { params: Promise<{ id: string }> }) {
   const session = await auth();
   if (!session?.user?.orgId) {
     return new Response("Unauthorized", { status: 401 });
@@ -75,10 +72,7 @@ export async function GET(
   }
 }
 
-export async function PATCH(
-  request: NextRequest,
-  context: { params: Promise<{ id: string }> }
-) {
+export async function PATCH(request: NextRequest, context: { params: Promise<{ id: string }> }) {
   const session = await auth();
   if (!session?.user?.orgId) {
     return new Response("Unauthorized", { status: 401 });

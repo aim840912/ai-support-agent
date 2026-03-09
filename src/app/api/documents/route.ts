@@ -87,19 +87,13 @@ export async function POST(request: Request) {
   }
 
   if (file.size > MAX_SIZE) {
-    return NextResponse.json(
-      { error: "File size exceeds 10MB limit" },
-      { status: 400 }
-    );
+    return NextResponse.json({ error: "File size exceeds 10MB limit" }, { status: 400 });
   }
 
   // Check document limit before processing
   const limitCheck = await checkDocumentLimit(session.user.orgId);
   if (!limitCheck.allowed) {
-    return NextResponse.json(
-      { error: limitCheck.reason, code: "DOCUMENT_LIMIT" },
-      { status: 429 }
-    );
+    return NextResponse.json({ error: limitCheck.reason, code: "DOCUMENT_LIMIT" }, { status: 429 });
   }
 
   const buffer = Buffer.from(await file.arrayBuffer());
@@ -135,10 +129,9 @@ export async function POST(request: Request) {
   }
 
   // Fire-and-forget: process in background (no await)
-  processDocument(document.id, buffer, sanitizedFilename, session.user.orgId).catch(
-    (err) => logError("[processDocument]", err)
+  processDocument(document.id, buffer, sanitizedFilename, session.user.orgId).catch((err) =>
+    logError("[processDocument]", err)
   );
 
   return NextResponse.json(document, { status: 201 });
 }
-

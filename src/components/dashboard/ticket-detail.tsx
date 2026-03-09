@@ -1,12 +1,7 @@
 "use client";
 
 import { useState, useTransition } from "react";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import {
   Select,
   SelectContent,
@@ -44,17 +39,35 @@ type TicketDetailData = {
 };
 
 const statusConfig: Record<string, { label: string; className: string }> = {
-  open: { label: "Open", className: "bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300" },
-  in_progress: { label: "In Progress", className: "bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300" },
-  resolved: { label: "Resolved", className: "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300" },
+  open: {
+    label: "Open",
+    className: "bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300",
+  },
+  in_progress: {
+    label: "In Progress",
+    className: "bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300",
+  },
+  resolved: {
+    label: "Resolved",
+    className: "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300",
+  },
   closed: { label: "Closed", className: "bg-muted text-muted-foreground" },
 };
 
 const priorityConfig: Record<string, { label: string; className: string }> = {
   low: { label: "Low", className: "bg-muted text-muted-foreground" },
-  medium: { label: "Medium", className: "bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300" },
-  high: { label: "High", className: "bg-orange-100 text-orange-800 dark:bg-orange-900/30 dark:text-orange-300" },
-  urgent: { label: "Urgent", className: "bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300" },
+  medium: {
+    label: "Medium",
+    className: "bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300",
+  },
+  high: {
+    label: "High",
+    className: "bg-orange-100 text-orange-800 dark:bg-orange-900/30 dark:text-orange-300",
+  },
+  urgent: {
+    label: "Urgent",
+    className: "bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300",
+  },
 };
 
 type Props = {
@@ -102,7 +115,7 @@ export function TicketDetail({ ticketId, onClose, onUpdate }: Props) {
           body: JSON.stringify({ status: newStatus }),
         });
         if (!res.ok) throw new Error("Update failed");
-        setTicket((prev) => prev ? { ...prev, status: newStatus } : prev);
+        setTicket((prev) => (prev ? { ...prev, status: newStatus } : prev));
         toast.success("Status updated");
         onUpdate();
       } catch {
@@ -133,8 +146,18 @@ export function TicketDetail({ ticketId, onClose, onUpdate }: Props) {
     });
   }
 
-  const status = ticket ? (statusConfig[ticket.status] ?? { label: ticket.status, className: "bg-muted text-foreground" }) : null;
-  const priority = ticket ? (priorityConfig[ticket.priority] ?? { label: ticket.priority, className: "bg-muted text-foreground" }) : null;
+  const status = ticket
+    ? (statusConfig[ticket.status] ?? {
+        label: ticket.status,
+        className: "bg-muted text-foreground",
+      })
+    : null;
+  const priority = ticket
+    ? (priorityConfig[ticket.priority] ?? {
+        label: ticket.priority,
+        className: "bg-muted text-foreground",
+      })
+    : null;
 
   return (
     <Dialog open={!!ticketId} onOpenChange={handleOpenChange}>
@@ -181,11 +204,7 @@ export function TicketDetail({ ticketId, onClose, onUpdate }: Props) {
             {/* Status update */}
             <div className="flex items-center gap-3">
               <span className="text-sm text-muted-foreground">Update status:</span>
-              <Select
-                value={ticket.status}
-                onValueChange={handleStatusChange}
-                disabled={isPending}
-              >
+              <Select value={ticket.status} onValueChange={handleStatusChange} disabled={isPending}>
                 <SelectTrigger className="w-40" aria-label="Update ticket status">
                   <SelectValue />
                 </SelectTrigger>
@@ -205,8 +224,13 @@ export function TicketDetail({ ticketId, onClose, onUpdate }: Props) {
                 <ScrollArea className="h-40">
                   <div className="space-y-2 pr-2">
                     {ticket.notes.map((note) => (
-                      <div key={note.id} className="rounded-md border border-border bg-background px-3 py-2">
-                        <p className="text-sm text-foreground whitespace-pre-wrap">{note.content}</p>
+                      <div
+                        key={note.id}
+                        className="rounded-md border border-border bg-background px-3 py-2"
+                      >
+                        <p className="text-sm text-foreground whitespace-pre-wrap">
+                          {note.content}
+                        </p>
                         <p className="mt-1 text-xs text-muted-foreground">
                           {new Date(note.createdAt).toLocaleString()}
                         </p>
@@ -229,11 +253,7 @@ export function TicketDetail({ ticketId, onClose, onUpdate }: Props) {
                 maxLength={2000}
                 aria-label="Internal note"
               />
-              <Button
-                size="sm"
-                onClick={handleAddNote}
-                disabled={!noteText.trim() || isPending}
-              >
+              <Button size="sm" onClick={handleAddNote} disabled={!noteText.trim() || isPending}>
                 Add Note
               </Button>
             </div>

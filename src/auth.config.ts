@@ -22,8 +22,7 @@ const loginSchema = z.object({
 // Pre-hashed dummy value used for constant-time bcrypt when the user doesn't
 // exist, preventing timing-based email enumeration.
 // Generated with: bcrypt.hash("dummy-password-for-timing", 12)
-const DUMMY_HASH =
-  "$2a$12$LJ3m4ys3Tl0H2I14y0g.aOSghlp58bpMksFv/4KE2GI/G0mfqxgMq";
+const DUMMY_HASH = "$2a$12$LJ3m4ys3Tl0H2I14y0g.aOSghlp58bpMksFv/4KE2GI/G0mfqxgMq";
 
 export const authConfig: NextAuthConfig = {
   pages: {
@@ -32,7 +31,7 @@ export const authConfig: NextAuthConfig = {
   session: {
     strategy: "jwt", // Credentials provider requires JWT strategy
     maxAge: 30 * 24 * 60 * 60, // 30 days (cookie lifetime — actual expiry enforced in jwt callback)
-    updateAge: 24 * 60 * 60,   // Refresh token once per day
+    updateAge: 24 * 60 * 60, // Refresh token once per day
   },
   callbacks: {
     /**
@@ -51,7 +50,15 @@ export const authConfig: NextAuthConfig = {
      * (Google always does; GitHub omits this field for some accounts but we treat
      * absence as unverified to be conservative).
      */
-    async signIn({ user, account, profile }: { user: User | AdapterUser; account?: Account | null; profile?: Profile }) {
+    async signIn({
+      user,
+      account,
+      profile,
+    }: {
+      user: User | AdapterUser;
+      account?: Account | null;
+      profile?: Profile;
+    }) {
       // Only applies to OAuth sign-ins — Credentials flow is handled in authorize()
       if (account?.type !== "oauth") return true;
 
@@ -80,12 +87,20 @@ export const authConfig: NextAuthConfig = {
 
       // Public routes — no auth required
       const publicRoutes = ["/", "/login", "/register", "/forgot-password", "/reset-password"];
-      const publicPrefixes = ["/widget", "/api/auth", "/api/widget", "/api/register", "/api/verify-email", "/verify-email", "/api/forgot-password", "/api/reset-password", "/api/team/accept-invite"];
+      const publicPrefixes = [
+        "/widget",
+        "/api/auth",
+        "/api/widget",
+        "/api/register",
+        "/api/verify-email",
+        "/verify-email",
+        "/api/forgot-password",
+        "/api/reset-password",
+        "/api/team/accept-invite",
+      ];
 
       const isPublicRoute = publicRoutes.includes(nextUrl.pathname);
-      const isPublicPrefix = publicPrefixes.some((prefix) =>
-        nextUrl.pathname.startsWith(prefix)
-      );
+      const isPublicPrefix = publicPrefixes.some((prefix) => nextUrl.pathname.startsWith(prefix));
 
       if (isPublicRoute || isPublicPrefix) return true;
 

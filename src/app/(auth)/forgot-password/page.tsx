@@ -35,7 +35,18 @@ export default function ForgotPasswordPage() {
       <div className="rounded-xl border border-border bg-card p-8 shadow-sm text-center">
         <div className="mb-4 flex justify-center">
           <div className="rounded-full bg-muted p-3">
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-foreground" aria-hidden="true">
+            <svg
+              width="24"
+              height="24"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              className="text-foreground"
+              aria-hidden="true"
+            >
               <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z" />
               <polyline points="22,6 12,13 2,6" />
             </svg>
@@ -43,7 +54,8 @@ export default function ForgotPasswordPage() {
         </div>
         <h1 className="mb-2 text-xl font-semibold text-foreground">Check your inbox</h1>
         <p className="text-sm text-muted-foreground">
-          If <strong>{email}</strong> is registered, we sent a password reset link. Check your spam folder if it doesn&apos;t arrive within a few minutes.
+          If <strong>{email}</strong> is registered, we sent a password reset link. Check your spam
+          folder if it doesn&apos;t arrive within a few minutes.
         </p>
         <Link
           href="/login"
@@ -64,10 +76,7 @@ export default function ForgotPasswordPage() {
 
       <form onSubmit={handleSubmit} className="space-y-4">
         <div>
-          <label
-            htmlFor="email"
-            className="mb-1 block text-sm font-medium text-foreground"
-          >
+          <label htmlFor="email" className="mb-1 block text-sm font-medium text-foreground">
             Email
           </label>
           <input

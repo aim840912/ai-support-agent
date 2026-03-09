@@ -3,11 +3,7 @@ import { hashApiKey } from "@/lib/api-key";
 import { WidgetChatInterface } from "@/components/widget/widget-chat-interface";
 import { notFound } from "next/navigation";
 
-export default async function WidgetPage({
-  params,
-}: {
-  params: Promise<{ apiKey: string }>;
-}) {
+export default async function WidgetPage({ params }: { params: Promise<{ apiKey: string }> }) {
   const { apiKey } = await params;
 
   // Validate the API key and fetch org + agent settings.
@@ -16,10 +12,7 @@ export default async function WidgetPage({
   const keyHash = hashApiKey(apiKey);
   const org = await prisma.organization.findFirst({
     where: {
-      OR: [
-        { apiKeyHash: keyHash },
-        { apiKeyHash: null, apiKey: apiKey },
-      ],
+      OR: [{ apiKeyHash: keyHash }, { apiKeyHash: null, apiKey: apiKey }],
     },
     select: {
       id: true,
@@ -34,15 +27,7 @@ export default async function WidgetPage({
     notFound();
   }
 
-  const welcomeMessage =
-    org.agentSettings?.welcomeMessage ??
-    "Hi! How can I help you today?";
+  const welcomeMessage = org.agentSettings?.welcomeMessage ?? "Hi! How can I help you today?";
 
-  return (
-    <WidgetChatInterface
-      apiKey={apiKey}
-      welcomeMessage={welcomeMessage}
-      orgName={org.name}
-    />
-  );
+  return <WidgetChatInterface apiKey={apiKey} welcomeMessage={welcomeMessage} orgName={org.name} />;
 }

@@ -14,15 +14,15 @@ export function LiveDemo() {
               Try It Live
             </h2>
             <p className="mt-4 text-sm text-muted-foreground sm:text-base leading-relaxed">
-              This widget is powered by the AI Support Agent platform. Ask it about
-              orders, products, or request support — the agent will look up real data
-              and escalate when needed.
+              This widget is powered by the AI Support Agent platform. Ask it about orders,
+              products, or request support — the agent will look up real data and escalate when
+              needed.
             </p>
             <ul className="mt-6 space-y-3 text-sm text-muted-foreground">
               {[
-                "Ask: \"What is the status of order ORD-001?\"",
-                "Ask: \"Do you have the AUDIO-WNC-BLK in stock?\"",
-                "Ask: \"I have a problem with my order, can you help?\"",
+                'Ask: "What is the status of order ORD-001?"',
+                'Ask: "Do you have the AUDIO-WNC-BLK in stock?"',
+                'Ask: "I have a problem with my order, can you help?"',
               ].map((hint) => (
                 <li key={hint} className="flex items-start gap-2">
                   <span className="mt-0.5 shrink-0 text-foreground">→</span>

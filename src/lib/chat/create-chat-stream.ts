@@ -41,10 +41,10 @@ export async function createChatStream({
     // Pass plan so the check can skip an extra org DB fetch.
     const convLimit = await checkConversationLimit(orgId, plan);
     if (!convLimit.allowed) {
-      return new Response(
-        JSON.stringify({ error: convLimit.reason, code: "CONVERSATION_LIMIT" }),
-        { status: 429, headers: { "Content-Type": "application/json" } }
-      );
+      return new Response(JSON.stringify({ error: convLimit.reason, code: "CONVERSATION_LIMIT" }), {
+        status: 429,
+        headers: { "Content-Type": "application/json" },
+      });
     }
 
     try {
@@ -80,10 +80,10 @@ export async function createChatStream({
     // Pass plan so the check can skip an extra org DB fetch.
     const msgLimit = await checkMessageLimit(orgId, resolvedSessionId, plan);
     if (!msgLimit.allowed) {
-      return new Response(
-        JSON.stringify({ error: msgLimit.reason, code: "MESSAGE_LIMIT" }),
-        { status: 429, headers: { "Content-Type": "application/json" } }
-      );
+      return new Response(JSON.stringify({ error: msgLimit.reason, code: "MESSAGE_LIMIT" }), {
+        status: 429,
+        headers: { "Content-Type": "application/json" },
+      });
     }
   }
 
@@ -100,17 +100,13 @@ export async function createChatStream({
 
         const userText =
           lastUserMessage?.parts
-            ?.filter(
-              (p): p is Extract<typeof p, { type: "text" }> => p.type === "text"
-            )
+            ?.filter((p): p is Extract<typeof p, { type: "text" }> => p.type === "text")
             .map((p) => p.text)
             .join("") ?? "";
 
         const assistantText =
           responseMessage?.parts
-            ?.filter(
-              (p): p is Extract<typeof p, { type: "text" }> => p.type === "text"
-            )
+            ?.filter((p): p is Extract<typeof p, { type: "text" }> => p.type === "text")
             .map((p) => p.text)
             .join("") ?? "";
 

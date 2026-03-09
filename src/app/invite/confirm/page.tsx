@@ -41,7 +41,7 @@ function InviteConfirmContent() {
         setStatus("error");
         setErrorMsg("Network error. Please try again.");
       });
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [token]);
 
   if (status === "loading" || status === "idle") {
@@ -55,9 +55,7 @@ function InviteConfirmContent() {
   if (status === "success") {
     return (
       <div className="flex min-h-screen items-center justify-center">
-        <p className="text-sm text-foreground">
-          Invitation accepted! Redirecting you now…
-        </p>
+        <p className="text-sm text-foreground">Invitation accepted! Redirecting you now…</p>
       </div>
     );
   }

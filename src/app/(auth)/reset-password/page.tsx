@@ -52,10 +52,7 @@ function ResetPasswordForm() {
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
       <div>
-        <label
-          htmlFor="password"
-          className="mb-1 block text-sm font-medium text-foreground"
-        >
+        <label htmlFor="password" className="mb-1 block text-sm font-medium text-foreground">
           New password
         </label>
         <input
@@ -72,10 +69,7 @@ function ResetPasswordForm() {
       </div>
 
       <div>
-        <label
-          htmlFor="confirm"
-          className="mb-1 block text-sm font-medium text-foreground"
-        >
+        <label htmlFor="confirm" className="mb-1 block text-sm font-medium text-foreground">
           Confirm password
         </label>
         <input
@@ -112,9 +106,7 @@ export default function ResetPasswordPage() {
   return (
     <div className="rounded-xl border border-border bg-card p-8 shadow-sm">
       <h1 className="mb-1 text-2xl font-semibold text-foreground">Set new password</h1>
-      <p className="mb-6 text-sm text-muted-foreground">
-        Choose a new password for your account.
-      </p>
+      <p className="mb-6 text-sm text-muted-foreground">Choose a new password for your account.</p>
 
       <Suspense fallback={<div className="text-sm text-muted-foreground">Loading...</div>}>
         <ResetPasswordForm />

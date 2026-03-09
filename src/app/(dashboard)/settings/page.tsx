@@ -91,9 +91,7 @@ export default async function SettingsPage({
                   "Hi! I'm your AI support assistant. How can I help you today?"
                 }
                 systemPrompt={agentSettings?.systemPrompt ?? ""}
-                enabledTools={
-                  agentSettings?.enabledTools ?? ["searchKnowledgeBase"]
-                }
+                enabledTools={agentSettings?.enabledTools ?? ["searchKnowledgeBase"]}
               />
             </TabsContent>
 
@@ -139,8 +137,7 @@ export default async function SettingsPage({
                 currentUserId={session.user.id!}
                 currentUserRole={session.user.role ?? "member"}
                 canInviteMore={
-                  usage.limits.teamMembers === -1 ||
-                  members.length < usage.limits.teamMembers
+                  usage.limits.teamMembers === -1 || members.length < usage.limits.teamMembers
                 }
                 planLimit={usage.limits.teamMembers}
               />

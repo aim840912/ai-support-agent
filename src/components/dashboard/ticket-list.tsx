@@ -37,17 +37,35 @@ export type Ticket = {
 };
 
 const statusConfig: Record<string, { label: string; className: string }> = {
-  open: { label: "Open", className: "bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300" },
-  in_progress: { label: "In Progress", className: "bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300" },
-  resolved: { label: "Resolved", className: "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300" },
+  open: {
+    label: "Open",
+    className: "bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300",
+  },
+  in_progress: {
+    label: "In Progress",
+    className: "bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300",
+  },
+  resolved: {
+    label: "Resolved",
+    className: "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300",
+  },
   closed: { label: "Closed", className: "bg-muted text-muted-foreground" },
 };
 
 const priorityConfig: Record<string, { label: string; className: string }> = {
   low: { label: "Low", className: "bg-muted text-muted-foreground" },
-  medium: { label: "Medium", className: "bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300" },
-  high: { label: "High", className: "bg-orange-100 text-orange-800 dark:bg-orange-900/30 dark:text-orange-300" },
-  urgent: { label: "Urgent", className: "bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300" },
+  medium: {
+    label: "Medium",
+    className: "bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300",
+  },
+  high: {
+    label: "High",
+    className: "bg-orange-100 text-orange-800 dark:bg-orange-900/30 dark:text-orange-300",
+  },
+  urgent: {
+    label: "Urgent",
+    className: "bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300",
+  },
 };
 
 type Props = {
@@ -125,18 +143,30 @@ export function TicketList({ tickets, activeStatus, activePriority }: Props) {
           <Table>
             <TableHeader>
               <TableRow className="bg-muted/50 hover:bg-muted/50">
-                <TableHead className="text-xs font-medium text-muted-foreground">Ticket #</TableHead>
+                <TableHead className="text-xs font-medium text-muted-foreground">
+                  Ticket #
+                </TableHead>
                 <TableHead className="text-xs font-medium text-muted-foreground">Subject</TableHead>
-                <TableHead className="text-xs font-medium text-muted-foreground">Priority</TableHead>
+                <TableHead className="text-xs font-medium text-muted-foreground">
+                  Priority
+                </TableHead>
                 <TableHead className="text-xs font-medium text-muted-foreground">Status</TableHead>
                 <TableHead className="text-xs font-medium text-muted-foreground">Order</TableHead>
-                <TableHead className="text-xs font-medium text-muted-foreground text-right">Created</TableHead>
+                <TableHead className="text-xs font-medium text-muted-foreground text-right">
+                  Created
+                </TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {tickets.map((ticket) => {
-                const status = statusConfig[ticket.status] ?? { label: ticket.status, className: "bg-muted text-foreground" };
-                const priority = priorityConfig[ticket.priority] ?? { label: ticket.priority, className: "bg-muted text-foreground" };
+                const status = statusConfig[ticket.status] ?? {
+                  label: ticket.status,
+                  className: "bg-muted text-foreground",
+                };
+                const priority = priorityConfig[ticket.priority] ?? {
+                  label: ticket.priority,
+                  className: "bg-muted text-foreground",
+                };
 
                 return (
                   <TableRow
@@ -168,7 +198,9 @@ export function TicketList({ tickets, activeStatus, activePriority }: Props) {
                       </Badge>
                     </TableCell>
                     <TableCell className="text-sm text-muted-foreground">
-                      {ticket.orderNumber ?? <span className="italic text-muted-foreground/50">—</span>}
+                      {ticket.orderNumber ?? (
+                        <span className="italic text-muted-foreground/50">—</span>
+                      )}
                     </TableCell>
                     <TableCell className="text-right text-sm text-muted-foreground/70">
                       {new Date(ticket.createdAt).toLocaleDateString()}

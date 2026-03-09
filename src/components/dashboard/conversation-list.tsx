@@ -47,9 +47,18 @@ type ChatSession = {
 };
 
 const sourceConfig: Record<string, { label: string; className: string }> = {
-  widget: { label: "Widget", className: "bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300" },
-  dashboard: { label: "Dashboard", className: "bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-300" },
-  api: { label: "API", className: "bg-orange-100 text-orange-800 dark:bg-orange-900/30 dark:text-orange-300" },
+  widget: {
+    label: "Widget",
+    className: "bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300",
+  },
+  dashboard: {
+    label: "Dashboard",
+    className: "bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-300",
+  },
+  api: {
+    label: "API",
+    className: "bg-orange-100 text-orange-800 dark:bg-orange-900/30 dark:text-orange-300",
+  },
 };
 
 type Props = {
@@ -94,10 +103,7 @@ export function ConversationList({ sessions, activeSource }: Props) {
       {/* Filter bar */}
       <div className="mb-4 flex items-center gap-3">
         <span className="text-sm text-muted-foreground">Filter by source:</span>
-        <Select
-          value={activeSource ?? "all"}
-          onValueChange={handleSourceChange}
-        >
+        <Select value={activeSource ?? "all"} onValueChange={handleSourceChange}>
           <SelectTrigger className="w-40" aria-label="Filter conversations by source">
             <SelectValue />
           </SelectTrigger>
@@ -129,19 +135,24 @@ export function ConversationList({ sessions, activeSource }: Props) {
             <TableHeader>
               <TableRow className="bg-muted/50 hover:bg-muted/50">
                 <TableHead className="text-xs font-medium text-muted-foreground">Source</TableHead>
-                <TableHead className="text-xs font-medium text-muted-foreground">First message</TableHead>
-                <TableHead className="text-xs font-medium text-muted-foreground text-right">Messages</TableHead>
-                <TableHead className="text-xs font-medium text-muted-foreground text-right">Date</TableHead>
+                <TableHead className="text-xs font-medium text-muted-foreground">
+                  First message
+                </TableHead>
+                <TableHead className="text-xs font-medium text-muted-foreground text-right">
+                  Messages
+                </TableHead>
+                <TableHead className="text-xs font-medium text-muted-foreground text-right">
+                  Date
+                </TableHead>
                 <TableHead className="w-10" />
               </TableRow>
             </TableHeader>
             <TableBody>
               {sessions.map((session) => {
-                const source =
-                  sourceConfig[session.source] ?? {
-                    label: session.source,
-                    className: "bg-muted text-foreground",
-                  };
+                const source = sourceConfig[session.source] ?? {
+                  label: session.source,
+                  className: "bg-muted text-foreground",
+                };
                 const isDeleting = deletingId === session.id && isPending;
 
                 return (
@@ -154,12 +165,7 @@ export function ConversationList({ sessions, activeSource }: Props) {
                     onClick={() => setSelectedId(session.id)}
                   >
                     <TableCell>
-                      <Badge
-                        className={cn(
-                          "border-0 text-xs font-medium",
-                          source.className
-                        )}
-                      >
+                      <Badge className={cn("border-0 text-xs font-medium", source.className)}>
                         {source.label}
                       </Badge>
                     </TableCell>
@@ -176,9 +182,7 @@ export function ConversationList({ sessions, activeSource }: Props) {
                     <TableCell className="text-right text-sm text-muted-foreground/70">
                       {new Date(session.createdAt).toLocaleDateString()}
                     </TableCell>
-                    <TableCell
-                      onClick={(e) => e.stopPropagation()}
-                    >
+                    <TableCell onClick={(e) => e.stopPropagation()}>
                       <AlertDialog>
                         <AlertDialogTrigger asChild>
                           <Button
@@ -219,10 +223,7 @@ export function ConversationList({ sessions, activeSource }: Props) {
         </div>
       )}
 
-      <ConversationDetail
-        sessionId={selectedId}
-        onClose={() => setSelectedId(null)}
-      />
+      <ConversationDetail sessionId={selectedId} onClose={() => setSelectedId(null)} />
     </>
   );
 }

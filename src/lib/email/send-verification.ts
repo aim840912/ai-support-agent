@@ -9,10 +9,7 @@ const VERIFICATION_TTL_MS = 24 * 60 * 60 * 1000; // 24 hours
  * Generates a verification token, stores it in VerificationToken table,
  * and sends a verification email via Resend.
  */
-export async function sendVerificationEmail(
-  email: string,
-  userName: string
-): Promise<void> {
+export async function sendVerificationEmail(email: string, userName: string): Promise<void> {
   const token = await createAndStoreToken(email, VERIFICATION_TTL_MS);
   const verifyUrl = `${getBaseUrl()}/api/verify-email?token=${token}&email=${encodeURIComponent(email)}`;
 

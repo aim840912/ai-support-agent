@@ -12,10 +12,7 @@ const updateSchema = z.object({
   price: z.number().min(0).optional(),
 });
 
-export async function PATCH(
-  request: NextRequest,
-  context: { params: Promise<{ id: string }> }
-) {
+export async function PATCH(request: NextRequest, context: { params: Promise<{ id: string }> }) {
   const session = await auth();
   if (!session?.user?.orgId) {
     return new Response("Unauthorized", { status: 401 });
@@ -46,8 +43,14 @@ export async function PATCH(
     const product = await prisma.product.findUnique({
       where: { id },
       select: {
-        id: true, name: true, sku: true, stockLevel: true,
-        warehouse: true, reorderThreshold: true, price: true, createdAt: true,
+        id: true,
+        name: true,
+        sku: true,
+        stockLevel: true,
+        warehouse: true,
+        reorderThreshold: true,
+        price: true,
+        createdAt: true,
       },
     });
 
@@ -67,10 +70,7 @@ export async function PATCH(
   }
 }
 
-export async function DELETE(
-  _request: NextRequest,
-  context: { params: Promise<{ id: string }> }
-) {
+export async function DELETE(_request: NextRequest, context: { params: Promise<{ id: string }> }) {
   const session = await auth();
   if (!session?.user?.orgId) {
     return new Response("Unauthorized", { status: 401 });

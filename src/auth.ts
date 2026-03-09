@@ -74,9 +74,7 @@ async function getInstance(): Promise<NextAuthInstance> {
           //    from user when present, propagates it on subsequent requests).
           const baseResult = authConfig.callbacks?.jwt?.(params);
           const token =
-            baseResult instanceof Promise
-              ? await baseResult
-              : (baseResult ?? params.token);
+            baseResult instanceof Promise ? await baseResult : (baseResult ?? params.token);
 
           // 2. DB fallback — only fires on sign-in (params.user present) when
           //    orgId is still missing. This handles the NextAuth v5 beta edge

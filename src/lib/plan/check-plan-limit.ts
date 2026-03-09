@@ -42,10 +42,7 @@ export async function checkDocumentLimit(orgId: string): Promise<LimitResult> {
  * Check whether the org can start another conversation this month.
  * Pass `plan` to skip an extra DB round-trip when the caller already knows it.
  */
-export async function checkConversationLimit(
-  orgId: string,
-  plan?: string
-): Promise<LimitResult> {
+export async function checkConversationLimit(orgId: string, plan?: string): Promise<LimitResult> {
   const resolvedPlan = plan ?? (await getOrgPlan(orgId));
   const limits = getPlanLimits(resolvedPlan);
   if (limits.conversationsPerMonth === -1) return { allowed: true };

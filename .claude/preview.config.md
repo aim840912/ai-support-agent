@@ -1,15 +1,15 @@
 ## Services
 
-| Name | Port | Health URL | Start Command |
-|------|------|------------|---------------|
-| Web | 3000 | http://localhost:3000 | pnpm run dev |
+| Name | Port | Health URL            | Start Command |
+| ---- | ---- | --------------------- | ------------- |
+| Web  | 3000 | http://localhost:3000 | pnpm run dev  |
 
 ## Settings
 
-| Key | Value |
-|-----|-------|
-| Base URL | http://localhost:3000 |
-| Kill Command | npx kill-port 3000 |
+| Key          | Value                 |
+| ------------ | --------------------- |
+| Base URL     | http://localhost:3000 |
+| Kill Command | npx kill-port 3000    |
 
 ## Prerequisites
 

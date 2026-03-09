@@ -10,7 +10,5 @@
       "Bash(findstr:*)"
     ]
   },
-  "enabledMcpjsonServers": [
-    "agentation"
-  ]
+  "enabledMcpjsonServers": ["agentation"]
 }

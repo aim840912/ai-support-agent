@@ -91,8 +91,8 @@ export function ProductList({ products, canAddMore, planLimit }: Props) {
 
       {!canAddMore && (
         <div className="mb-4 rounded-md border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800 dark:border-amber-900/50 dark:bg-amber-900/20 dark:text-amber-300">
-          You&apos;ve reached the product limit for your plan ({planLimit} products).
-          Upgrade to Pro for up to 1,000 products.
+          You&apos;ve reached the product limit for your plan ({planLimit} products). Upgrade to Pro
+          for up to 1,000 products.
         </div>
       )}
 
@@ -111,9 +111,15 @@ export function ProductList({ products, canAddMore, planLimit }: Props) {
               <TableRow className="bg-muted/50 hover:bg-muted/50">
                 <TableHead className="text-xs font-medium text-muted-foreground">Name</TableHead>
                 <TableHead className="text-xs font-medium text-muted-foreground">SKU</TableHead>
-                <TableHead className="text-xs font-medium text-muted-foreground text-right">Price</TableHead>
-                <TableHead className="text-xs font-medium text-muted-foreground text-right">Stock</TableHead>
-                <TableHead className="text-xs font-medium text-muted-foreground">Warehouse</TableHead>
+                <TableHead className="text-xs font-medium text-muted-foreground text-right">
+                  Price
+                </TableHead>
+                <TableHead className="text-xs font-medium text-muted-foreground text-right">
+                  Stock
+                </TableHead>
+                <TableHead className="text-xs font-medium text-muted-foreground">
+                  Warehouse
+                </TableHead>
                 <TableHead className="w-20" />
               </TableRow>
             </TableHeader>

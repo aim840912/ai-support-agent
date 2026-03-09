@@ -10,11 +10,11 @@ interface SplitOptions {
   separators?: string[];
 }
 
-const DEFAULT_SEPARATORS = ['\n\n', '\n', '. ', ' ', ''];
+const DEFAULT_SEPARATORS = ["\n\n", "\n", ". ", " ", ""];
 
 export function splitText(
   text: string,
-  options: SplitOptions = { chunkSize: 1000, chunkOverlap: 200 },
+  options: SplitOptions = { chunkSize: 1000, chunkOverlap: 200 }
 ): string[] {
   const { chunkSize, chunkOverlap } = options;
   const separators = options.separators ?? DEFAULT_SEPARATORS;
@@ -27,7 +27,7 @@ export function splitText(
   const rawChunks = recursiveSplit(text, separators, chunkSize);
 
   // Merge small chunks and apply overlap
-  let currentChunk = '';
+  let currentChunk = "";
 
   for (const raw of rawChunks) {
     if (currentChunk.length + raw.length <= chunkSize) {
@@ -49,11 +49,7 @@ export function splitText(
   return chunks;
 }
 
-function recursiveSplit(
-  text: string,
-  separators: string[],
-  chunkSize: number,
-): string[] {
+function recursiveSplit(text: string, separators: string[], chunkSize: number): string[] {
   if (text.length <= chunkSize || separators.length === 0) {
     return [text];
   }
@@ -61,7 +57,7 @@ function recursiveSplit(
   const separator = separators[0];
   const remainingSeparators = separators.slice(1);
 
-  if (separator === '') {
+  if (separator === "") {
     // Last resort: split by character count
     const parts: string[] = [];
     for (let i = 0; i < text.length; i += chunkSize) {

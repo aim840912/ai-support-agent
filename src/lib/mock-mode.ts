@@ -22,5 +22,7 @@ export function isLlmMockMode(): boolean {
  */
 export function isResendConfigured(): boolean {
   const key = process.env.RESEND_API_KEY ?? "";
-  return !!key && !key.startsWith("placeholder") && !key.startsWith("re_placeholder") && key.length >= 10;
+  return (
+    !!key && !key.startsWith("placeholder") && !key.startsWith("re_placeholder") && key.length >= 10
+  );
 }

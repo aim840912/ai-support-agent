@@ -9,10 +9,7 @@ import { prisma } from "@/lib/db";
  * @param ttlMs      - Token lifetime in milliseconds
  * @returns          The raw hex token string
  */
-export async function createAndStoreToken(
-  identifier: string,
-  ttlMs: number
-): Promise<string> {
+export async function createAndStoreToken(identifier: string, ttlMs: number): Promise<string> {
   const token = crypto.randomBytes(32).toString("hex");
   const expires = new Date(Date.now() + ttlMs);
 

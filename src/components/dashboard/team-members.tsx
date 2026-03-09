@@ -52,8 +52,14 @@ type Props = {
 };
 
 const roleConfig: Record<string, { label: string; className: string }> = {
-  owner: { label: "Owner", className: "bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-300" },
-  admin: { label: "Admin", className: "bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300" },
+  owner: {
+    label: "Owner",
+    className: "bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-300",
+  },
+  admin: {
+    label: "Admin",
+    className: "bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300",
+  },
   member: { label: "Member", className: "bg-muted text-muted-foreground" },
 };
 
@@ -137,14 +143,18 @@ export function TeamMembers({
 
         {!canInviteMore && canManage && (
           <div className="rounded-md border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800 dark:border-amber-900/50 dark:bg-amber-900/20 dark:text-amber-300">
-            You&apos;ve reached the team member limit ({planLimit}). Upgrade to Pro for up to 20 members.
+            You&apos;ve reached the team member limit ({planLimit}). Upgrade to Pro for up to 20
+            members.
           </div>
         )}
 
         {/* Member list */}
         <div className="space-y-2">
           {members.map((member) => {
-            const role = roleConfig[member.role] ?? { label: member.role, className: "bg-muted text-foreground" };
+            const role = roleConfig[member.role] ?? {
+              label: member.role,
+              className: "bg-muted text-foreground",
+            };
             const isSelf = member.id === currentUserId;
             const isRemoving = removingId === member.id && isPending;
             const canRemoveThis =
@@ -173,9 +183,7 @@ export function TeamMembers({
                         <span className="ml-1.5 text-xs text-muted-foreground">(you)</span>
                       )}
                     </p>
-                    {member.name && (
-                      <p className="text-xs text-muted-foreground">{member.email}</p>
-                    )}
+                    {member.name && <p className="text-xs text-muted-foreground">{member.email}</p>}
                   </div>
                 </div>
 
@@ -228,7 +236,8 @@ export function TeamMembers({
                         <AlertDialogHeader>
                           <AlertDialogTitle>Remove {member.name ?? member.email}?</AlertDialogTitle>
                           <AlertDialogDescription>
-                            This will remove them from your organization. They will lose access to all resources.
+                            This will remove them from your organization. They will lose access to
+                            all resources.
                           </AlertDialogDescription>
                         </AlertDialogHeader>
                         <AlertDialogFooter>
@@ -255,7 +264,10 @@ export function TeamMembers({
             <p className="mb-2 text-sm font-medium text-foreground">Pending Invitations</p>
             <div className="space-y-2">
               {invitations.map((inv) => {
-                const role = roleConfig[inv.role] ?? { label: inv.role, className: "bg-muted text-foreground" };
+                const role = roleConfig[inv.role] ?? {
+                  label: inv.role,
+                  className: "bg-muted text-foreground",
+                };
                 return (
                   <div
                     key={inv.id}

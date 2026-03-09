@@ -68,8 +68,10 @@ export function ChatInterface({
           <AlertCircle className="w-3.5 h-3.5 shrink-0" aria-hidden="true" />
           <span>
             <strong>Demo mode</strong> — Running with a mock LLM. Add{" "}
-            <code className="font-mono bg-amber-100 dark:bg-amber-900 px-1 rounded">GROQ_API_KEY</code> to
-            enable a real AI model.
+            <code className="font-mono bg-amber-100 dark:bg-amber-900 px-1 rounded">
+              GROQ_API_KEY
+            </code>{" "}
+            to enable a real AI model.
           </span>
         </div>
       )}

@@ -36,9 +36,7 @@ export async function GET() {
     const totalSessions = sessions.length;
     const totalMessages = sessions.reduce((acc, s) => acc + s._count.messages, 0);
     const avgMessagesPerSession =
-      totalSessions > 0
-        ? Math.round((totalMessages / totalSessions) * 10) / 10
-        : 0;
+      totalSessions > 0 ? Math.round((totalMessages / totalSessions) * 10) / 10 : 0;
 
     // Daily conversations — group by date string (JS-side aggregation)
     const dailyMap: Record<string, number> = {};
@@ -68,8 +66,8 @@ export async function GET() {
       const calls = Array.isArray(msg.toolCalls)
         ? msg.toolCalls
         : typeof msg.toolCalls === "object"
-        ? [msg.toolCalls]
-        : [];
+          ? [msg.toolCalls]
+          : [];
 
       for (const call of calls as { toolName?: string; name?: string }[]) {
         const name = call.toolName ?? call.name ?? "unknown";

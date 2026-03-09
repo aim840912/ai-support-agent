@@ -6,5 +6,4 @@ if (!process.env.RESEND_API_KEY) {
 
 export const resend = new Resend(process.env.RESEND_API_KEY ?? "re_placeholder");
 
-export const EMAIL_FROM =
-  process.env.EMAIL_FROM ?? "AI Support Agent <noreply@yourdomain.com>";
+export const EMAIL_FROM = process.env.EMAIL_FROM ?? "AI Support Agent <noreply@yourdomain.com>";
