@@ -1,5 +1,5 @@
 const DEMO_API_KEY = process.env.NEXT_PUBLIC_DEMO_API_KEY ?? "";
-const APP_URL = process.env.NEXT_PUBLIC_APP_URL ?? "https://ai-support-agent.vercel.app";
+const APP_URL = process.env.NEXT_PUBLIC_APP_URL ?? "https://ai-support-agent-tau.vercel.app";
 
 export function LiveDemo() {
   if (!DEMO_API_KEY) return null;

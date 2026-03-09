@@ -2,7 +2,7 @@
 
 A production-grade, multi-tenant AI customer support SaaS. Train an intelligent agent on your knowledge base, embed a chat widget on any website, and let AI resolve customer queries instantly — with order lookup, inventory check, and ticket escalation built in.
 
-**Live Demo** → [ai-support-agent.vercel.app](https://ai-support-agent.vercel.app)
+**Live Demo** → [ai-support-agent-tau.vercel.app](https://ai-support-agent-tau.vercel.app)
 
 ---
 
@@ -63,7 +63,7 @@ A production-grade, multi-tenant AI customer support SaaS. Train an intelligent 
                                  │ Prisma
               ┌──────────────────▼──────────────────┐
               │     Neon PostgreSQL + pgvector        │
-              │   16 models · vector similarity      │
+              │   17 models · vector similarity      │
               │   search · multi-tenant by orgId     │
               └──────────────────────────────────────┘
 ```
@@ -91,19 +91,19 @@ A production-grade, multi-tenant AI customer support SaaS. Train an intelligent 
 
 ## Tech Stack
 
-| Layer          | Technology                                            |
-| -------------- | ----------------------------------------------------- |
-| **Framework**  | Next.js 16 (App Router) + React 19                    |
-| **Styling**    | Tailwind CSS v4 + Radix UI                            |
-| **Auth**       | NextAuth v5 (beta) — email verification + magic links |
-| **Database**   | Prisma 7 + Neon PostgreSQL (pgvector)                 |
-| **LLM**        | Vercel AI SDK + Groq (Llama 3.3 70B)                  |
-| **Embeddings** | Google Gemini (text-embedding-004)                    |
-| **Payments**   | Stripe — checkout + webhook                           |
-| **Email**      | Resend — verification + password reset                |
-| **UI**         | Lucide React + Recharts + shadcn/ui                   |
-| **Testing**    | Vitest (93 tests)                                     |
-| **CI/CD**      | GitHub Actions — lint + type-check + test + build     |
+| Layer          | Technology                                               |
+| -------------- | -------------------------------------------------------- |
+| **Framework**  | Next.js 16 (App Router) + React 19                       |
+| **Styling**    | Tailwind CSS v4 + Radix UI                               |
+| **Auth**       | NextAuth v5 (beta) — email/password + email verification |
+| **Database**   | Prisma 7 + Neon PostgreSQL (pgvector)                    |
+| **LLM**        | Vercel AI SDK + Groq (Llama 3.3 70B)                     |
+| **Embeddings** | Google Gemini (text-embedding-004)                       |
+| **Payments**   | Stripe — checkout + webhook                              |
+| **Email**      | Resend — verification + password reset                   |
+| **UI**         | Lucide React + Recharts + shadcn/ui                      |
+| **Testing**    | Vitest (78 tests)                                        |
+| **CI/CD**      | GitHub Actions — lint + type-check + test + build        |
 
 ---
 
@@ -125,10 +125,10 @@ src/
     email/               # Resend integration (verify, reset, invite)
   __tests__/             # Vitest unit + integration tests
 prisma/
-  schema.prisma          # 16 models: Organization, User, Document, Embedding,
-                         # ChatSession, ChatMessage, AgentSettings,
-                         # Product, Order, OrderItem, Ticket, TicketNote,
-                         # Invitation, Account, Session, VerificationToken
+  schema.prisma          # 17 models: Organization, User, UserOrganization,
+                         # Document, Embedding, ChatSession, ChatMessage,
+                         # AgentSettings, Product, Order, OrderItem, Ticket,
+                         # TicketNote, Invitation, Account, Session, VerificationToken
 ```
 
 ---
@@ -172,8 +172,7 @@ GROQ_API_KEY=                       # Groq LLM
 RESEND_API_KEY=                     # Email delivery
 STRIPE_SECRET_KEY=                  # Billing
 STRIPE_WEBHOOK_SECRET=
-NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY=
-STRIPE_PRO_PRICE_ID=
+NEXT_PUBLIC_STRIPE_PRICE_ID=
 ```
 
 ```bash
@@ -191,7 +190,7 @@ Open [http://localhost:3000](http://localhost:3000).
 ```bash
 pnpm dev           # Start dev server (Turbopack)
 pnpm build         # Production build
-pnpm test          # Run 93 Vitest tests
+pnpm test          # Run 78 Vitest tests
 pnpm test:watch    # Watch mode
 pnpm lint          # ESLint
 pnpm type-check    # TypeScript (no emit)
@@ -206,7 +205,7 @@ After registering, go to **Settings → Widget Integration** to get your embed c
 ```html
 <!-- Add to any website — replace with your API key -->
 <iframe
-  src="https://ai-support-agent.vercel.app/widget/sk_YOUR_API_KEY"
+  src="https://ai-support-agent-tau.vercel.app/widget/sk_YOUR_API_KEY"
   width="400"
   height="600"
   style="border: none; border-radius: 16px; box-shadow: 0 4px 24px rgba(0,0,0,0.12);"
