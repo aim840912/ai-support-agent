@@ -9,7 +9,7 @@ import { prisma } from "@/lib/db";
 export function createCheckInventoryTool(orgId: string) {
   return tool({
     description:
-      "Check the inventory level for a specific product. Returns stock quantity, warehouse location, and reorder status.",
+      "Check the inventory level for a specific product. Returns stock quantity, warehouse location, and reorder status. 查詢特定商品的庫存量、倉庫位置和補貨狀態。",
     inputSchema: z.object({
       productId: z
         .string()

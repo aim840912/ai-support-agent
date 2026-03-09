@@ -32,12 +32,12 @@ const MOCK_FAQ_RESULTS: SearchResult[] = [
 export function createSearchKnowledgeBaseTool(orgId: string) {
   return tool({
     description:
-      "Search the company knowledge base and FAQ documents for relevant information to answer customer questions. Use this as the first step before looking up order or inventory data.",
+      "Search the company knowledge base and FAQ documents for relevant information to answer customer questions. Use this as the first step before looking up order or inventory data. 搜尋公司知識庫和常見問題文件，用於回答客戶的一般性問題。",
     inputSchema: z.object({
       query: z
         .string()
         .describe(
-          "The search query derived from the customer's question. Be specific and use keywords."
+          "The search query derived from the customer's question. Use the SAME language as the customer — if the customer writes in Chinese, the query must be in Chinese. 使用與客戶相同的語言提取搜尋關鍵詞，客戶用中文則用中文搜尋。"
         ),
       limit: z
         .number()

@@ -9,7 +9,7 @@ import { prisma } from "@/lib/db";
 export function createGetOrderStatusTool(orgId: string) {
   return tool({
     description:
-      "Look up the status of a customer order by order number. Returns order details including status, tracking number, and estimated delivery date.",
+      "Look up the status of a customer order by order number. Returns order details including status, tracking number, and estimated delivery date. 透過訂單號查詢客戶訂單狀態，回傳狀態、追蹤號碼和預計送達日期。",
     inputSchema: z.object({
       orderId: z
         .string()

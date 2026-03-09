@@ -48,7 +48,7 @@ async function createTicketWithUniqueNumber(data: {
 export function createCreateTicketTool(orgId: string) {
   return tool({
     description:
-      "Create a support ticket when an issue cannot be resolved immediately. Use this when the customer's problem requires human review or escalation.",
+      "Create a support ticket when an issue cannot be resolved immediately. Use this when the customer's problem requires human review or escalation. 當問題無法立即解決時建立客服工單，用於需要人工審查或升級處理的情況。",
     inputSchema: z.object({
       subject: z.string().describe("Brief subject line for the ticket"),
       description: z
