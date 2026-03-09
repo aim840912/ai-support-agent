@@ -37,9 +37,14 @@ export default async function SettingsPage({
         where: { orgId },
         select: { welcomeMessage: true, systemPrompt: true, enabledTools: true },
       }),
-      prisma.user.findMany({
+      // Use UserOrganization as the source of truth for membership.
+      // User.orgId is a legacy field that points to the user's original org —
+      // it does NOT reflect memberships added via invitation to other orgs.
+      prisma.userOrganization.findMany({
         where: { orgId },
-        select: { id: true, name: true, email: true, role: true, createdAt: true },
+        include: {
+          user: { select: { id: true, name: true, email: true, createdAt: true } },
+        },
         orderBy: { createdAt: "asc" },
       }),
       prisma.invitation.findMany({
@@ -121,10 +126,10 @@ export default async function SettingsPage({
             <TabsContent value="team">
               <TeamMembers
                 members={members.map((m) => ({
-                  id: m.id,
-                  name: m.name,
-                  email: m.email,
-                  role: m.role,
+                  id: m.user.id,
+                  name: m.user.name,
+                  email: m.user.email,
+                  role: m.role, // Per-org role from UserOrganization (authoritative)
                   joinedAt: m.createdAt.toISOString(),
                 }))}
                 invitations={invitations.map((inv) => ({
