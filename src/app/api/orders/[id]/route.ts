@@ -106,8 +106,9 @@ export async function PATCH(request: NextRequest, context: { params: Promise<{ i
     }
 
     // Fetch updated record for response — updateMany does not return updated rows.
-    const order = await prisma.order.findUnique({
-      where: { id },
+    // Use findFirst with orgId to keep the read scoped to the same tenant.
+    const order = await prisma.order.findFirst({
+      where: { id, orgId },
       select: { id: true, status: true, trackingNumber: true, estimatedDelivery: true },
     });
 

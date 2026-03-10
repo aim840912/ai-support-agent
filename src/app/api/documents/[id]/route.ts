@@ -5,7 +5,7 @@ import { logError } from "@/lib/error-logger";
 
 export async function DELETE(_request: Request, context: { params: Promise<{ id: string }> }) {
   const session = await auth();
-  if (!session?.user) {
+  if (!session?.user?.orgId) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 

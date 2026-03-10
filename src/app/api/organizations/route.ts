@@ -4,6 +4,10 @@ import { z } from "zod";
 import { NextRequest, NextResponse } from "next/server";
 import { generateApiKey, hashApiKey } from "@/lib/api-key";
 import { logError } from "@/lib/error-logger";
+import { createRateLimiter, checkRateLimit, rateLimitResponse } from "@/lib/rate-limit";
+
+// 5 org creations per user per hour — prevents org-spam abuse
+const createOrgLimiter = createRateLimiter({ limit: 5, window: "1h" });
 
 const createOrgSchema = z.object({
   name: z.string().min(1).max(100),
@@ -57,6 +61,10 @@ export async function POST(request: NextRequest) {
   if (!session?.user?.id) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
+
+  // Rate limit by userId — prevents org-spam (e.g. bulk org creation via script)
+  const rl = await checkRateLimit(createOrgLimiter, `create-org:${session.user.id}`);
+  if (!rl.success) return rateLimitResponse(rl.reset);
 
   try {
     const body = await request.json();

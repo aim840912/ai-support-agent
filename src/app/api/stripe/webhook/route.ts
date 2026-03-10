@@ -16,7 +16,7 @@ export async function POST(request: Request) {
 
   const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET;
   if (!webhookSecret) {
-    return new Response("Webhook secret is not configured", { status: 500 });
+    return new Response("Internal server error", { status: 500 });
   }
   if (!signature) {
     return new Response("Missing stripe-signature header", { status: 400 });

@@ -3,6 +3,10 @@ import { prisma } from "@/lib/db";
 import { NextRequest } from "next/server";
 import { logError } from "@/lib/error-logger";
 import { isValidSource, type ValidSource } from "@/lib/constants";
+import { createRateLimiter, checkRateLimit, rateLimitResponse } from "@/lib/rate-limit";
+
+// 10 exports per org per 15 minutes — prevents data-scraping via repeated exports
+const exportLimiter = createRateLimiter({ limit: 10, window: "15m" });
 
 type ExportFormat = "csv" | "json";
 
@@ -20,6 +24,10 @@ export async function GET(request: NextRequest) {
   }
 
   const { orgId } = session.user;
+
+  // Rate limit by orgId — large exports are expensive; prevent rapid successive calls
+  const rl = await checkRateLimit(exportLimiter, `conversations-export:${orgId}`);
+  if (!rl.success) return rateLimitResponse(rl.reset);
 
   const rawFormat = request.nextUrl.searchParams.get("format") ?? "json";
   const format: ExportFormat = rawFormat === "csv" ? "csv" : "json";

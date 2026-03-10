@@ -40,8 +40,9 @@ export async function PATCH(request: NextRequest, context: { params: Promise<{ i
     }
 
     // Fetch updated record for response — updateMany does not return updated rows.
-    const product = await prisma.product.findUnique({
-      where: { id },
+    // Use findFirst with orgId to keep the read scoped to the same tenant.
+    const product = await prisma.product.findFirst({
+      where: { id, orgId },
       select: {
         id: true,
         name: true,
@@ -80,8 +81,11 @@ export async function DELETE(_request: NextRequest, context: { params: Promise<{
   const { id } = await context.params;
 
   try {
-    // Check for existing order references first (informational guard)
-    const referencedByOrders = await prisma.orderItem.count({ where: { productId: id } });
+    // Check for existing order references first (informational guard).
+    // Scope through the order relation to ensure we only count orders within this org.
+    const referencedByOrders = await prisma.orderItem.count({
+      where: { productId: id, order: { orgId } },
+    });
     if (referencedByOrders > 0) {
       return Response.json(
         { error: "Cannot delete a product that is referenced by existing orders" },

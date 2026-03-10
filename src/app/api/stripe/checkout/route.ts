@@ -2,6 +2,10 @@ import { auth } from "@/auth";
 import { prisma } from "@/lib/db";
 import { getStripeClient } from "@/lib/stripe";
 import { logError } from "@/lib/error-logger";
+import { createRateLimiter, checkRateLimit, rateLimitResponse } from "@/lib/rate-limit";
+
+// 5 checkout sessions per org per hour — prevents billing endpoint abuse
+const checkoutLimiter = createRateLimiter({ limit: 5, window: "1h" });
 
 export async function POST() {
   const session = await auth();
@@ -15,9 +19,13 @@ export async function POST() {
     return new Response("Insufficient permissions", { status: 403 });
   }
 
+  // Rate limit by orgId — prevents rapid retries / checkout session flooding
+  const rl = await checkRateLimit(checkoutLimiter, `stripe-checkout:${session.user.orgId}`);
+  if (!rl.success) return rateLimitResponse(rl.reset);
+
   const priceId = process.env.NEXT_PUBLIC_STRIPE_PRICE_ID;
   if (!priceId) {
-    return new Response("Stripe price ID is not configured", { status: 500 });
+    return new Response("Billing is currently unavailable", { status: 500 });
   }
 
   const { orgId, email } = session.user;

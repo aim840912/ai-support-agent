@@ -97,6 +97,7 @@ export const authConfig: NextAuthConfig = {
         "/api/forgot-password",
         "/api/reset-password",
         "/api/team/accept-invite",
+        "/api/stripe/webhook", // Stripe server-to-server: no session cookie
       ];
 
       const isPublicRoute = publicRoutes.includes(nextUrl.pathname);
