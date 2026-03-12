@@ -10,6 +10,12 @@
  *   import { isQuotaError, getSafeErrorMessage, safeStreamOnError } from "@/lib/api-error-handler";
  */
 
+import { APICallError, RetryError } from "ai";
+
+/**
+ * Keyword fallback for non-AI-SDK errors (e.g. Resend HTTP client).
+ * Only reached when neither APICallError nor RetryError matches.
+ */
 const QUOTA_KEYWORDS = [
   "429",
   "quota",
@@ -26,17 +32,25 @@ const QUOTA_KEYWORDS = [
 /**
  * Returns true when `error` looks like a provider quota / rate-limit error.
  *
- * Checks:
- *  1. Numeric `status` or `statusCode` property equal to 429.
- *  2. Error message containing quota-related keywords (case-insensitive).
+ * Three-layer detection (most precise first):
+ *  1. AI SDK APICallError  — typed statusCode check (Groq / Gemini)
+ *  2. AI SDK RetryError    — unwrap lastError and recurse (retry-exhausted path)
+ *  3. Keyword fallback     — message matching for non-AI-SDK clients (Resend)
  */
 export function isQuotaError(error: unknown): boolean {
   if (error == null) return false;
 
-  // Vercel AI SDK wraps provider errors with a `status` property
-  const asRecord = error as Record<string, unknown>;
-  if (asRecord.status === 429 || asRecord.statusCode === 429) return true;
+  // Layer 1: AI SDK APICallError — precise typed statusCode check
+  if (APICallError.isInstance(error)) {
+    return error.statusCode === 429;
+  }
 
+  // Layer 2: AI SDK RetryError — unwrap the last attempt and recurse
+  if (RetryError.isInstance(error)) {
+    return isQuotaError(error.lastError);
+  }
+
+  // Layer 3: Fallback for non-AI-SDK errors (e.g. Resend HTTP client)
   if (error instanceof Error) {
     const msg = error.message.toLowerCase();
     return QUOTA_KEYWORDS.some((kw) => msg.includes(kw));
