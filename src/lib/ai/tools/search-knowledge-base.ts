@@ -1,6 +1,7 @@
 import { tool } from "ai";
 import { z } from "zod";
 import { isMockMode } from "@/lib/mock-mode";
+import { logError } from "@/lib/error-logger";
 import type { SearchResult } from "@/lib/rag/vector-search";
 
 // Mock FAQ results for demo mode
@@ -58,14 +59,23 @@ export function createSearchKnowledgeBaseTool(orgId: string) {
       }
 
       // Real mode: dynamic import to avoid loading pg in edge/tests
-      const { vectorSearch } = await import("@/lib/rag/vector-search");
-      const rawResults = await vectorSearch(query, orgId, limit);
-      const results = rawResults.map((r) => ({
-        content: r.chunkText,
-        source: r.filename,
-        relevanceScore: r.similarity,
-      }));
-      return { results, totalFound: results.length };
+      try {
+        const { vectorSearch } = await import("@/lib/rag/vector-search");
+        const rawResults = await vectorSearch(query, orgId, limit);
+        const results = rawResults.map((r) => ({
+          content: r.chunkText,
+          source: r.filename,
+          relevanceScore: r.similarity,
+        }));
+        return { results, totalFound: results.length };
+      } catch (error) {
+        logError("[searchKnowledgeBase]", error);
+        return {
+          results: [],
+          totalFound: 0,
+          error: "Knowledge base search is temporarily unavailable.",
+        };
+      }
     },
   });
 }

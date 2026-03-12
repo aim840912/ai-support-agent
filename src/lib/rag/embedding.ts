@@ -1,6 +1,16 @@
 import { embedMany } from "ai";
 import { google } from "@ai-sdk/google";
 import { isMockMode } from "@/lib/mock-mode";
+import { logError } from "@/lib/error-logger";
+import { getSafeErrorMessage } from "@/lib/api-error-handler";
+
+/** Thrown when the Gemini embedding API fails (e.g. quota exhausted). */
+export class EmbeddingError extends Error {
+  override name = "EmbeddingError";
+  constructor(message: string, options?: ErrorOptions) {
+    super(message, options);
+  }
+}
 
 const BATCH_SIZE = 20;
 const EMBEDDING_MODEL = "gemini-embedding-001";
@@ -23,17 +33,22 @@ export async function embedTexts(texts: string[]): Promise<number[][]> {
 
   const results: number[][] = [];
 
-  // Process in batches of BATCH_SIZE
-  for (let i = 0; i < texts.length; i += BATCH_SIZE) {
-    const batch = texts.slice(i, i + BATCH_SIZE);
-    const { embeddings } = await embedMany({
-      model,
-      values: batch,
-      providerOptions: {
-        google: { outputDimensionality: OUTPUT_DIMENSIONS },
-      },
-    });
-    results.push(...embeddings);
+  try {
+    // Process in batches of BATCH_SIZE
+    for (let i = 0; i < texts.length; i += BATCH_SIZE) {
+      const batch = texts.slice(i, i + BATCH_SIZE);
+      const { embeddings } = await embedMany({
+        model,
+        values: batch,
+        providerOptions: {
+          google: { outputDimensionality: OUTPUT_DIMENSIONS },
+        },
+      });
+      results.push(...embeddings);
+    }
+  } catch (error) {
+    logError("[embedTexts]", error);
+    throw new EmbeddingError(getSafeErrorMessage(error), { cause: error });
   }
 
   return results;

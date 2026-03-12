@@ -1,6 +1,7 @@
 import { prisma } from "@/lib/db";
 import { splitText } from "./text-splitter";
 import { embedTexts } from "./embedding";
+import { logError } from "@/lib/error-logger";
 
 /**
  * Full RAG pipeline: extract text → split → embed → store vectors.
@@ -68,6 +69,7 @@ export async function processDocument(
       },
     });
   } catch (err) {
+    logError("[processDocument]", err);
     await prisma.document.update({
       where: { id: documentId },
       data: { status: "error" },

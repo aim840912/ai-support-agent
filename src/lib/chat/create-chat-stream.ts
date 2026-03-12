@@ -4,6 +4,7 @@ import { createAgentUIStreamResponse } from "ai";
 import type { UIMessage } from "ai";
 import { checkConversationLimit, checkMessageLimit } from "@/lib/plan/check-plan-limit";
 import { logError } from "@/lib/error-logger";
+import { isQuotaError, getSafeErrorMessage, safeStreamOnError } from "@/lib/api-error-handler";
 
 type CreateChatStreamOptions = {
   orgId: string;
@@ -89,56 +90,63 @@ export async function createChatStream({
 
   const agent = createSupportAgent(orgId, plan, customSystemPrompt);
 
-  return createAgentUIStreamResponse({
-    agent,
-    uiMessages: messages,
-    onFinish: async ({ responseMessage }) => {
-      if (!resolvedSessionId) return;
+  try {
+    return createAgentUIStreamResponse({
+      agent,
+      uiMessages: messages,
+      onError: safeStreamOnError,
+      onFinish: async ({ responseMessage }) => {
+        if (!resolvedSessionId) return;
 
-      try {
-        const lastUserMessage = messages[messages.length - 1];
+        try {
+          const lastUserMessage = messages[messages.length - 1];
 
-        const userText =
-          lastUserMessage?.parts
-            ?.filter((p): p is Extract<typeof p, { type: "text" }> => p.type === "text")
-            .map((p) => p.text)
-            .join("") ?? "";
+          const userText =
+            lastUserMessage?.parts
+              ?.filter((p): p is Extract<typeof p, { type: "text" }> => p.type === "text")
+              .map((p) => p.text)
+              .join("") ?? "";
 
-        const assistantText =
-          responseMessage?.parts
-            ?.filter((p): p is Extract<typeof p, { type: "text" }> => p.type === "text")
-            .map((p) => p.text)
-            .join("") ?? "";
+          const assistantText =
+            responseMessage?.parts
+              ?.filter((p): p is Extract<typeof p, { type: "text" }> => p.type === "text")
+              .map((p) => p.text)
+              .join("") ?? "";
 
-        const toolCalls =
-          responseMessage?.parts
-            ?.filter((p) => p.type.startsWith("tool-") || p.type === "dynamic-tool")
-            .map((p) => {
-              const tp = p as {
-                type: string;
-                toolName?: string;
-                toolCallId: string;
-              };
-              return {
-                toolName: tp.toolName ?? tp.type.replace(/^tool-/, ""),
-                toolCallId: tp.toolCallId,
-              };
-            }) ?? [];
+          const toolCalls =
+            responseMessage?.parts
+              ?.filter((p) => p.type.startsWith("tool-") || p.type === "dynamic-tool")
+              .map((p) => {
+                const tp = p as {
+                  type: string;
+                  toolName?: string;
+                  toolCallId: string;
+                };
+                return {
+                  toolName: tp.toolName ?? tp.type.replace(/^tool-/, ""),
+                  toolCallId: tp.toolCallId,
+                };
+              }) ?? [];
 
-        await prisma.chatMessage.createMany({
-          data: [
-            { sessionId: resolvedSessionId, role: "user", content: userText },
-            {
-              sessionId: resolvedSessionId,
-              role: "assistant",
-              content: assistantText,
-              toolCalls: toolCalls.length > 0 ? toolCalls : undefined,
-            },
-          ],
-        });
-      } catch (e) {
-        logError("[createChatStream] Failed to persist messages:", e);
-      }
-    },
-  });
+          await prisma.chatMessage.createMany({
+            data: [
+              { sessionId: resolvedSessionId, role: "user", content: userText },
+              {
+                sessionId: resolvedSessionId,
+                role: "assistant",
+                content: assistantText,
+                toolCalls: toolCalls.length > 0 ? toolCalls : undefined,
+              },
+            ],
+          });
+        } catch (e) {
+          logError("[createChatStream] Failed to persist messages:", e);
+        }
+      },
+    });
+  } catch (error) {
+    logError("[createChatStream]", error);
+    const message = getSafeErrorMessage(error);
+    return Response.json({ error: message }, { status: isQuotaError(error) ? 429 : 500 });
+  }
 }
