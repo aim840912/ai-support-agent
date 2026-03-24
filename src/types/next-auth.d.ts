@@ -6,12 +6,14 @@ declare module "next-auth" {
       id: string;
       orgId: string;
       role: string;
+      isDemo?: boolean;
     } & DefaultSession["user"];
   }
 
   interface User {
     orgId?: string;
     role?: string;
+    isDemo?: boolean;
   }
 }
 
@@ -22,5 +24,6 @@ declare module "next-auth/jwt" {
     role?: string;
     rememberMe?: boolean;
     loginAt?: number; // Unix timestamp (seconds)
+    isDemo?: boolean;
   }
 }

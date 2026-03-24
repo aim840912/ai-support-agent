@@ -125,6 +125,7 @@ export const authConfig: NextAuthConfig = {
         token.role = (user as { role?: string }).role; // preliminary — overwritten below from UserOrganization
         token.rememberMe = (user as { rememberMe?: boolean }).rememberMe ?? true; // OAuth defaults to remembered
         token.loginAt = now;
+        token.isDemo = (user as { isDemo?: boolean }).isDemo ?? false;
 
         // Fetch passwordChangedAt + authoritative role from UserOrganization.
         // UserOrganization.role is the source of truth for role-per-org;
@@ -233,6 +234,7 @@ export const authConfig: NextAuthConfig = {
         session.user.id = token.id as string;
         session.user.orgId = token.orgId as string;
         session.user.role = token.role as string;
+        session.user.isDemo = (token.isDemo as boolean) ?? false;
       }
       return session;
     },
@@ -250,6 +252,27 @@ export const authConfig: NextAuthConfig = {
     }),
     Credentials({
       async authorize(credentials, request) {
+        // Demo shortcut — bypasses password validation and email verification.
+        // isDemo flag is only meaningful here on the server; it cannot grant access
+        // to any account other than the seeded demo user.
+        if (credentials?.isDemo === "true") {
+          const { prisma } = await import("@/lib/db");
+          const { DEMO_EMAIL } = await import("@/lib/demo");
+          const user = await prisma.user.findUnique({
+            where: { email: DEMO_EMAIL },
+            select: {
+              id: true,
+              email: true,
+              name: true,
+              orgId: true,
+              activeOrgId: true,
+              role: true,
+            },
+          });
+          if (!user) return null;
+          return { ...user, rememberMe: false, isDemo: true };
+        }
+
         const parsed = loginSchema.safeParse(credentials);
         if (!parsed.success) return null;
 

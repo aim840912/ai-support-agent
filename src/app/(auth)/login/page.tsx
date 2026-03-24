@@ -1,11 +1,12 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { signIn } from "next-auth/react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { Suspense } from "react";
 import { OAuthButtons } from "@/components/auth/oauth-buttons";
+import { demoSignIn } from "@/actions/demo";
 
 function LoginForm() {
   const router = useRouter();
@@ -19,6 +20,21 @@ function LoginForm() {
   const isVerified = searchParams.get("verified") === "1";
   const isReset = searchParams.get("reset") === "1";
   const authError = searchParams.get("error");
+  const isDemoMode = searchParams.get("demo") === "1";
+
+  // Auto-trigger demo login when redirected from the "Try Demo" button.
+  // Using next-auth/react's signIn() here (HTTP path) avoids the Server Action
+  // module-isolation issue where PrismaNeon WebSocket connections fail.
+  useEffect(() => {
+    if (isDemoMode) {
+      signIn("credentials", {
+        email: "demo@ai-support-agent.local",
+        isDemo: "true",
+        callbackUrl: "/overview",
+        redirect: true,
+      });
+    }
+  }, [isDemoMode]);
 
   const errorMessages: Record<string, string> = {
     OAuthAccountNotLinked:
@@ -47,6 +63,15 @@ function LoginForm() {
     } else {
       router.push("/overview");
     }
+  }
+
+  // Show a loading state while demo auto-login is in progress
+  if (isDemoMode) {
+    return (
+      <div className="flex items-center justify-center py-8 text-sm text-muted-foreground">
+        Loading demo…
+      </div>
+    );
   }
 
   return (
@@ -144,6 +169,21 @@ function LoginForm() {
           className="w-full rounded-lg bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/80 disabled:opacity-50"
         >
           {loading ? "Signing in..." : "Sign in"}
+        </button>
+      </form>
+
+      <div className="my-4 flex items-center gap-3">
+        <div className="h-px flex-1 bg-border" />
+        <span className="text-xs text-muted-foreground">or</span>
+        <div className="h-px flex-1 bg-border" />
+      </div>
+
+      <form action={demoSignIn}>
+        <button
+          type="submit"
+          className="w-full rounded-lg border border-border px-4 py-2 text-sm font-medium text-foreground transition-colors hover:bg-accent"
+        >
+          Try Demo Dashboard
         </button>
       </form>
 

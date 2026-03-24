@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/db";
 import { AppSidebar } from "@/components/dashboard/app-sidebar";
@@ -28,6 +29,19 @@ export default async function DashboardLayout({ children }: { children: React.Re
           <SidebarTrigger className="-ml-1" aria-label="Toggle sidebar" />
           <ThemeToggle />
         </header>
+        {session?.user?.isDemo && (
+          <div
+            className="shrink-0 px-4 py-2.5 text-sm text-center bg-amber-50 dark:bg-amber-900/20 border-b border-amber-200 dark:border-amber-800 text-amber-800 dark:text-amber-300"
+            role="status"
+            aria-live="polite"
+          >
+            Demo mode — read-only access.{" "}
+            <Link href="/register" className="font-medium underline hover:no-underline">
+              Create a free account
+            </Link>{" "}
+            to build your own.
+          </div>
+        )}
         <main className="flex-1 flex flex-col p-6 min-h-0 min-w-0">{children}</main>
       </SidebarInset>
     </SidebarProvider>

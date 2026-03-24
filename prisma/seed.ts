@@ -12,6 +12,9 @@ import { PrismaClient } from "../src/generated/prisma";
 import { PrismaNeon } from "@prisma/adapter-neon";
 import { readFileSync } from "fs";
 import { resolve } from "path";
+import { generateApiKey, hashApiKey } from "../src/lib/api-key";
+
+const DEMO_EMAIL = "demo@ai-support-agent.local";
 
 // Load .env.local so seed can access DATABASE_URL in local development
 try {
@@ -495,23 +498,64 @@ const SESSION_PLAN: SessionPlanEntry[] = [
 async function main() {
   console.log("Seeding database...");
 
-  // Find the most recently registered org to seed data for.
-  // In a fresh install there is only one org. When multiple orgs exist (e.g.
-  // a developer account + a demo account), this targets the most recently
-  // created org — which is typically the dedicated demo/portfolio account.
-  const org = await prisma.organization.findFirst({
-    orderBy: { createdAt: "desc" },
+  // Find or create a dedicated demo org + user.
+  // Using a fixed email ensures idempotency — re-running seed never duplicates data.
+  let demoUser = await prisma.user.findUnique({ where: { email: DEMO_EMAIL } });
+
+  if (!demoUser) {
+    console.log(`Creating demo user (${DEMO_EMAIL})...`);
+    const rawApiKey = generateApiKey();
+
+    const result = await prisma.$transaction(async (tx) => {
+      const org = await tx.organization.create({
+        data: {
+          name: "TechGear Store",
+          apiKey: rawApiKey,
+          apiKeyHash: hashApiKey(rawApiKey),
+        },
+      });
+      const user = await tx.user.create({
+        data: {
+          email: DEMO_EMAIL,
+          name: "Demo User",
+          // No password — auth bypass in auth.config.ts authorize()
+          emailVerified: new Date(),
+          orgId: org.id,
+          activeOrgId: org.id,
+          role: "owner",
+        },
+      });
+      await tx.userOrganization.create({
+        data: { userId: user.id, orgId: org.id, role: "owner" },
+      });
+      return { org, user };
+    });
+
+    demoUser = result.user;
+
+    console.log(`\n${"─".repeat(60)}`);
+    console.log(`  Demo user created: ${DEMO_EMAIL}`);
+    console.log(`  Demo API key:      ${rawApiKey}`);
+    console.log(`\n  To enable the landing page widget demo, add to .env.local:`);
+    console.log(`  NEXT_PUBLIC_DEMO_API_KEY=${rawApiKey}`);
+    console.log(`${"─".repeat(60)}\n`);
+  } else {
+    console.log(`Demo user already exists (${DEMO_EMAIL}) — skipping user creation`);
+  }
+
+  const org = await prisma.organization.findUnique({
+    where: { id: demoUser.orgId! },
   });
 
   if (!org) {
-    console.warn("No organization found. Register an account first, then re-run seed.");
+    console.error("Demo org not found. This should not happen.");
     return;
   }
 
   console.log(`Seeding data for org: ${org.name} (${org.id})`);
 
-  // Find first user (used as authorId for TicketNotes and dashboard session userId)
-  const firstUser = await prisma.user.findFirst({ where: { orgId: org.id } });
+  // Use demo user as authorId for TicketNotes and dashboard session userId
+  const firstUser = demoUser;
 
   // ── Upgrade org to pro plan ──────────────────────────────────────────────
   await prisma.organization.update({

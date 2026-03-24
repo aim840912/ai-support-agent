@@ -3,6 +3,7 @@ import { prisma } from "@/lib/db";
 import { z } from "zod";
 import { NextRequest } from "next/server";
 import { logError } from "@/lib/error-logger";
+import { isDemoUser } from "@/lib/demo";
 
 const ASSIGNABLE_ROLES = ["admin", "member"] as const;
 
@@ -73,6 +74,10 @@ export async function DELETE(_request: NextRequest, context: { params: Promise<{
 
   const { orgId, id: currentUserId } = session.user;
   const currentRole = session.user.role as string;
+
+  if (isDemoUser(session.user.email)) {
+    return Response.json({ error: "Demo account cannot delete data" }, { status: 403 });
+  }
 
   const { id: targetUserId } = await context.params;
 

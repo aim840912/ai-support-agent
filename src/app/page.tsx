@@ -13,6 +13,7 @@ import {
 import { HowItWorks } from "@/components/landing/how-it-works";
 import { Pricing } from "@/components/landing/pricing";
 import { LiveDemo } from "@/components/landing/live-demo";
+import { demoSignIn } from "@/actions/demo";
 
 const features = [
   {
@@ -118,12 +119,15 @@ export default function Home() {
               Get Started Free
               <ArrowRight className="h-4 w-4" aria-hidden="true" />
             </Link>
-            <Link
-              href="/login"
-              className="flex w-full items-center justify-center gap-2 rounded-lg border border-border px-6 py-2.5 text-sm font-medium text-foreground transition-colors hover:border-primary/30 hover:bg-accent sm:w-auto"
-            >
-              Sign In
-            </Link>
+            <form action={demoSignIn} className="w-full sm:w-auto">
+              <button
+                type="submit"
+                className="flex w-full items-center justify-center gap-2 rounded-lg border border-border px-6 py-2.5 text-sm font-medium text-foreground transition-colors hover:border-primary/30 hover:bg-accent"
+              >
+                Try Demo
+                <ArrowRight className="h-4 w-4" aria-hidden="true" />
+              </button>
+            </form>
           </div>
 
           {/* Social proof strip */}

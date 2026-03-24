@@ -3,6 +3,7 @@ import { prisma } from "@/lib/db";
 import { z } from "zod";
 import { NextRequest } from "next/server";
 import { logError } from "@/lib/error-logger";
+import { isDemoUser } from "@/lib/demo";
 
 const updateSchema = z.object({
   name: z.string().min(1).max(200).optional(),
@@ -75,6 +76,10 @@ export async function DELETE(_request: NextRequest, context: { params: Promise<{
   const session = await auth();
   if (!session?.user?.orgId) {
     return new Response("Unauthorized", { status: 401 });
+  }
+
+  if (isDemoUser(session.user.email)) {
+    return Response.json({ error: "Demo account cannot delete data" }, { status: 403 });
   }
 
   const { orgId } = session.user;
