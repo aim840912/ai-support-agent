@@ -1,5 +1,6 @@
 import { prisma } from "@/lib/db";
 import { createSupportAgent } from "@/lib/ai/agent";
+import { classifyComplexity } from "@/lib/ai/model-router";
 import { createAgentUIStreamResponse } from "ai";
 import type { UIMessage } from "ai";
 import { checkConversationLimit, checkMessageLimit } from "@/lib/plan/check-plan-limit";
@@ -88,7 +89,15 @@ export async function createChatStream({
     }
   }
 
-  const agent = createSupportAgent(orgId, plan, customSystemPrompt);
+  // Model-routing experiment: classify complexity and route the model tier.
+  const decision = classifyComplexity(messages);
+  if (process.env.NODE_ENV !== "production") {
+    console.log(
+      `[model-router] tier=${decision.tier} score=${decision.score} reasons=[${decision.reasons.join(",")}] source=${source}`
+    );
+  }
+
+  const agent = createSupportAgent(orgId, plan, customSystemPrompt, decision.tier);
 
   try {
     return createAgentUIStreamResponse({

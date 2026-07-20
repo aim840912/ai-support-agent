@@ -1,7 +1,8 @@
 import { ToolLoopAgent, stepCountIs, simulateReadableStream } from "ai";
 import { MockLanguageModelV3 } from "ai/test";
-import { createGroq } from "@ai-sdk/groq";
+import { createOpenRouter } from "@openrouter/ai-sdk-provider";
 import { isLlmMockMode } from "@/lib/mock-mode";
+import { MODEL_SLUGS, type ComplexityTier } from "./model-router";
 import {
   createGetOrderStatusTool,
   createCheckInventoryTool,
@@ -12,18 +13,19 @@ import { buildSystemPrompt } from "./prompts";
 import { getPlanLimits } from "@/lib/plan/limits";
 
 /**
- * Returns the language model to use.
+ * Returns the language model for the given complexity tier.
  *
- * THIS IS THE ONLY PLACE THAT NEEDS TO CHANGE when adding a real API key.
+ * THIS IS THE ONLY PLACE THAT NEEDS TO CHANGE when swapping providers/models.
  *
- * To switch to production:
- * 1. pnpm add @ai-sdk/groq
- * 2. Replace the mock branch with:
- *    import { createGroq } from '@ai-sdk/groq'
- *    return createGroq()('llama-3.1-70b-versatile')
- * 3. Set GROQ_API_KEY in .env.local
+ * Model-routing experiment (this branch):
+ * - "simple"  → GLM via OpenRouter, with server-side fallback to Claude
+ *               (OpenRouter `models` array — no app-level try/catch).
+ * - "complex" → Claude via OpenRouter.
+ * - Mock mode (no valid OPENROUTER_API_KEY) ignores the tier entirely.
+ *
+ * Slugs live in MODEL_SLUGS (model-router.ts).
  */
-function getModel() {
+function getModel(tier: ComplexityTier = "simple") {
   if (isLlmMockMode()) {
     const demoText =
       "[Demo Mode] I'm a mock AI agent. In production, I would call a real LLM to answer your question. For now, I can demonstrate the tool-calling pipeline — try asking about order ORD-001 or product PROD-003!";
@@ -62,7 +64,17 @@ function getModel() {
     });
   }
 
-  return createGroq()("llama-3.3-70b-versatile");
+  const openrouter = createOpenRouter({ apiKey: process.env.OPENROUTER_API_KEY });
+
+  if (tier === "complex") {
+    return openrouter.chat(MODEL_SLUGS.complex);
+  }
+
+  // Simple tier: GLM primary; OpenRouter falls back server-side to Claude
+  // if GLM is unavailable/rate-limited at request-routing time.
+  return openrouter.chat(MODEL_SLUGS.simple, {
+    models: [MODEL_SLUGS.fallback],
+  });
 }
 
 /**
@@ -74,12 +86,15 @@ function getModel() {
  *                             between base behaviour and security rules.
  *                             Security rules always come last and cannot be
  *                             overridden — see buildSystemPrompt() in prompts.ts.
+ * @param modelTier          - Complexity tier from classifyComplexity();
+ *                             routes "simple" → GLM, "complex" → Claude.
  */
 // Return type intentionally inferred — ToolLoopAgent<never, {tools}, never> is caller-dependent
 export function createSupportAgent(
   orgId: string,
   plan = "free",
-  customSystemPrompt?: string | null
+  customSystemPrompt?: string | null,
+  modelTier: ComplexityTier = "simple"
 ) {
   const limits = getPlanLimits(plan);
   const allowed = new Set(limits.enabledTools);
@@ -97,9 +112,16 @@ export function createSupportAgent(
   ) as typeof allTools;
 
   return new ToolLoopAgent({
-    model: getModel(),
+    model: getModel(modelTier),
     instructions: buildSystemPrompt(customSystemPrompt),
     tools,
     stopWhen: stepCountIs(10),
+    // Dev-only observability: log which model actually served each step
+    // (confirms whether the OpenRouter server-side fallback kicked in).
+    onStepFinish: (step) => {
+      if (process.env.NODE_ENV !== "production") {
+        console.log(`[model-router] tier=${modelTier} served-by=${step.response?.modelId}`);
+      }
+    },
   });
 }

@@ -69,7 +69,7 @@ export function ChatInterface({
           <span>
             <strong>Demo mode</strong> — Running with a mock LLM. Add{" "}
             <code className="font-mono bg-amber-100 dark:bg-amber-900 px-1 rounded">
-              GROQ_API_KEY
+              OPENROUTER_API_KEY
             </code>{" "}
             to enable a real AI model.
           </span>
