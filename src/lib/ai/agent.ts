@@ -116,6 +116,10 @@ export function createSupportAgent(
     instructions: buildSystemPrompt(customSystemPrompt),
     tools,
     stopWhen: stepCountIs(10),
+    // Support replies are short; also caps OpenRouter's per-request credit
+    // pre-hold (without this, it pre-holds the model's max output — 64K tokens —
+    // and small-credit accounts get a 402 before any token is generated).
+    maxOutputTokens: 1024,
     // Dev-only observability: log which model actually served each step
     // (confirms whether the OpenRouter server-side fallback kicked in).
     onStepFinish: (step) => {
