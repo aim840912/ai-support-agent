@@ -80,7 +80,7 @@ describe("checkConversationLimit", () => {
 
   it("allows conversations on free plan when under monthly limit", async () => {
     mockPlan("free");
-    mockSessionCount.mockResolvedValue(30); // limit is 50
+    mockSessionCount.mockResolvedValue(5); // limit is 10
 
     const result = await checkConversationLimit("org-1");
     expect(result.allowed).toBe(true);
@@ -88,7 +88,7 @@ describe("checkConversationLimit", () => {
 
   it("blocks conversations on free plan when at monthly limit", async () => {
     mockPlan("free");
-    mockSessionCount.mockResolvedValue(50);
+    mockSessionCount.mockResolvedValue(10);
 
     const result = await checkConversationLimit("org-1");
     expect(result.allowed).toBe(false);
@@ -104,7 +104,7 @@ describe("checkConversationLimit", () => {
   });
 
   it("skips extra DB call when plan is pre-fetched", async () => {
-    mockSessionCount.mockResolvedValue(10);
+    mockSessionCount.mockResolvedValue(3);
 
     await checkConversationLimit("org-1", "free");
 

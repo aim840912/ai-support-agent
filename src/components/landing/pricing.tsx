@@ -9,8 +9,8 @@ type PricingFeature = {
 
 const features: PricingFeature[] = [
   { label: "Knowledge base documents", free: "5", pro: "100" },
-  { label: "Conversations / month", free: "50", pro: "Unlimited" },
-  { label: "Messages / conversation", free: "20", pro: "Unlimited" },
+  { label: "Conversations / month", free: "10", pro: "Unlimited" },
+  { label: "Messages / conversation", free: "10", pro: "Unlimited" },
   { label: "Products in inventory", free: "10", pro: "1,000" },
   { label: "Team members", free: "3", pro: "20" },
   { label: "AI tools: KB search", free: true, pro: true },
