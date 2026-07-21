@@ -36,6 +36,19 @@ export const MODEL_SLUGS = {
   fallback: "anthropic/claude-sonnet-4.5",
 } as const;
 
+/**
+ * Cost guard: Claude auto-routing is DISABLED until the user-pays feature
+ * ships. Every tier resolves to the cheap model with NO fallback, so no
+ * request can spend Claude credits. classifyComplexity() still runs and
+ * logs the tier — re-enabling is a one-function change here.
+ */
+export function resolveModelChoice(_tier: ComplexityTier): {
+  primary: string;
+  fallbacks: string[];
+} {
+  return { primary: MODEL_SLUGS.simple, fallbacks: [] };
+}
+
 /** Keyword rules — weight 2 fires the complex tier on its own. */
 export const COMPLEX_KEYWORDS: { pattern: RegExp; reason: string; weight: number }[] = [
   { pattern: /退款|退貨|refund|return my/i, reason: "refund", weight: 2 },

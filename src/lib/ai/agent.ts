@@ -2,7 +2,7 @@ import { ToolLoopAgent, stepCountIs, simulateReadableStream } from "ai";
 import { MockLanguageModelV3 } from "ai/test";
 import { createOpenRouter } from "@openrouter/ai-sdk-provider";
 import { isLlmMockMode } from "@/lib/mock-mode";
-import { MODEL_SLUGS, type ComplexityTier } from "./model-router";
+import { resolveModelChoice, type ComplexityTier } from "./model-router";
 import {
   createGetOrderStatusTool,
   createCheckInventoryTool,
@@ -17,13 +17,14 @@ import { getPlanLimits } from "@/lib/plan/limits";
  *
  * THIS IS THE ONLY PLACE THAT NEEDS TO CHANGE when swapping providers/models.
  *
- * Model-routing experiment (this branch):
- * - "simple"  → GLM via OpenRouter, with server-side fallback to Claude
- *               (OpenRouter `models` array — no app-level try/catch).
- * - "complex" → Claude via OpenRouter.
- * - Mock mode (no valid OPENROUTER_API_KEY) ignores the tier entirely.
+ * COST GUARD (current state): Claude auto-routing is disabled until the
+ * user-pays feature ships. resolveModelChoice() (model-router.ts) maps every
+ * tier to the cheap model with no fallback — no request can spend Claude
+ * credits. classifyComplexity() still runs upstream and the tier is logged
+ * in onStepFinish, so re-enabling later is a one-function change in
+ * resolveModelChoice().
  *
- * Slugs live in MODEL_SLUGS (model-router.ts).
+ * Mock mode (no valid OPENROUTER_API_KEY) ignores the tier entirely.
  */
 function getModel(tier: ComplexityTier = "simple") {
   if (isLlmMockMode()) {
@@ -66,15 +67,10 @@ function getModel(tier: ComplexityTier = "simple") {
 
   const openrouter = createOpenRouter({ apiKey: process.env.OPENROUTER_API_KEY });
 
-  if (tier === "complex") {
-    return openrouter.chat(MODEL_SLUGS.complex);
-  }
-
-  // Simple tier: GLM primary; OpenRouter falls back server-side to Claude
-  // if GLM is unavailable/rate-limited at request-routing time.
-  return openrouter.chat(MODEL_SLUGS.simple, {
-    models: [MODEL_SLUGS.fallback],
-  });
+  const choice = resolveModelChoice(tier);
+  return choice.fallbacks.length > 0
+    ? openrouter.chat(choice.primary, { models: choice.fallbacks })
+    : openrouter.chat(choice.primary);
 }
 
 /**

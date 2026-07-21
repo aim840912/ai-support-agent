@@ -1,6 +1,11 @@
 import { describe, it, expect } from "vitest";
 import type { UIMessage } from "ai";
-import { classifyComplexity, COMPLEX_THRESHOLD, MODEL_SLUGS } from "@/lib/ai/model-router";
+import {
+  classifyComplexity,
+  COMPLEX_THRESHOLD,
+  MODEL_SLUGS,
+  resolveModelChoice,
+} from "@/lib/ai/model-router";
 
 /** Builds a UIMessage list of alternating user/assistant turns from user texts. */
 function makeMessages(userTexts: string[]): UIMessage[] {
@@ -129,4 +134,16 @@ describe("MODEL_SLUGS", () => {
   it("keeps simple and complex tiers on different models", () => {
     expect(MODEL_SLUGS.simple).not.toBe(MODEL_SLUGS.complex);
   });
+});
+
+describe("resolveModelChoice (cost guard)", () => {
+  it.each(["simple", "complex"] as const)(
+    "%s tier resolves to the cheap model with no fallbacks",
+    (tier) => {
+      const choice = resolveModelChoice(tier);
+      expect(choice.primary).toBe(MODEL_SLUGS.simple);
+      expect(choice.primary).not.toBe(MODEL_SLUGS.complex); // never Claude
+      expect(choice.fallbacks).toEqual([]);
+    }
+  );
 });
