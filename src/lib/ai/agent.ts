@@ -20,7 +20,7 @@ import { getPlanLimits } from "@/lib/plan/limits";
  * 1. pnpm add @ai-sdk/groq
  * 2. Replace the mock branch with:
  *    import { createGroq } from '@ai-sdk/groq'
- *    return createGroq()('llama-3.1-70b-versatile')
+ *    return createGroq()('openai/gpt-oss-120b')
  * 3. Set GROQ_API_KEY in .env.local
  */
 function getModel() {
@@ -62,7 +62,10 @@ function getModel() {
     });
   }
 
-  return createGroq()("llama-3.3-70b-versatile");
+  // llama-3.3-70b-versatile was decommissioned by Groq (404 model_not_found),
+  // which surfaced only as a generic stream error. gpt-oss-120b is available
+  // on the free tier; it is a reasoning model, so do not set a low output cap.
+  return createGroq()("openai/gpt-oss-120b");
 }
 
 /**
