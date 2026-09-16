@@ -12,6 +12,8 @@
 
 import { APICallError, RetryError } from "ai";
 
+import { logError } from "@/lib/error-logger";
+
 /**
  * Keyword fallback for non-AI-SDK errors (e.g. Resend HTTP client).
  * Only reached when neither APICallError nor RetryError matches.
@@ -79,7 +81,12 @@ export function getSafeErrorMessage(error: unknown): string {
  * that string to be sent as the final stream message instead of the raw error.
  *
  *   createAgentUIStreamResponse({ ..., onError: safeStreamOnError })
+ *
+ * Logs before rewriting: the string returned here replaces the provider error
+ * entirely, so without this call a provider failure (404, auth error, quota)
+ * leaves no trace in the server logs at all.
  */
 export function safeStreamOnError(error: unknown): string {
+  logError("[AIStream]", error);
   return getSafeErrorMessage(error);
 }
