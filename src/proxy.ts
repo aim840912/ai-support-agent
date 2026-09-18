@@ -12,10 +12,13 @@ export const config = {
      * - _next/image   (image optimization)
      * - favicon.ico
      * - widget/embed.js (publicly embeddable widget script)
+     * - .well-known/*  (browser/agent probes, e.g. Chrome DevTools'
+     *                   appspecific/com.chrome.devtools.json — redirecting
+     *                   these to /login makes DevTools retry in a loop)
      * - public assets (png, jpg, svg, etc.)
      *
      * Auth decisions (public vs protected) are made in authConfig.authorized callback.
      */
-    "/((?!_next/static|_next/image|favicon\\.ico|widget/embed\\.js|.*\\.(?:png|jpg|jpeg|gif|svg|ico|webp)).*)",
+    "/((?!_next/static|_next/image|favicon\\.ico|widget/embed\\.js|\\.well-known|.*\\.(?:png|jpg|jpeg|gif|svg|ico|webp)).*)",
   ],
 };

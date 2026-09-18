@@ -24,8 +24,8 @@ export type PlanLimits = {
 export const PLAN_LIMITS: Record<PlanKey, PlanLimits> = {
   free: {
     documents: 5,
-    conversationsPerMonth: 50,
-    messagesPerConversation: 20,
+    conversationsPerMonth: 10,
+    messagesPerConversation: 10,
     products: 10,
     ticketsPerMonth: 10,
     teamMembers: 3,

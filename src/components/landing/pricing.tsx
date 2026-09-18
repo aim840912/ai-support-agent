@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { Check, X } from "lucide-react";
+import { PLAN_LIMITS } from "@/lib/plan/limits";
 
 type PricingFeature = {
   label: string;
@@ -7,12 +8,27 @@ type PricingFeature = {
   pro: string | boolean;
 };
 
+const { free, pro } = PLAN_LIMITS;
+
+/** Renders a numeric limit; -1 means unlimited. */
+const limit = (n: number) => (n === -1 ? "Unlimited" : n.toLocaleString());
+
+// Numeric rows read from PLAN_LIMITS so the table can never drift from the
+// limits actually enforced at runtime.
 const features: PricingFeature[] = [
-  { label: "Knowledge base documents", free: "5", pro: "100" },
-  { label: "Conversations / month", free: "50", pro: "Unlimited" },
-  { label: "Messages / conversation", free: "20", pro: "Unlimited" },
-  { label: "Products in inventory", free: "10", pro: "1,000" },
-  { label: "Team members", free: "3", pro: "20" },
+  { label: "Knowledge base documents", free: limit(free.documents), pro: limit(pro.documents) },
+  {
+    label: "Conversations / month",
+    free: limit(free.conversationsPerMonth),
+    pro: limit(pro.conversationsPerMonth),
+  },
+  {
+    label: "Messages / conversation",
+    free: limit(free.messagesPerConversation),
+    pro: limit(pro.messagesPerConversation),
+  },
+  { label: "Products in inventory", free: limit(free.products), pro: limit(pro.products) },
+  { label: "Team members", free: limit(free.teamMembers), pro: limit(pro.teamMembers) },
   { label: "AI tools: KB search", free: true, pro: true },
   { label: "AI tools: Order lookup", free: true, pro: true },
   { label: "AI tools: Inventory check", free: false, pro: true },

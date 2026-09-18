@@ -1,7 +1,8 @@
 import { ToolLoopAgent, stepCountIs, simulateReadableStream } from "ai";
 import { MockLanguageModelV3 } from "ai/test";
-import { createGroq } from "@ai-sdk/groq";
+import { createOpenRouter } from "@openrouter/ai-sdk-provider";
 import { isLlmMockMode } from "@/lib/mock-mode";
+import { resolveModelChoice, type ComplexityTier } from "./model-router";
 import {
   createGetOrderStatusTool,
   createCheckInventoryTool,
@@ -12,18 +13,20 @@ import { buildSystemPrompt } from "./prompts";
 import { getPlanLimits } from "@/lib/plan/limits";
 
 /**
- * Returns the language model to use.
+ * Returns the language model for the given complexity tier.
  *
- * THIS IS THE ONLY PLACE THAT NEEDS TO CHANGE when adding a real API key.
+ * THIS IS THE ONLY PLACE THAT NEEDS TO CHANGE when swapping providers/models.
  *
- * To switch to production:
- * 1. pnpm add @ai-sdk/groq
- * 2. Replace the mock branch with:
- *    import { createGroq } from '@ai-sdk/groq'
- *    return createGroq()('openai/gpt-oss-120b')
- * 3. Set GROQ_API_KEY in .env.local
+ * COST GUARD (current state): Claude auto-routing is disabled until the
+ * user-pays feature ships. resolveModelChoice() (model-router.ts) maps every
+ * tier to the cheap model with no fallback — no request can spend Claude
+ * credits. classifyComplexity() still runs upstream and the tier is logged
+ * in onStepFinish, so re-enabling later is a one-function change in
+ * resolveModelChoice().
+ *
+ * Mock mode (no valid OPENROUTER_API_KEY) ignores the tier entirely.
  */
-function getModel() {
+function getModel(tier: ComplexityTier = "simple") {
   if (isLlmMockMode()) {
     const demoText =
       "[Demo Mode] I'm a mock AI agent. In production, I would call a real LLM to answer your question. For now, I can demonstrate the tool-calling pipeline — try asking about order ORD-001 or product PROD-003!";
@@ -62,10 +65,12 @@ function getModel() {
     });
   }
 
-  // llama-3.3-70b-versatile was decommissioned by Groq (404 model_not_found),
-  // which surfaced only as a generic stream error. gpt-oss-120b is available
-  // on the free tier; it is a reasoning model, so do not set a low output cap.
-  return createGroq()("openai/gpt-oss-120b");
+  const openrouter = createOpenRouter({ apiKey: process.env.OPENROUTER_API_KEY });
+
+  const choice = resolveModelChoice(tier);
+  return choice.fallbacks.length > 0
+    ? openrouter.chat(choice.primary, { models: choice.fallbacks })
+    : openrouter.chat(choice.primary);
 }
 
 /**
@@ -77,12 +82,15 @@ function getModel() {
  *                             between base behaviour and security rules.
  *                             Security rules always come last and cannot be
  *                             overridden — see buildSystemPrompt() in prompts.ts.
+ * @param modelTier          - Complexity tier from classifyComplexity();
+ *                             routes "simple" → GLM, "complex" → Claude.
  */
 // Return type intentionally inferred — ToolLoopAgent<never, {tools}, never> is caller-dependent
 export function createSupportAgent(
   orgId: string,
   plan = "free",
-  customSystemPrompt?: string | null
+  customSystemPrompt?: string | null,
+  modelTier: ComplexityTier = "simple"
 ) {
   const limits = getPlanLimits(plan);
   const allowed = new Set(limits.enabledTools);
@@ -100,9 +108,20 @@ export function createSupportAgent(
   ) as typeof allTools;
 
   return new ToolLoopAgent({
-    model: getModel(),
+    model: getModel(modelTier),
     instructions: buildSystemPrompt(customSystemPrompt),
     tools,
     stopWhen: stepCountIs(10),
+    // Support replies are short; also caps OpenRouter's per-request credit
+    // pre-hold (without this, it pre-holds the model's max output — 64K tokens —
+    // and small-credit accounts get a 402 before any token is generated).
+    maxOutputTokens: 1024,
+    // Dev-only observability: log which model actually served each step
+    // (confirms whether the OpenRouter server-side fallback kicked in).
+    onStepFinish: (step) => {
+      if (process.env.NODE_ENV !== "production") {
+        console.log(`[model-router] tier=${modelTier} served-by=${step.response?.modelId}`);
+      }
+    },
   });
 }

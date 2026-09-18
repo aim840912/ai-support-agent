@@ -14,6 +14,7 @@ import { HowItWorks } from "@/components/landing/how-it-works";
 import { Pricing } from "@/components/landing/pricing";
 import { LiveDemo } from "@/components/landing/live-demo";
 import { demoSignIn } from "@/actions/demo";
+import { PLAN_LIMITS } from "@/lib/plan/limits";
 
 const features = [
   {
@@ -26,7 +27,7 @@ const features = [
     icon: MessageSquare,
     title: "AI Chat Agent",
     description:
-      "Tool-calling agent powered by Groq Llama 3. Looks up orders, checks inventory, and escalates tickets automatically.",
+      "Tool-calling agent served via OpenRouter. Looks up orders, checks inventory, and escalates tickets automatically.",
   },
   {
     icon: Code,
@@ -133,7 +134,7 @@ export default function Home() {
           {/* Social proof strip */}
           <div className="mt-10 flex flex-wrap items-center justify-center gap-x-8 gap-y-3 text-xs text-muted-foreground">
             <span>No credit card required</span>
-            <span>50 conversations / month free</span>
+            <span>{PLAN_LIMITS.free.conversationsPerMonth} conversations / month free</span>
             <span>Deploy in &lt; 5 minutes</span>
           </div>
         </div>

@@ -114,17 +114,18 @@ price: product.price,            // ❌ serializes as string "99.99"
 
 ### Environment Variables
 
-| Variable                       | Required | Notes                                |
-| ------------------------------ | -------- | ------------------------------------ |
-| `DATABASE_URL`                 | Yes      | Neon connection string               |
-| `AUTH_SECRET`                  | Yes      | `openssl rand -base64 32`            |
-| `AUTH_URL` / `NEXTAUTH_URL`    | Yes      | Base URL                             |
-| `NEXT_PUBLIC_APP_URL`          | Yes      | Used for widget iframe src           |
-| `GOOGLE_GENERATIVE_AI_API_KEY` | Yes      | Gemini embeddings                    |
-| `GROQ_API_KEY`                 | Yes      | LLM                                  |
-| `RESEND_API_KEY`               | No       | Falls back to console log            |
-| `STRIPE_SECRET_KEY`            | No       | Billing features disabled without it |
-| `NEXT_PUBLIC_DEMO_API_KEY`     | No       | Enables live demo on landing page    |
+| Variable                       | Required                                | Notes                                                                           |
+| ------------------------------ | --------------------------------------- | ------------------------------------------------------------------------------- |
+| `DATABASE_URL`                 | Yes                                     | Neon connection string                                                          |
+| `AUTH_SECRET`                  | Yes                                     | `openssl rand -base64 32`                                                       |
+| `AUTH_URL` / `NEXTAUTH_URL`    | Yes                                     | Base URL                                                                        |
+| `NEXT_PUBLIC_APP_URL`          | Yes                                     | Used for widget iframe src                                                      |
+| `GOOGLE_GENERATIVE_AI_API_KEY` | Yes                                     | Gemini embeddings                                                               |
+| `OPENROUTER_API_KEY`           | Yes (this branch)                       | LLM via OpenRouter (all tiers → GLM; Claude auto-routing disabled — cost guard) |
+| `GROQ_API_KEY`                 | No (superseded on model-routing branch) | LLM (main branch)                                                               |
+| `RESEND_API_KEY`               | No                                      | Falls back to console log                                                       |
+| `STRIPE_SECRET_KEY`            | No                                      | Billing features disabled without it                                            |
+| `NEXT_PUBLIC_DEMO_API_KEY`     | No                                      | Enables live demo on landing page                                               |
 
 ---
 
