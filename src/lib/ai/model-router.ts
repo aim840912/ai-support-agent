@@ -28,25 +28,34 @@ export const COMPLEX_THRESHOLD = 2;
  * Centralised here so tuning the experiment is a one-line change.
  */
 export const MODEL_SLUGS = {
-  /** Cheap model for simple requests. */
-  simple: "z-ai/glm-4.7",
-  /** Strong model for complex requests (reliable tool-calling). */
+  /** Zero-cost model serving every request while the cost guard is on. */
+  simple: "qwen/qwen3.8-27b:free",
+  /** Strong PAID model for complex requests — gated off by the cost guard. */
   complex: "anthropic/claude-sonnet-4.5",
-  /** Server-side fallback when the simple model fails (OpenRouter `models` array). */
-  fallback: "anthropic/claude-sonnet-4.5",
+  /**
+   * Server-side fallbacks (OpenRouter `models` array), tried in order when the
+   * primary fails. Free endpoints are routinely rate-limited upstream (429),
+   * so fallbacks matter more here than on paid models. Keep every entry
+   * `:free`, and keep the list short — OpenRouter caps the array length.
+   */
+  freeFallbacks: ["deepseek/deepseek-v4-flash-0731:free", "google/gemma-4-31b-it:free"],
 } as const;
 
 /**
- * Cost guard: Claude auto-routing is DISABLED until the user-pays feature
- * ships. Every tier resolves to the cheap model with NO fallback, so no
- * request can spend Claude credits. classifyComplexity() still runs and
- * logs the tier — re-enabling is a one-function change here.
+ * Cost guard: paid routing is DISABLED until the user-pays feature ships.
+ * Every tier resolves to `:free` models only (primary + fallbacks), so no
+ * request can spend credits. classifyComplexity() still runs and logs the
+ * tier — re-enabling is a one-function change here.
+ *
+ * Free-tier ceiling: 20 req/min, and 50 req/day account-wide (1000/day once
+ * the account has ever purchased >= $10 credits). One chat message costs 2-3
+ * requests because of the tool loop, so 50/day is roughly 20 messages.
  */
 export function resolveModelChoice(_tier: ComplexityTier): {
   primary: string;
   fallbacks: string[];
 } {
-  return { primary: MODEL_SLUGS.simple, fallbacks: [] };
+  return { primary: MODEL_SLUGS.simple, fallbacks: [...MODEL_SLUGS.freeFallbacks] };
 }
 
 /** Keyword rules — weight 2 fires the complex tier on its own. */

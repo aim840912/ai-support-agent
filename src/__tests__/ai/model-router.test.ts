@@ -137,13 +137,24 @@ describe("MODEL_SLUGS", () => {
 });
 
 describe("resolveModelChoice (cost guard)", () => {
+  it.each(["simple", "complex"] as const)("%s tier resolves to the free primary model", (tier) => {
+    expect(resolveModelChoice(tier).primary).toBe(MODEL_SLUGS.simple);
+  });
+
+  // Allowlist, not denylist: asserting "not Claude" let a paid GLM slug pass.
   it.each(["simple", "complex"] as const)(
-    "%s tier resolves to the cheap model with no fallbacks",
+    "%s tier can only ever reach zero-cost (:free) models",
     (tier) => {
-      const choice = resolveModelChoice(tier);
-      expect(choice.primary).toBe(MODEL_SLUGS.simple);
-      expect(choice.primary).not.toBe(MODEL_SLUGS.complex); // never Claude
-      expect(choice.fallbacks).toEqual([]);
+      const { primary, fallbacks } = resolveModelChoice(tier);
+      for (const slug of [primary, ...fallbacks]) {
+        expect(slug).toMatch(/:free$/);
+      }
     }
   );
+
+  it("offers fallbacks distinct from the primary", () => {
+    const { primary, fallbacks } = resolveModelChoice("simple");
+    expect(fallbacks.length).toBeGreaterThan(0);
+    expect(fallbacks).not.toContain(primary);
+  });
 });

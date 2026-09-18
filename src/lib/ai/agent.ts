@@ -17,11 +17,11 @@ import { getPlanLimits } from "@/lib/plan/limits";
  *
  * THIS IS THE ONLY PLACE THAT NEEDS TO CHANGE when swapping providers/models.
  *
- * COST GUARD (current state): Claude auto-routing is disabled until the
- * user-pays feature ships. resolveModelChoice() (model-router.ts) maps every
- * tier to the cheap model with no fallback — no request can spend Claude
- * credits. classifyComplexity() still runs upstream and the tier is logged
- * in onStepFinish, so re-enabling later is a one-function change in
+ * COST GUARD (current state): paid routing is disabled until the user-pays
+ * feature ships. resolveModelChoice() (model-router.ts) maps every tier to
+ * `:free` OpenRouter models only (primary + free fallbacks) — no request can
+ * spend credits. classifyComplexity() still runs upstream and the tier is
+ * logged in onStepFinish, so re-enabling later is a one-function change in
  * resolveModelChoice().
  *
  * Mock mode (no valid OPENROUTER_API_KEY) ignores the tier entirely.
@@ -83,7 +83,8 @@ function getModel(tier: ComplexityTier = "simple") {
  *                             Security rules always come last and cannot be
  *                             overridden — see buildSystemPrompt() in prompts.ts.
  * @param modelTier          - Complexity tier from classifyComplexity();
- *                             routes "simple" → GLM, "complex" → Claude.
+ *                             logged only while the cost guard is on (every
+ *                             tier → free model); see resolveModelChoice().
  */
 // Return type intentionally inferred — ToolLoopAgent<never, {tools}, never> is caller-dependent
 export function createSupportAgent(

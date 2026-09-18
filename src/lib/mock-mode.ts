@@ -11,8 +11,8 @@ export function isMockMode(): boolean {
  * Detect if the LLM chat should run in mock mode (no valid OpenRouter key).
  * Controls the ToolLoopAgent model — mock mode uses MockLanguageModelV3.
  *
- * model-routing branch: OpenRouter is the primary chat provider
- * (GLM for simple requests, Claude for complex — see lib/ai/model-router.ts).
+ * OpenRouter is the chat provider; which models it serves (currently `:free`
+ * only, behind the cost guard) is decided in lib/ai/model-router.ts.
  */
 export function isLlmMockMode(): boolean {
   const key = process.env.OPENROUTER_API_KEY ?? "";
