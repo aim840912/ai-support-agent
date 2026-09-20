@@ -4,6 +4,7 @@ import { classifyComplexity, type ComplexityTier } from "@/lib/ai/model-router";
 import type { UIMessage } from "ai";
 import { checkConversationLimit, checkMessageLimit } from "@/lib/plan/check-plan-limit";
 import { logError } from "@/lib/error-logger";
+import type { ValidSource } from "@/lib/constants";
 
 export type PrepareChatOptions = {
   orgId: string;
@@ -11,7 +12,7 @@ export type PrepareChatOptions = {
   sessionId?: string;
   userId?: string;
   visitorId?: string;
-  source?: "dashboard" | "widget" | "api";
+  source?: ValidSource;
   plan?: string;
   /** Org-specific AI instructions — injected safely before security rules. */
   customSystemPrompt?: string | null;
