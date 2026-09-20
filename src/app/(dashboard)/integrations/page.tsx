@@ -7,6 +7,11 @@ import {
   WebhookEndpointsCard,
   type EndpointView,
 } from "@/components/dashboard/webhook-endpoints-card";
+import {
+  McpIntegrationCard,
+  type IntegrationKeyView,
+} from "@/components/dashboard/mcp-integration-card";
+import { getToolsForPlan } from "@/lib/ai/tools/registry";
 import { getPublicBaseUrl, isPubliclyReachable } from "@/lib/public-url";
 import { DELIVERY_HISTORY_LIMIT, FAILURE_THRESHOLD } from "@/lib/webhooks/dispatch";
 import {
@@ -22,7 +27,7 @@ export const metadata = {
   description: "Connect the support agent to the channels and tools you already use.",
 };
 
-const TABS = ["webhooks", "channels"] as const;
+const TABS = ["webhooks", "channels", "mcp"] as const;
 type TabValue = (typeof TABS)[number];
 
 export default async function IntegrationsPage({
@@ -48,7 +53,8 @@ export default async function IntegrationsPage({
   const activeTab: TabValue = TABS.includes(tab as TabValue) ? (tab as TabValue) : "webhooks";
 
   try {
-    const [channel, endpoints] = await Promise.all([
+    const [org, channel, endpoints, integrationKeys] = await Promise.all([
+      prisma.organization.findUnique({ where: { id: orgId }, select: { plan: true } }),
       prisma.telegramChannel.findUnique({
         where: { orgId },
         select: { botUsername: true, enabled: true, lastEventAt: true },
@@ -83,7 +89,21 @@ export default async function IntegrationsPage({
           },
         },
       }),
+      prisma.integrationKey.findMany({
+        where: { orgId, revokedAt: null },
+        orderBy: { createdAt: "desc" },
+        select: {
+          id: true,
+          name: true,
+          keyPrefix: true,
+          createdAt: true,
+          lastUsedAt: true,
+          revokedAt: true,
+        },
+      }),
     ]);
+
+    const plan = org?.plan ?? "free";
 
     const telegram: TelegramChannelView = {
       connected: Boolean(channel),
@@ -94,6 +114,13 @@ export default async function IntegrationsPage({
       enabled: channel?.enabled ?? false,
       lastEventAt: channel?.lastEventAt?.toISOString() ?? null,
     };
+
+    const keyViews: IntegrationKeyView[] = integrationKeys.map((key) => ({
+      ...key,
+      createdAt: key.createdAt.toISOString(),
+      lastUsedAt: key.lastUsedAt?.toISOString() ?? null,
+      revokedAt: key.revokedAt?.toISOString() ?? null,
+    }));
 
     const endpointViews: EndpointView[] = endpoints.map((endpoint) => ({
       ...endpoint,
@@ -114,11 +141,11 @@ export default async function IntegrationsPage({
           </p>
         </header>
 
-        {/* The MCP tab lands in a later step. */}
         <Tabs defaultValue={activeTab}>
           <TabsList>
             <TabsTrigger value="webhooks">Webhooks</TabsTrigger>
             <TabsTrigger value="channels">Channels</TabsTrigger>
+            <TabsTrigger value="mcp">MCP</TabsTrigger>
           </TabsList>
 
           <TabsContent value="webhooks" className="mt-6">
@@ -141,6 +168,21 @@ export default async function IntegrationsPage({
               publicBaseUrl={publicBaseUrl}
               reachable={reachable}
               canEdit={canEdit}
+            />
+          </TabsContent>
+
+          <TabsContent value="mcp" className="mt-6">
+            <McpIntegrationCard
+              serverUrl={`${publicBaseUrl}/api/mcp`}
+              keys={keyViews}
+              plan={plan}
+              canIssueKeys={role === "owner"}
+              tools={getToolsForPlan(plan).map((tool) => ({
+                name: tool.name,
+                title: tool.title,
+                description: tool.description,
+                mutates: tool.mutates,
+              }))}
             />
           </TabsContent>
         </Tabs>

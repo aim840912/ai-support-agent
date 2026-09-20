@@ -386,3 +386,94 @@ const SAMPLE_TICKET = {
   createdAt: new Date().toISOString(),
   dashboardUrl: `${getPublicBaseUrl()}/tickets/tkt_sample`,
 };
+
+// ─────────────────────────────────────────────────────────────────────────────
+// MCP integration keys
+// ─────────────────────────────────────────────────────────────────────────────
+
+/**
+ * Issuing a machine credential is a higher bar than configuring a channel.
+ * Matches regenerateApiKey in the settings actions, which is owner-only for
+ * the same reason.
+ */
+async function requireOwner() {
+  const session = await auth();
+  if (!session?.user?.orgId) throw new Error("Unauthorized");
+  if (session.user.role !== "owner") throw new Error("Forbidden: owner only");
+  if (isDemoUser(session.user.email)) {
+    throw new Error("The demo account cannot issue integration keys");
+  }
+  return { orgId: session.user.orgId };
+}
+
+const MAX_KEYS_PER_ORG = 10;
+
+const keyNameSchema = z
+  .string()
+  .trim()
+  .min(1, "Give the key a name so you can tell them apart")
+  .max(60, "Name must be 60 characters or fewer");
+
+export type CreateKeyResult = {
+  ok: boolean;
+  message: string;
+  /** Returned exactly once — only the hash is stored. */
+  key?: string;
+};
+
+export async function createIntegrationKey(input: { name: string }): Promise<CreateKeyResult> {
+  const { orgId } = await requireOwner();
+
+  const parsed = keyNameSchema.safeParse(input.name);
+  if (!parsed.success) {
+    return { ok: false, message: parsed.error.issues[0]?.message ?? "Invalid name" };
+  }
+
+  try {
+    const active = await prisma.integrationKey.count({ where: { orgId, revokedAt: null } });
+    if (active >= MAX_KEYS_PER_ORG) {
+      return {
+        ok: false,
+        message: `You already have ${MAX_KEYS_PER_ORG} active keys. Revoke one first.`,
+      };
+    }
+
+    // mcp_ rather than sk_ so the two credential families are distinguishable
+    // in logs at a glance.
+    const raw = `mcp_${randomBytes(24).toString("base64url")}`;
+    await prisma.integrationKey.create({
+      data: {
+        orgId,
+        name: parsed.data,
+        keyHash: hashApiKey(raw),
+        keyPrefix: raw.slice(0, 12),
+      },
+    });
+
+    revalidatePath("/integrations");
+    return { ok: true, key: raw, message: "Key created. Copy it now — it is not shown again." };
+  } catch (error) {
+    logError("[integrations/createIntegrationKey]", error);
+    return { ok: false, message: "Could not create the key." };
+  }
+}
+
+export async function revokeIntegrationKey(id: string): Promise<{ ok: boolean; message: string }> {
+  const { orgId } = await requireOwner();
+
+  try {
+    // Marked revoked rather than deleted, so the dashboard can still show that
+    // a key existed and when it was last used.
+    const { count } = await prisma.integrationKey.updateMany({
+      where: { id, orgId, revokedAt: null },
+      data: { revokedAt: new Date() },
+    });
+    if (count === 0) return { ok: false, message: "Key not found." };
+
+    revalidatePath("/integrations");
+    return { ok: true, message: "Key revoked. Clients using it will stop working immediately." };
+  } catch (error) {
+    logError("[integrations/revokeIntegrationKey]", error);
+    return { ok: false, message: "Could not revoke the key." };
+  }
+}
