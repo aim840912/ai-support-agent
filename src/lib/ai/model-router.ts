@@ -28,8 +28,16 @@ export const COMPLEX_THRESHOLD = 2;
  * Centralised here so tuning the experiment is a one-line change.
  */
 export const MODEL_SLUGS = {
-  /** Zero-cost model serving every request while the cost guard is on. */
-  simple: "qwen/qwen3.8-27b:free",
+  /**
+   * Zero-cost model serving every request while the cost guard is on.
+   *
+   * Chosen on measured latency, not model size: with a tool definition
+   * attached and asked to look up an order, this answered in ~2s where
+   * nvidia/nemotron-3-ultra-550b-a55b:free took 15s and
+   * nvidia/nemotron-3.5-lightning:free took 45s despite the name. For a
+   * support widget, time-to-first-answer dominates.
+   */
+  simple: "dots-studio/dots-3-note-preview:free",
   /** Strong PAID model for complex requests — gated off by the cost guard. */
   complex: "anthropic/claude-sonnet-4.5",
   /**
@@ -37,8 +45,15 @@ export const MODEL_SLUGS = {
    * primary fails. Free endpoints are routinely rate-limited upstream (429),
    * so fallbacks matter more here than on paid models. Keep every entry
    * `:free`, and keep the list short — OpenRouter caps the array length.
+   *
+   * ⚠️ These slugs rot silently. A model can lose its free tier entirely
+   * ("This model is unavailable for free") and nothing surfaces it until the
+   * primary is also down and the fallback turns out to be dead too — which is
+   * exactly what happened on 2026-09-20 with deepseek-v4-flash. Re-verify with
+   * a direct call, not by reading the model list: presence in /api/v1/models
+   * and `supported_parameters: ["tools"]` were both true for the dead slug.
    */
-  freeFallbacks: ["deepseek/deepseek-v4-flash-0731:free", "google/gemma-4-31b-it:free"],
+  freeFallbacks: ["nvidia/nemotron-3-ultra-550b-a55b:free", "inclusionai/ling-3.0-flash-vl:free"],
 } as const;
 
 /**
