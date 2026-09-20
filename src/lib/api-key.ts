@@ -1,4 +1,4 @@
-import { randomBytes, createHash } from "crypto";
+import { randomBytes, createHash, timingSafeEqual } from "crypto";
 
 /**
  * Generate a cryptographically secure API key for widget authentication.
@@ -37,4 +37,18 @@ export function generateApiKey(): string {
  */
 export function hashApiKey(rawKey: string): string {
   return createHash("sha256").update(rawKey).digest("hex");
+}
+
+/**
+ * Constant-time comparison of two hex digests.
+ *
+ * timingSafeEqual throws when the buffers differ in length, so the length
+ * check has to come first — and it is safe to leak, since these are always
+ * fixed-width digests.
+ */
+export function secureCompareHex(a: string, b: string): boolean {
+  const bufA = Buffer.from(a, "hex");
+  const bufB = Buffer.from(b, "hex");
+  if (bufA.length === 0 || bufA.length !== bufB.length) return false;
+  return timingSafeEqual(bufA, bufB);
 }

@@ -81,10 +81,16 @@ export async function generateChatReply(ctx: ChatContext): Promise<string> {
     sessionId: ctx.sessionId,
     userText: extractText(ctx.messages[ctx.messages.length - 1]),
     assistantText: result.text,
-    toolCalls: result.toolCalls.map((t) => ({
-      toolName: String(t.toolName),
-      toolCallId: t.toolCallId,
-    })),
+    // result.toolCalls holds only the LAST step's calls. In a tool loop the
+    // final step is the one that writes the answer and calls nothing, so
+    // reading it directly records an empty list for every tool-using turn —
+    // verified against a live request before this was flattened.
+    toolCalls: result.steps.flatMap((step) =>
+      step.toolCalls.map((t) => ({
+        toolName: String(t.toolName),
+        toolCallId: t.toolCallId,
+      }))
+    ),
   });
 
   return result.text;

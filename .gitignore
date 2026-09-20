@@ -57,3 +57,5 @@ dev-server.log
 
 # claude local settings (machine-specific, contains absolute paths)
 .claude/settings.local.json
+# Local test fixtures and credentials. This repo is public — never track these.
+.claude/test.config.md

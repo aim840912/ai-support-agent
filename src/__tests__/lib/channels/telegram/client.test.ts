@@ -14,7 +14,7 @@ import {
 const TOKEN = "123456:TEST-TOKEN";
 
 function mockFetchSequence(
-  ...responses: { ok: boolean; result?: unknown; description?: string }[]
+  ...responses: { ok: boolean; result?: unknown; error_code?: number; description?: string }[]
 ) {
   const fn = vi.fn();
   for (const body of responses) {
