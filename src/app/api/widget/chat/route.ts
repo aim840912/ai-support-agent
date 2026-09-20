@@ -1,5 +1,4 @@
-import { prisma } from "@/lib/db";
-import { hashApiKey } from "@/lib/api-key";
+import { resolveOrgByWidgetKey } from "@/lib/org-auth";
 import { createChatStream } from "@/lib/chat/create-chat-stream";
 import { validateAndSanitizeMessages } from "@/lib/chat/validate-messages";
 import type { UIMessage } from "ai";
@@ -21,31 +20,12 @@ export async function POST(request: Request) {
     return new Response("Missing x-api-key header", { status: 401 });
   }
 
-  // Resolve organization via SHA-256 hash of the incoming API key.
-  // Hashing prevents SQL-injection attacks from obtaining usable plaintext keys
-  // (attacker retrieves hash, not the original key).
-  // Fallback to plaintext lookup for orgs created before the hash migration —
-  // remove the fallback once all records have been backfilled.
-  const keyHash = hashApiKey(apiKey);
-  let org: {
-    id: string;
-    plan: string;
-    agentSettings: { systemPrompt: string | null } | null;
-  } | null;
+  // Hash-based lookup, with a fallback for organizations created before the
+  // hash migration. Shared with the MCP server's credential resolution so the
+  // two cannot drift — see src/lib/org-auth.ts.
+  let org: Awaited<ReturnType<typeof resolveOrgByWidgetKey>>;
   try {
-    org = await prisma.organization.findFirst({
-      where: {
-        OR: [
-          { apiKeyHash: keyHash }, // preferred — hash-based lookup
-          { apiKeyHash: null, apiKey: apiKey }, // migration fallback for pre-hash orgs
-        ],
-      },
-      select: {
-        id: true,
-        plan: true,
-        agentSettings: { select: { systemPrompt: true } },
-      },
-    });
+    org = await resolveOrgByWidgetKey(apiKey);
   } catch (error) {
     logError("[WidgetChatAPI]", error);
     return new Response("Internal server error", { status: 500 });
@@ -55,7 +35,7 @@ export async function POST(request: Request) {
     return new Response("Invalid API key", { status: 401 });
   }
 
-  const orgId = org.id;
+  const orgId = org.orgId;
   const plan = org.plan ?? "free";
 
   // Rate limit by org ID + IP — isolates widget tenants while protecting per-visitor.
@@ -91,6 +71,6 @@ export async function POST(request: Request) {
     visitorId,
     source: "widget",
     plan,
-    customSystemPrompt: org.agentSettings?.systemPrompt ?? null,
+    customSystemPrompt: org.customSystemPrompt,
   });
 }

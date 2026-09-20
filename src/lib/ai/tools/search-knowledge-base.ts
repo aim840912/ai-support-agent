@@ -26,56 +26,73 @@ const MOCK_FAQ_RESULTS: SearchResult[] = [
   },
 ];
 
+export const searchKnowledgeBaseDescription =
+  "Search the company knowledge base and FAQ documents for relevant information to answer customer questions. Use this as the first step before looking up order or inventory data. 搜尋公司知識庫和常見問題文件，用於回答客戶的一般性問題。";
+
+export const searchKnowledgeBaseInputSchema = z.object({
+  query: z
+    .string()
+    .describe(
+      "The search query derived from the customer's question. Use the SAME language as the customer — if the customer writes in Chinese, the query must be in Chinese. 使用與客戶相同的語言提取搜尋關鍵詞，客戶用中文則用中文搜尋。"
+    ),
+  limit: z
+    .number()
+    .min(1)
+    .max(5)
+    .optional()
+    .describe("Number of results to return (1-5, default: 3)"),
+});
+
+export type SearchKnowledgeBaseInput = z.infer<typeof searchKnowledgeBaseInputSchema>;
+
+/**
+ * Plain runner shared by the chat agent and the MCP server.
+ *
+ * The mock-mode branch and the dynamic import stay here rather than moving up
+ * to the caller, so MCP inherits demo mode for free — the server is usable
+ * without an embeddings key, which matters for a portfolio deployment.
+ */
+export async function runSearchKnowledgeBase(
+  orgId: string,
+  { query, limit = 3 }: SearchKnowledgeBaseInput
+) {
+  if (isMockMode()) {
+    const results = MOCK_FAQ_RESULTS.slice(0, limit).map((r) => ({
+      content: r.chunkText,
+      source: r.filename,
+      relevanceScore: r.similarity,
+    }));
+    return { results, totalFound: results.length };
+  }
+
+  // Real mode: dynamic import to avoid loading pg in edge/tests
+  try {
+    const { vectorSearch } = await import("@/lib/rag/vector-search");
+    const rawResults = await vectorSearch(query, orgId, limit);
+    const results = rawResults.map((r) => ({
+      content: r.chunkText,
+      source: r.filename,
+      relevanceScore: r.similarity,
+    }));
+    return { results, totalFound: results.length };
+  } catch (error) {
+    logError("[searchKnowledgeBase]", error);
+    return {
+      results: [],
+      totalFound: 0,
+      error: "Knowledge base search is temporarily unavailable.",
+    };
+  }
+}
+
 /**
  * Factory function that creates a searchKnowledgeBase tool bound to a specific org.
  * In mock mode, returns pre-defined FAQ results. In production, calls pgvector.
  */
 export function createSearchKnowledgeBaseTool(orgId: string) {
   return tool({
-    description:
-      "Search the company knowledge base and FAQ documents for relevant information to answer customer questions. Use this as the first step before looking up order or inventory data. 搜尋公司知識庫和常見問題文件，用於回答客戶的一般性問題。",
-    inputSchema: z.object({
-      query: z
-        .string()
-        .describe(
-          "The search query derived from the customer's question. Use the SAME language as the customer — if the customer writes in Chinese, the query must be in Chinese. 使用與客戶相同的語言提取搜尋關鍵詞，客戶用中文則用中文搜尋。"
-        ),
-      limit: z
-        .number()
-        .min(1)
-        .max(5)
-        .optional()
-        .describe("Number of results to return (1-5, default: 3)"),
-    }),
-    execute: async ({ query, limit = 3 }) => {
-      if (isMockMode()) {
-        // Return mock results in demo mode (no Gemini key needed)
-        const results = MOCK_FAQ_RESULTS.slice(0, limit).map((r) => ({
-          content: r.chunkText,
-          source: r.filename,
-          relevanceScore: r.similarity,
-        }));
-        return { results, totalFound: results.length };
-      }
-
-      // Real mode: dynamic import to avoid loading pg in edge/tests
-      try {
-        const { vectorSearch } = await import("@/lib/rag/vector-search");
-        const rawResults = await vectorSearch(query, orgId, limit);
-        const results = rawResults.map((r) => ({
-          content: r.chunkText,
-          source: r.filename,
-          relevanceScore: r.similarity,
-        }));
-        return { results, totalFound: results.length };
-      } catch (error) {
-        logError("[searchKnowledgeBase]", error);
-        return {
-          results: [],
-          totalFound: 0,
-          error: "Knowledge base search is temporarily unavailable.",
-        };
-      }
-    },
+    description: searchKnowledgeBaseDescription,
+    inputSchema: searchKnowledgeBaseInputSchema,
+    execute: (input) => runSearchKnowledgeBase(orgId, input),
   });
 }

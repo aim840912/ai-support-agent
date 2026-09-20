@@ -10,7 +10,7 @@ import {
   createSearchKnowledgeBaseTool,
 } from "./tools";
 import { buildSystemPrompt } from "./prompts";
-import { getPlanLimits } from "@/lib/plan/limits";
+import { isToolAllowed } from "./tools/registry";
 
 /**
  * Returns the language model for the given complexity tier.
@@ -93,10 +93,9 @@ export function createSupportAgent(
   customSystemPrompt?: string | null,
   modelTier: ComplexityTier = "simple"
 ) {
-  const limits = getPlanLimits(plan);
-  const allowed = new Set(limits.enabledTools);
-
-  // All possible tools — only include those allowed by the plan
+  // All possible tools. The plan filter comes from the shared registry rather
+  // than being computed here, so chat and the MCP server cannot disagree about
+  // which tools a plan includes.
   const allTools = {
     searchKnowledgeBase: createSearchKnowledgeBaseTool(orgId),
     getOrderStatus: createGetOrderStatusTool(orgId),
@@ -105,7 +104,7 @@ export function createSupportAgent(
   };
 
   const tools = Object.fromEntries(
-    Object.entries(allTools).filter(([key]) => allowed.has(key))
+    Object.entries(allTools).filter(([key]) => isToolAllowed(plan, key))
   ) as typeof allTools;
 
   return new ToolLoopAgent({
