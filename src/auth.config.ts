@@ -98,6 +98,8 @@ export const authConfig: NextAuthConfig = {
         "/api/reset-password",
         "/api/team/accept-invite",
         "/api/stripe/webhook", // Stripe server-to-server: no session cookie
+        "/api/channels", // Inbound channel webhooks (Telegram): verified by per-channel secret token
+        "/api/mcp", // MCP server: verified by IntegrationKey bearer token
       ];
 
       const isPublicRoute = publicRoutes.includes(nextUrl.pathname);
