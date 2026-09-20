@@ -13,18 +13,18 @@ Deployed on Vercel. Auth via NextAuth v5 (email/password + email verification).
 
 ## Stack & Key Libraries
 
-| Purpose    | Library              | Notes                                                                                                                 |
-| ---------- | -------------------- | --------------------------------------------------------------------------------------------------------------------- |
-| Framework  | Next.js 16           | App Router only — no pages/ directory                                                                                 |
-| Styling    | Tailwind CSS v4      | No v3 syntax (`theme()` calls)                                                                                        |
-| Auth       | NextAuth v5 beta     | `src/auth.ts` + `src/auth.config.ts`                                                                                  |
-| DB ORM     | Prisma 7             | Client at `src/lib/db.ts` — dynamic import for edge compat                                                            |
-| DB         | Neon PostgreSQL      | pgvector enabled; `prisma migrate dev` (local), `prisma migrate deploy` (prod) — 6 migrations in `prisma/migrations/` |
-| LLM        | Vercel AI SDK + Groq | `ai` package v6                                                                                                       |
-| Embeddings | Google Gemini        | `text-embedding-004`, 768 dims                                                                                        |
-| Payments   | Stripe               | Checkout + webhook at `/api/stripe/`                                                                                  |
-| Email      | Resend               | Falls back to console.log in dev when `RESEND_API_KEY` unset                                                          |
-| Testing    | Vitest 4             | `pnpm test` — 93 tests; config in `vitest.config.ts`                                                                  |
+| Purpose    | Library              | Notes                                                                                                                                                    |
+| ---------- | -------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Framework  | Next.js 16           | App Router only — no pages/ directory                                                                                                                    |
+| Styling    | Tailwind CSS v4      | No v3 syntax (`theme()` calls)                                                                                                                           |
+| Auth       | NextAuth v5 beta     | `src/auth.ts` + `src/auth.config.ts`                                                                                                                     |
+| DB ORM     | Prisma 7             | Client at `src/lib/db.ts` — static import + sync singleton; Turbopack compat via `serverExternalPackages`                                                |
+| DB         | Neon PostgreSQL      | pgvector enabled; `prisma migrate dev` (local), `prisma migrate deploy` (prod) — 7 migrations in `prisma/migrations/` (hand-written SQL — see gotcha #8) |
+| LLM        | Vercel AI SDK + Groq | `ai` package v6                                                                                                                                          |
+| Embeddings | Google Gemini        | `text-embedding-004`, 768 dims                                                                                                                           |
+| Payments   | Stripe               | Checkout + webhook at `/api/stripe/`                                                                                                                     |
+| Email      | Resend               | Falls back to console.log in dev when `RESEND_API_KEY` unset                                                                                             |
+| Testing    | Vitest 4             | `pnpm test` — 106 tests; config in `vitest.config.ts` (node env, no jsdom → UI is untestable as configured)                                              |
 
 ---
 
@@ -32,22 +32,29 @@ Deployed on Vercel. Auth via NextAuth v5 (email/password + email verification).
 
 ### Prisma + Edge Runtime (Turbopack)
 
-**Problem**: Static Prisma import crashes Turbopack workers.
-**Fix**: `src/lib/db.ts` uses dynamic `import()` inside an async singleton factory.
+**Problem**: Bundling Prisma's native/WASM deps into a Turbopack worker crashes it.
+**Fix**: `next.config.ts` lists them in `serverExternalPackages` so they are loaded at
+runtime instead of bundled. `src/lib/db.ts` is then an ordinary **static** top-level
+import plus a synchronous `globalThis` singleton.
 
 ```typescript
-// ✅ Correct — dynamic import in db.ts
-let prismaInstance: PrismaClient | null = null;
-async function getInstance() {
-  if (!prismaInstance) {
-    const { PrismaClient } = await import("@/generated/prisma");
-    prismaInstance = new PrismaClient();
-  }
-  return prismaInstance;
-}
+// ✅ Actual db.ts — static import, sync singleton
+import { PrismaClient } from "../generated/prisma";
+import { PrismaNeon } from "@prisma/adapter-neon";
+export const prisma = globalForPrisma.prisma ?? createPrismaClient();
 ```
 
-**Never** switch back to a static top-level `import { PrismaClient }` — it will crash.
+```typescript
+// next.config.ts — this is what keeps Turbopack happy
+serverExternalPackages: ["pdf-parse", "@neondatabase/serverless", "@prisma/adapter-neon"],
+```
+
+**When adding a native or CJS dependency that Turbopack chokes on, add it to that array** —
+don't reach for a dynamic import.
+
+> ⚠️ This section previously described an async dynamic-import factory and said a static
+> import "will crash". That was never what the code did (verified 2026-09-20). Trust
+> `src/lib/db.ts` over this file if they ever disagree again.
 
 **Generated client** (`src/generated/prisma/`) is gitignored (~10MB WASM binaries). It's regenerated automatically by `prisma generate` which runs as the first step of `vercel.json` `buildCommand`. In local dev, run `pnpm prisma generate` after schema changes.
 
@@ -134,7 +141,7 @@ price: product.price,            // ❌ serializes as string "99.99"
 ```bash
 pnpm dev           # Dev server (Turbopack)
 pnpm build         # Production build
-pnpm test          # 93 Vitest tests
+pnpm test          # 106 Vitest tests
 pnpm lint          # ESLint
 pnpm type-check    # tsc --noEmit
 pnpm format        # Prettier --write
@@ -156,7 +163,7 @@ pnpm prisma migrate deploy # Apply pending migrations (production/CI)
 
 ## Known Gotchas
 
-1. **Turbopack + Prisma**: Static import = crash. Always use the `db.ts` singleton. See #8723.
+1. **Turbopack + Prisma**: handled by `serverExternalPackages` in `next.config.ts`, not by a dynamic import. Always go through the `db.ts` singleton. See the architecture section above.
 2. **NextAuth v5 beta**: `auth()` returns `null` in some edge routes — always null-check `session?.user?.orgId`.
 3. **pgvector queries**: Prisma doesn't natively support `<=>` operator — use raw queries in `vector-search.ts`.
 4. **Neon serverless**: Use `@neondatabase/serverless` driver + `@prisma/adapter-neon` for edge-compatible DB connections.
@@ -165,4 +172,5 @@ pnpm prisma migrate deploy # Apply pending migrations (production/CI)
 7. **Decimal serialization**: `.toNumber()` required on all Decimal fields before `Response.json()`. Prisma Decimal objects serialize as strings otherwise.
 8. **Prisma migrate dev in non-interactive env**: Refuses to run even with `--create-only`. Use `prisma migrate diff --from-config-datasource --to-schema prisma/schema.prisma --script` to generate SQL, manually create `migrations/<timestamp>_<name>/migration.sql`, then `prisma migrate deploy`.
 9. **Chat returns a stream error but the Demo-mode banner is absent → the OpenRouter key is dead, not missing.** `isLlmMockMode()` only checks the key's _shape_ (length ≥ 20, not `placeholder*`), so a revoked key skips mock mode and every request fails with `401 User not found`. Check with `curl -H "Authorization: Bearer $KEY" https://openrouter.ai/api/v1/key`; fix by issuing a new key and updating **both** `.env.local` and the Vercel env var (then redeploy — env changes don't apply to finished deployments).
-10. **OpenRouter account setup lives outside the repo**: the account has no purchased credits, so `:free` models are capped at 50 req/day **account-wide** (20/min; UTC reset) — shared by every tenant plus the landing-page live demo, and one chat message costs 2–3 requests because of the tool loop. The key itself carries a $1 credit limit as a second cost guard. Live quota: `free_model_daily_requests` in `GET /api/v1/key`. The primary free model is often unavailable, so the fallback list in `model-router.ts` is load-bearing (first verified request was served by the first fallback).
+10. **A new server-to-server API route answers 307 → `/login` instead of running.** Symptom is a redirect plus two `authjs.*` cookies where you expected JSON — it looks nothing like an auth failure, and no error is logged. Cause: the NextAuth proxy guards everything not listed in `publicPrefixes` in `src/auth.config.ts`. Any endpoint that carries its own credential (webhook secret, API key, bearer token) instead of a session cookie **must be added there** — `/api/widget`, `/api/stripe/webhook`, `/api/channels` and `/api/mcp` already are.
+11. **OpenRouter account setup lives outside the repo**: the account has no purchased credits, so `:free` models are capped at 50 req/day **account-wide** (20/min; UTC reset) — shared by every tenant plus the landing-page live demo, and one chat message costs 2–3 requests because of the tool loop. The key itself carries a $1 credit limit as a second cost guard. Live quota: `free_model_daily_requests` in `GET /api/v1/key`. The primary free model is often unavailable, so the fallback list in `model-router.ts` is load-bearing (first verified request was served by the first fallback).
