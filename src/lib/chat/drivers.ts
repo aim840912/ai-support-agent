@@ -1,4 +1,4 @@
-import { createAgentUIStreamResponse } from "ai";
+import { createAgentUIStreamResponse, convertToModelMessages } from "ai";
 import type { UIMessage } from "ai";
 import { safeStreamOnError } from "@/lib/api-error-handler";
 import { persistTurn, type PersistedToolCall } from "./persist-turn";
@@ -60,4 +60,32 @@ export function streamChatResponse(ctx: ChatContext): Promise<Response> {
       });
     },
   });
+}
+
+/**
+ * Messaging driver: runs the same agent to completion and returns one finished
+ * string, for channels that deliver a whole message rather than a stream.
+ *
+ * Uses agent.generate() rather than generateText() on purpose — generateText
+ * would bypass the instructions, tools and stopWhen that createSupportAgent
+ * already configured, silently costing the agent its tools.
+ */
+export async function generateChatReply(ctx: ChatContext): Promise<string> {
+  // convertToModelMessages is async in AI SDK v6. Forgetting the await passes a
+  // Promise where an array is expected, which fails at the provider, not here.
+  const modelMessages = await convertToModelMessages(ctx.messages);
+
+  const result = await ctx.agent.generate({ messages: modelMessages });
+
+  await persistTurn({
+    sessionId: ctx.sessionId,
+    userText: extractText(ctx.messages[ctx.messages.length - 1]),
+    assistantText: result.text,
+    toolCalls: result.toolCalls.map((t) => ({
+      toolName: String(t.toolName),
+      toolCallId: t.toolCallId,
+    })),
+  });
+
+  return result.text;
 }
