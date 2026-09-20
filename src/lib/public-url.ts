@@ -8,10 +8,17 @@
  * snippet and the sitemap.
  */
 export function getPublicBaseUrl(): string {
-  const raw =
-    process.env.INTEGRATIONS_PUBLIC_URL ??
-    process.env.NEXT_PUBLIC_APP_URL ??
-    "http://localhost:3000";
+  // The last resort differs by environment on purpose. Falling back to
+  // localhost in production is silently wrong rather than loudly broken: a
+  // deployed build kept emitting http://localhost:3000 as the dashboardUrl in
+  // webhook payloads because neither variable was set, and every local test
+  // passed because localhost happened to be the right answer there.
+  const fallback =
+    process.env.NODE_ENV === "production"
+      ? "https://ai-support-agent-tau.vercel.app"
+      : "http://localhost:3000";
+
+  const raw = process.env.INTEGRATIONS_PUBLIC_URL ?? process.env.NEXT_PUBLIC_APP_URL ?? fallback;
   return raw.replace(/\/+$/, "");
 }
 
