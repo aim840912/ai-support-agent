@@ -14,6 +14,7 @@ import {
   Package,
   ShoppingCart,
   TicketCheck,
+  Plug,
 } from "lucide-react";
 import { OrgSwitcher } from "@/components/dashboard/org-switcher";
 import {
@@ -69,6 +70,11 @@ const navItems = [
     title: "Analytics",
     href: "/analytics",
     icon: BarChart3,
+  },
+  {
+    title: "Integrations",
+    href: "/integrations",
+    icon: Plug,
   },
   {
     title: "Settings",
