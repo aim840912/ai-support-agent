@@ -7,6 +7,7 @@ import { generateChatReply } from "@/lib/chat/drivers";
 import { loadRecentMessages } from "@/lib/chat/load-recent-messages";
 import { decryptSecret } from "@/lib/crypto/secrets";
 import { sendMessage, sendChatAction } from "./client";
+import { toTelegramHtml } from "./format";
 import type { TelegramMessage } from "./types";
 import type { UIMessage } from "ai";
 
@@ -149,7 +150,16 @@ export async function handleTelegramMessage(
     }
 
     const reply = await generateChatReply(prepared.ctx);
-    await sendMessage(botToken, chatId, reply || USER_FACING.generic);
+
+    // Only the model's answer goes through the formatter. The canned messages
+    // above stay plain: they contain no markup, and sending them as HTML would
+    // add a parsing failure mode for no gain.
+    await sendMessage(
+      botToken,
+      chatId,
+      reply ? toTelegramHtml(reply) : USER_FACING.generic,
+      reply ? "HTML" : undefined
+    );
 
     await prisma.telegramChannel
       .update({ where: { id: channel.id }, data: { lastEventAt: new Date() } })
