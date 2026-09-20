@@ -11,6 +11,9 @@ import { encryptSecret, decryptSecret, isSecretEncryptionConfigured } from "@/li
 import { getMe, setWebhook, deleteWebhook } from "@/lib/channels/telegram/client";
 import { getPublicBaseUrl, isPubliclyReachable } from "@/lib/public-url";
 import { isDemoUser } from "@/lib/demo";
+import { generateWebhookSecret } from "@/lib/webhook-signature";
+import { deliverOnce, validateWebhookUrl } from "@/lib/webhooks/dispatch";
+import { buildEvent, WEBHOOK_EVENTS } from "@/lib/webhooks/events";
 
 /**
  * Server actions are callable from the browser, so every one of these
@@ -214,3 +217,172 @@ export async function disconnectTelegramChannel(): Promise<TelegramActionResult>
   revalidatePath("/integrations");
   return { ok: true, message: "Telegram disconnected." };
 }
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Outbound webhooks
+// ─────────────────────────────────────────────────────────────────────────────
+
+const endpointSchema = z.object({
+  url: z.string().trim().min(1, "Enter a URL"),
+  events: z.array(z.enum(WEBHOOK_EVENTS)).min(1, "Choose at least one event"),
+  description: z.string().trim().max(200).optional(),
+});
+
+export type EndpointResult = { ok: boolean; message: string; secret?: string };
+
+/**
+ * Every mutation below re-reads the org from the session and scopes the write
+ * to it with updateMany/deleteMany. Using update({ where: { id } }) would let
+ * an admin of one org delete another org's endpoint by guessing a cuid — an
+ * IDOR, and the first thing a reviewer looks for here.
+ */
+export async function createWebhookEndpoint(input: {
+  url: string;
+  events: string[];
+  description?: string;
+}): Promise<EndpointResult> {
+  const { orgId } = await requireWriteAccess();
+
+  const parsed = endpointSchema.safeParse(input);
+  if (!parsed.success) {
+    return { ok: false, message: parsed.error.issues[0]?.message ?? "Invalid input" };
+  }
+
+  const urlCheck = validateWebhookUrl(parsed.data.url);
+  if (!urlCheck.ok) return { ok: false, message: urlCheck.reason };
+
+  try {
+    const secret = generateWebhookSecret();
+    await prisma.webhookEndpoint.create({
+      data: {
+        orgId,
+        url: parsed.data.url,
+        events: parsed.data.events,
+        description: parsed.data.description || null,
+        secret,
+      },
+    });
+
+    revalidatePath("/integrations");
+    // The secret is returned once so it can be shown for copying; it stays
+    // readable afterwards because the receiver needs it to verify signatures.
+    return { ok: true, message: "Endpoint added.", secret };
+  } catch (error) {
+    logError("[integrations/createWebhookEndpoint]", error);
+    return { ok: false, message: "Could not add the endpoint." };
+  }
+}
+
+export async function setWebhookEndpointEnabled(
+  id: string,
+  enabled: boolean
+): Promise<EndpointResult> {
+  const { orgId } = await requireWriteAccess();
+
+  try {
+    const { count } = await prisma.webhookEndpoint.updateMany({
+      where: { id, orgId },
+      // Re-enabling clears the failure streak, otherwise a single further
+      // failure would immediately switch it off again.
+      data: enabled ? { enabled: true, failureCount: 0 } : { enabled: false },
+    });
+    if (count === 0) return { ok: false, message: "Endpoint not found." };
+
+    revalidatePath("/integrations");
+    return { ok: true, message: enabled ? "Endpoint enabled." : "Endpoint paused." };
+  } catch (error) {
+    logError("[integrations/setWebhookEndpointEnabled]", error);
+    return { ok: false, message: "Could not update the endpoint." };
+  }
+}
+
+export async function deleteWebhookEndpoint(id: string): Promise<EndpointResult> {
+  const { orgId } = await requireWriteAccess();
+
+  try {
+    const { count } = await prisma.webhookEndpoint.deleteMany({ where: { id, orgId } });
+    if (count === 0) return { ok: false, message: "Endpoint not found." };
+
+    revalidatePath("/integrations");
+    return { ok: true, message: "Endpoint removed." };
+  } catch (error) {
+    logError("[integrations/deleteWebhookEndpoint]", error);
+    return { ok: false, message: "Could not remove the endpoint." };
+  }
+}
+
+export async function rotateWebhookSecret(id: string): Promise<EndpointResult> {
+  const { orgId } = await requireWriteAccess();
+
+  try {
+    const secret = generateWebhookSecret();
+    const { count } = await prisma.webhookEndpoint.updateMany({
+      where: { id, orgId },
+      data: { secret },
+    });
+    if (count === 0) return { ok: false, message: "Endpoint not found." };
+
+    revalidatePath("/integrations");
+    return {
+      ok: true,
+      secret,
+      message:
+        "Secret rotated. Update it in the receiving tool — deliveries will fail until you do.",
+    };
+  } catch (error) {
+    logError("[integrations/rotateWebhookSecret]", error);
+    return { ok: false, message: "Could not rotate the secret." };
+  }
+}
+
+export type TestDeliveryResult = {
+  ok: boolean;
+  message: string;
+  statusCode?: number | null;
+  durationMs?: number;
+};
+
+/**
+ * Fires a representative event at one endpoint.
+ *
+ * Goes through the real deliverOnce, so what this proves is the actual
+ * delivery path — headers, signature, timeout and all — rather than a
+ * simulation of it.
+ */
+export async function sendTestWebhook(id: string): Promise<TestDeliveryResult> {
+  const { orgId } = await requireWriteAccess();
+
+  // findFirst scoped by orgId before doing anything with the row.
+  const endpoint = await prisma.webhookEndpoint.findFirst({
+    where: { id, orgId },
+    select: { id: true, url: true, secret: true, orgId: true },
+  });
+  if (!endpoint) return { ok: false, message: "Endpoint not found." };
+
+  const result = await deliverOnce(endpoint, buildEvent("ticket.created", orgId, SAMPLE_TICKET));
+  revalidatePath("/integrations");
+
+  return {
+    ok: result.ok,
+    statusCode: result.statusCode,
+    durationMs: result.durationMs,
+    message: result.ok
+      ? `Delivered — HTTP ${result.statusCode} in ${result.durationMs}ms.`
+      : (result.error ?? `Failed with HTTP ${result.statusCode ?? "no response"}.`),
+  };
+}
+
+/** Obviously-fake values, so a test event is never mistaken for a real ticket. */
+const SAMPLE_TICKET = {
+  ticketId: "tkt_sample",
+  ticketNumber: "TKT-SAMPLE",
+  subject: "Test event from the Integrations page",
+  description: "This is a sample payload. No ticket was created.",
+  priority: "high",
+  status: "open",
+  slaHours: 4,
+  orderNumber: "ORD-SAMPLE",
+  source: "dashboard",
+  createdAt: new Date().toISOString(),
+  dashboardUrl: `${getPublicBaseUrl()}/tickets/tkt_sample`,
+};

@@ -3,7 +3,18 @@ import { prisma } from "@/lib/db";
 import { redirect } from "next/navigation";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ChannelsCard, type TelegramChannelView } from "@/components/dashboard/channels-card";
+import {
+  WebhookEndpointsCard,
+  type EndpointView,
+} from "@/components/dashboard/webhook-endpoints-card";
 import { getPublicBaseUrl, isPubliclyReachable } from "@/lib/public-url";
+import { DELIVERY_HISTORY_LIMIT, FAILURE_THRESHOLD } from "@/lib/webhooks/dispatch";
+import {
+  ID_HEADER,
+  EVENT_HEADER,
+  TIMESTAMP_HEADER,
+  SIGNATURE_HEADER,
+} from "@/lib/webhook-signature";
 import { logError } from "@/lib/error-logger";
 
 export const metadata = {
@@ -11,12 +22,15 @@ export const metadata = {
   description: "Connect the support agent to the channels and tools you already use.",
 };
 
+const TABS = ["webhooks", "channels"] as const;
+type TabValue = (typeof TABS)[number];
+
 export default async function IntegrationsPage({
   searchParams,
 }: {
   searchParams: Promise<{ tab?: string }>;
 }) {
-  await searchParams;
+  const { tab } = await searchParams;
   const session = await auth();
   // Explicit guard — the proxy should already have redirected, but a Server
   // Component enforces auth independently rather than querying with "".
@@ -29,11 +43,47 @@ export default async function IntegrationsPage({
   const publicBaseUrl = getPublicBaseUrl();
   const reachable = isPubliclyReachable(publicBaseUrl);
 
+  // Webhooks first: automation is the headline of this page, and the channel
+  // list is short enough to be one click away.
+  const activeTab: TabValue = TABS.includes(tab as TabValue) ? (tab as TabValue) : "webhooks";
+
   try {
-    const channel = await prisma.telegramChannel.findUnique({
-      where: { orgId },
-      select: { botUsername: true, enabled: true, lastEventAt: true },
-    });
+    const [channel, endpoints] = await Promise.all([
+      prisma.telegramChannel.findUnique({
+        where: { orgId },
+        select: { botUsername: true, enabled: true, lastEventAt: true },
+      }),
+      prisma.webhookEndpoint.findMany({
+        where: { orgId },
+        orderBy: { createdAt: "asc" },
+        select: {
+          id: true,
+          url: true,
+          events: true,
+          enabled: true,
+          description: true,
+          secret: true,
+          lastStatus: true,
+          lastFiredAt: true,
+          failureCount: true,
+          deliveries: {
+            orderBy: { createdAt: "desc" },
+            take: DELIVERY_HISTORY_LIMIT,
+            select: {
+              id: true,
+              event: true,
+              status: true,
+              statusCode: true,
+              durationMs: true,
+              attempt: true,
+              error: true,
+              responseBody: true,
+              createdAt: true,
+            },
+          },
+        },
+      }),
+    ]);
 
     const telegram: TelegramChannelView = {
       connected: Boolean(channel),
@@ -45,6 +95,15 @@ export default async function IntegrationsPage({
       lastEventAt: channel?.lastEventAt?.toISOString() ?? null,
     };
 
+    const endpointViews: EndpointView[] = endpoints.map((endpoint) => ({
+      ...endpoint,
+      lastFiredAt: endpoint.lastFiredAt?.toISOString() ?? null,
+      deliveries: endpoint.deliveries.map((delivery) => ({
+        ...delivery,
+        createdAt: delivery.createdAt.toISOString(),
+      })),
+    }));
+
     return (
       <div className="space-y-6">
         <header className="space-y-1">
@@ -55,11 +114,26 @@ export default async function IntegrationsPage({
           </p>
         </header>
 
-        {/* Webhooks and MCP tabs land in later steps; one tab keeps this honest. */}
-        <Tabs defaultValue="channels">
+        {/* The MCP tab lands in a later step. */}
+        <Tabs defaultValue={activeTab}>
           <TabsList>
+            <TabsTrigger value="webhooks">Webhooks</TabsTrigger>
             <TabsTrigger value="channels">Channels</TabsTrigger>
           </TabsList>
+
+          <TabsContent value="webhooks" className="mt-6">
+            <WebhookEndpointsCard
+              endpoints={endpointViews}
+              canEdit={canEdit}
+              failureThreshold={FAILURE_THRESHOLD}
+              headerNames={{
+                id: ID_HEADER,
+                event: EVENT_HEADER,
+                timestamp: TIMESTAMP_HEADER,
+                signature: SIGNATURE_HEADER,
+              }}
+            />
+          </TabsContent>
 
           <TabsContent value="channels" className="mt-6">
             <ChannelsCard
