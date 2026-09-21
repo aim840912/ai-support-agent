@@ -6,6 +6,34 @@ MCP server an AI client can query directly.
 
 All three are configured at **Dashboard → Integrations**.
 
+## How they fit together
+
+Every channel runs the same agent through the same three stages, and every
+way of creating a ticket goes through the same single write path:
+
+```mermaid
+flowchart LR
+  W["Website widget"] --> P
+  D["Dashboard"] --> P
+  T["Telegram webhook"] --> P
+  P["prepareChat()<br/>session · plan limits · agent"] --> S["streamChatResponse()<br/>→ SSE"]
+  P --> G["generateChatReply()<br/>→ one complete reply"]
+  S --> PT["persistTurn()"]
+  G --> PT
+  G --> TG["sendMessage → Telegram"]
+  P --> R["TOOL_REGISTRY<br/>one z.object per tool"]
+  R --> A["AI SDK tool()"]
+  R --> M["MCP registerTool()"]
+  R --> K["createTicket()<br/>single write path"]
+  K --> H["dispatchWebhooks()<br/>HMAC-signed"]
+```
+
+The registry is what keeps chat and MCP from drifting: MCP SDK v2 accepts the
+same Zod object the AI SDK does, so there is no translation layer to fall out
+of sync. `createTicket()` is the only place a ticket is written, which is why
+a webhook fires whether the ticket came from the widget, Telegram or an MCP
+client.
+
 ---
 
 ## Telegram channel
@@ -246,6 +274,73 @@ is recomputed in plaintext on every delivery. Encrypting it would buy only
 the narrow case of a database leak without an environment leak — the
 decryption key lives in the same environment as `DATABASE_URL` — while adding
 a failure mode where rotating that key breaks every endpoint at once.
+
+---
+
+## Designs considered and rejected
+
+### A `ChannelAdapter` interface
+
+The textbook move is an interface every channel implements. The channels
+have no common signature to put in it: the web routes return a `Response`
+that the AI SDK streams into, while Telegram returns an empty 200 and pushes
+the answer over a separate connection. The only shape that covers both is
+`(req) => Promise<Response>` — a Next.js route handler, already dispatched by
+the file system. What the channels genuinely share is the middle of the
+pipeline, so that is what was extracted. Adding Telegram changed **zero
+lines** of the two existing chat routes.
+
+**Adding another channel** (Twilio SMS, WhatsApp Cloud API, Slack) follows the
+Telegram route rather than an interface:
+
+1. A route under `src/app/api/channels/<name>/` that authenticates the
+   provider's signature and answers fast (defer the turn with `after()` if
+   the provider retries on slow responses).
+2. Call `prepareChat()` with a new `source` value, then `generateChatReply()`.
+3. Add the value to `VALID_SOURCES` in `src/lib/constants.ts` — the
+   conversation filters and export pick it up automatically.
+4. Add the route prefix to `publicPrefixes` (see below).
+
+Twilio and WhatsApp are not implemented: both need a paid number and a
+business review, and the steps above are the whole of the integration seam.
+
+### The MCP SDK's `withMcpAuth()` wrapper
+
+It wraps an already-constructed handler, which fixes the tool list before the
+bearer token is known — but the tool list is exactly what varies by tenant
+and plan. Authenticating inside the route instead lets the handler be built
+per request with the gated tool set. That costs nothing in MCP SDK v2, which
+is stateless and creates a fresh server per request anyway; the price is
+writing the `401` by hand.
+
+---
+
+## Things learned by running it
+
+Each of these passed type-checking and tests, and was found only by sending a
+real request.
+
+- **A new server-to-server route answers `307 → /login`.** The NextAuth proxy
+  guards every path not listed in `publicPrefixes` (`src/auth.config.ts`).
+  Any endpoint that carries its own credential must be added there; the
+  symptom looks nothing like an authentication failure.
+- **`GenerateTextResult.toolCalls` holds only the final step.** In a tool
+  loop the final step writes the answer and calls nothing, so the
+  non-streaming path stored every tool-using Telegram turn with no tool
+  records. Collect calls across `result.steps` instead.
+- **Free model slugs rot silently.** A model whose free tier was withdrawn
+  still appears in OpenRouter's model list with `tools` in its supported
+  parameters, and a fallback is only exercised when the primary also fails.
+  Only an actual request proves a slug works. Latency between free models
+  differed 22× for the same prompt.
+- **A fallback that is right in development can be wrong in production.**
+  The public-URL helper once fell back to `localhost`, so every webhook's
+  `dashboardUrl` pointed there in production while local tests passed.
+- **n8n**: the Code node blocks `require('crypto')` by default; the Webhook
+  node needs _Raw Body_ enabled, because the signature covers the exact bytes
+  and a re-serialised object will not match; CLI import requires a top-level
+  `id`, and `update:workflow --active` has been replaced by
+  `publish:workflow`.
 
 ---
 
