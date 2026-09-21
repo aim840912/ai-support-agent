@@ -6,6 +6,10 @@
  *
  * Idempotency strategy:
  *   - Products / Orders / Tickets / AgentSettings → upsert by unique field
+ *     The unique keys (sku, orderNumber, ticketNumber) are GLOBAL, not per org,
+ *     so the update branch re-assigns orgId. With `update: {}` a row already
+ *     owned by another org was silently left there — which is how the demo
+ *     org ended up empty after the demo account changed (2026-03-24).
  *   - Documents / ChatSessions / TicketNotes → count-check before inserting (skip if already exist)
  */
 import { PrismaClient } from "../src/generated/prisma";
@@ -585,7 +589,7 @@ async function main() {
   const products = await Promise.all([
     prisma.product.upsert({
       where: { sku: "AUDIO-WNC-BLK" },
-      update: {},
+      update: { orgId: org.id },
       create: {
         name: "Wireless Noise-Cancelling Headphones",
         sku: "AUDIO-WNC-BLK",
@@ -598,7 +602,7 @@ async function main() {
     }),
     prisma.product.upsert({
       where: { sku: "KB-MECH-RGB" },
-      update: {},
+      update: { orgId: org.id },
       create: {
         name: "Mechanical Keyboard (RGB)",
         sku: "KB-MECH-RGB",
@@ -611,7 +615,7 @@ async function main() {
     }),
     prisma.product.upsert({
       where: { sku: "HUB-USBC-7P" },
-      update: {},
+      update: { orgId: org.id },
       create: {
         name: "USB-C Hub 7-in-1",
         sku: "HUB-USBC-7P",
@@ -624,7 +628,7 @@ async function main() {
     }),
     prisma.product.upsert({
       where: { sku: "MOUSE-ERG-GRY" },
-      update: {},
+      update: { orgId: org.id },
       create: {
         name: "Ergonomic Mouse",
         sku: "MOUSE-ERG-GRY",
@@ -637,7 +641,7 @@ async function main() {
     }),
     prisma.product.upsert({
       where: { sku: "MAT-STAND-BLK" },
-      update: {},
+      update: { orgId: org.id },
       create: {
         name: "Standing Desk Mat",
         sku: "MAT-STAND-BLK",
@@ -650,7 +654,7 @@ async function main() {
     }),
     prisma.product.upsert({
       where: { sku: "CAM-4K-USB" },
-      update: {},
+      update: { orgId: org.id },
       create: {
         name: "4K Webcam",
         sku: "CAM-4K-USB",
@@ -664,7 +668,7 @@ async function main() {
     // New products
     prisma.product.upsert({
       where: { sku: "KB-WL-02" },
-      update: {},
+      update: { orgId: org.id },
       create: {
         name: "Wireless Keyboard",
         sku: "KB-WL-02",
@@ -677,7 +681,7 @@ async function main() {
     }),
     prisma.product.upsert({
       where: { sku: "LIGHT-LED-DK" },
-      update: {},
+      update: { orgId: org.id },
       create: {
         name: "LED Desk Lamp",
         sku: "LIGHT-LED-DK",
@@ -699,7 +703,7 @@ async function main() {
     // ── Existing 6 ──
     prisma.order.upsert({
       where: { orderNumber: "ORD-001" },
-      update: {},
+      update: { orgId: org.id },
       create: {
         orderNumber: "ORD-001",
         status: "delivered",
@@ -716,7 +720,7 @@ async function main() {
     }),
     prisma.order.upsert({
       where: { orderNumber: "ORD-002" },
-      update: {},
+      update: { orgId: org.id },
       create: {
         orderNumber: "ORD-002",
         status: "shipped",
@@ -733,7 +737,7 @@ async function main() {
     }),
     prisma.order.upsert({
       where: { orderNumber: "ORD-003" },
-      update: {},
+      update: { orgId: org.id },
       create: {
         orderNumber: "ORD-003",
         status: "processing",
@@ -749,7 +753,7 @@ async function main() {
     }),
     prisma.order.upsert({
       where: { orderNumber: "ORD-004" },
-      update: {},
+      update: { orgId: org.id },
       create: {
         orderNumber: "ORD-004",
         status: "pending",
@@ -764,7 +768,7 @@ async function main() {
     }),
     prisma.order.upsert({
       where: { orderNumber: "ORD-005" },
-      update: {},
+      update: { orgId: org.id },
       create: {
         orderNumber: "ORD-005",
         status: "cancelled",
@@ -779,7 +783,7 @@ async function main() {
     }),
     prisma.order.upsert({
       where: { orderNumber: "ORD-006" },
-      update: {},
+      update: { orgId: org.id },
       create: {
         orderNumber: "ORD-006",
         status: "shipped",
@@ -797,7 +801,7 @@ async function main() {
     // ── New orders ──
     prisma.order.upsert({
       where: { orderNumber: "ORD-007" },
-      update: {},
+      update: { orgId: org.id },
       create: {
         orderNumber: "ORD-007",
         status: "pending",
@@ -815,7 +819,7 @@ async function main() {
     }),
     prisma.order.upsert({
       where: { orderNumber: "ORD-008" },
-      update: {},
+      update: { orgId: org.id },
       create: {
         orderNumber: "ORD-008",
         status: "processing",
@@ -831,7 +835,7 @@ async function main() {
     }),
     prisma.order.upsert({
       where: { orderNumber: "ORD-009" },
-      update: {},
+      update: { orgId: org.id },
       create: {
         orderNumber: "ORD-009",
         status: "delivered",
@@ -848,7 +852,7 @@ async function main() {
     }),
     prisma.order.upsert({
       where: { orderNumber: "ORD-010" },
-      update: {},
+      update: { orgId: org.id },
       create: {
         orderNumber: "ORD-010",
         status: "cancelled",
@@ -872,7 +876,7 @@ async function main() {
   const tickets = await Promise.all([
     prisma.ticket.upsert({
       where: { ticketNumber: "TKT-1000" },
-      update: {},
+      update: { orgId: org.id },
       create: {
         ticketNumber: "TKT-1000",
         subject: "Headphones not pairing with MacBook",
@@ -887,7 +891,7 @@ async function main() {
     }),
     prisma.ticket.upsert({
       where: { ticketNumber: "TKT-1001" },
-      update: {},
+      update: { orgId: org.id },
       create: {
         ticketNumber: "TKT-1001",
         subject: "Received damaged product — webcam lens cracked",
@@ -902,7 +906,7 @@ async function main() {
     }),
     prisma.ticket.upsert({
       where: { ticketNumber: "TKT-1002" },
-      update: {},
+      update: { orgId: org.id },
       create: {
         ticketNumber: "TKT-1002",
         subject: "Wrong item shipped — received wrong keyboard model",
@@ -917,7 +921,7 @@ async function main() {
     }),
     prisma.ticket.upsert({
       where: { ticketNumber: "TKT-1003" },
-      update: {},
+      update: { orgId: org.id },
       create: {
         ticketNumber: "TKT-1003",
         subject: "Question about extended warranty coverage",
@@ -932,7 +936,7 @@ async function main() {
     }),
     prisma.ticket.upsert({
       where: { ticketNumber: "TKT-1004" },
-      update: {},
+      update: { orgId: org.id },
       create: {
         ticketNumber: "TKT-1004",
         subject: "Request to add item to existing order",
@@ -947,7 +951,7 @@ async function main() {
     }),
     prisma.ticket.upsert({
       where: { ticketNumber: "TKT-1005" },
-      update: {},
+      update: { orgId: org.id },
       create: {
         ticketNumber: "TKT-1005",
         subject: "Headphones stopped working after firmware update",
@@ -962,7 +966,7 @@ async function main() {
     }),
     prisma.ticket.upsert({
       where: { ticketNumber: "TKT-1006" },
-      update: {},
+      update: { orgId: org.id },
       create: {
         ticketNumber: "TKT-1006",
         subject: "Order ORD-007 still pending after 5 days",
@@ -977,7 +981,7 @@ async function main() {
     }),
     prisma.ticket.upsert({
       where: { ticketNumber: "TKT-1007" },
-      update: {},
+      update: { orgId: org.id },
       create: {
         ticketNumber: "TKT-1007",
         subject: "Refund not received for returned order ORD-005",
