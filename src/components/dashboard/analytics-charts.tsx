@@ -8,7 +8,7 @@ type SourceData = { source: string; count: number };
 type ToolData = { tool: string; count: number };
 
 const chartConfig = {
-  count: { label: "Count", color: "hsl(var(--chart-1))" },
+  count: { label: "Count", color: "var(--chart-1)" },
 };
 
 function EmptyState({ message }: { message: string }) {
@@ -37,8 +37,8 @@ export function ConversationsChart({ data }: { data: DailyData[] }) {
         <Area
           type="monotone"
           dataKey="count"
-          stroke="hsl(var(--chart-1))"
-          fill="hsl(var(--chart-1))"
+          stroke="var(--chart-1)"
+          fill="var(--chart-1)"
           fillOpacity={0.1}
         />
       </AreaChart>
@@ -57,7 +57,7 @@ export function SourceDistribution({ data }: { data: SourceData[] }) {
         <XAxis type="number" tick={{ fontSize: 11 }} allowDecimals={false} />
         <YAxis type="category" dataKey="source" tick={{ fontSize: 11 }} width={80} />
         <Tooltip content={<ChartTooltipContent />} />
-        <Bar dataKey="count" fill="hsl(var(--chart-2))" radius={4} />
+        <Bar dataKey="count" fill="var(--chart-2)" radius={4} />
       </BarChart>
     </ChartContainer>
   );
@@ -74,7 +74,7 @@ export function ToolUsageChart({ data }: { data: ToolData[] }) {
         <XAxis type="number" tick={{ fontSize: 11 }} allowDecimals={false} />
         <YAxis type="category" dataKey="tool" tick={{ fontSize: 11 }} width={130} />
         <Tooltip content={<ChartTooltipContent />} />
-        <Bar dataKey="count" fill="hsl(var(--chart-3))" radius={4} />
+        <Bar dataKey="count" fill="var(--chart-3)" radius={4} />
       </BarChart>
     </ChartContainer>
   );
