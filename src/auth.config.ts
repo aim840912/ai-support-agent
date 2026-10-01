@@ -185,37 +185,37 @@ export const authConfig: NextAuthConfig = {
 
       // Refresh passwordChangedAt, role, and orgId every 24 h (matching updateAge).
       // Password change detection: forces re-login within one updateAge window.
-      // Role/orgId refresh: ensures demoted/transferred users can't retain stale
-      // permissions longer than 24 h without re-authenticating.
+      // Role/orgId refresh: ensures demoted, removed or deleted users can't keep
+      // access longer than 24 h without re-authenticating.
+      //
+      // Fails closed: a deleted user, or one with no membership in the org the
+      // token would carry, gets an empty token. Keeping the old orgId/role in
+      // those cases (the previous behaviour) let a removed member keep using
+      // the org until the JWT itself expired.
       const lastChecked = token.passwordChangedAtCheckedAt as number | undefined;
       if (token.id && (!lastChecked || now - lastChecked > UPDATE_AGE_SEC)) {
         const { prisma } = await import("@/lib/db");
-        const currentOrgId = token.orgId as string | undefined;
         const dbUser = await prisma.user.findUnique({
           where: { id: token.id as string },
           select: {
             passwordChangedAt: true,
             activeOrgId: true,
-            organizations: currentOrgId
-              ? { where: { orgId: currentOrgId }, select: { role: true }, take: 1 }
-              : false,
+            organizations: { select: { orgId: true, role: true } },
           },
         });
-        token.passwordChangedAt = dbUser?.passwordChangedAt
+        if (!dbUser) return {};
+
+        // activeOrgId wins — handles org-switches made server-side (e.g.
+        // accept-invite auto-switches the active org).
+        const orgId = dbUser.activeOrgId ?? (token.orgId as string | undefined);
+        const membership = dbUser.organizations.find((m) => m.orgId === orgId);
+        if (!membership) return {};
+
+        token.orgId = membership.orgId;
+        token.role = membership.role;
+        token.passwordChangedAt = dbUser.passwordChangedAt
           ? Math.floor(dbUser.passwordChangedAt.getTime() / 1000)
           : 0;
-        // Propagate fresh orgId from activeOrgId (multi-org) — handles org-switches
-        // made server-side (e.g. accept-invite auto-switches active org).
-        if (dbUser?.activeOrgId) {
-          token.orgId = dbUser.activeOrgId;
-        }
-        // Propagate fresh role from UserOrganization
-        const freshMembership = Array.isArray(dbUser?.organizations)
-          ? (dbUser.organizations as { role: string }[])[0]
-          : undefined;
-        if (freshMembership?.role) {
-          token.role = freshMembership.role;
-        }
         token.passwordChangedAtCheckedAt = now;
       }
 
