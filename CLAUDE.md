@@ -13,18 +13,18 @@ Deployed on Vercel. Auth via NextAuth v5 (email/password + email verification).
 
 ## Stack & Key Libraries
 
-| Purpose    | Library              | Notes                                                                                                                                                    |
-| ---------- | -------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Framework  | Next.js 16           | App Router only — no pages/ directory                                                                                                                    |
-| Styling    | Tailwind CSS v4      | No v3 syntax (`theme()` calls)                                                                                                                           |
-| Auth       | NextAuth v5 beta     | `src/auth.ts` + `src/auth.config.ts`                                                                                                                     |
-| DB ORM     | Prisma 7             | Client at `src/lib/db.ts` — static import + sync singleton; Turbopack compat via `serverExternalPackages`                                                |
-| DB         | Neon PostgreSQL      | pgvector enabled; `prisma migrate dev` (local), `prisma migrate deploy` (prod) — 7 migrations in `prisma/migrations/` (hand-written SQL — see gotcha #8) |
-| LLM        | Vercel AI SDK + Groq | `ai` package v6                                                                                                                                          |
-| Embeddings | Google Gemini        | `text-embedding-004`, 768 dims                                                                                                                           |
-| Payments   | Stripe               | Checkout + webhook at `/api/stripe/`                                                                                                                     |
-| Email      | Resend               | Falls back to console.log in dev when `RESEND_API_KEY` unset                                                                                             |
-| Testing    | Vitest 4             | `pnpm test` — 106 tests; config in `vitest.config.ts` (node env, no jsdom → UI is untestable as configured)                                              |
+| Purpose    | Library                    | Notes                                                                                                                                                    |
+| ---------- | -------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Framework  | Next.js 16                 | App Router only — no pages/ directory                                                                                                                    |
+| Styling    | Tailwind CSS v4            | No v3 syntax (`theme()` calls)                                                                                                                           |
+| Auth       | NextAuth v5 beta           | `src/auth.ts` + `src/auth.config.ts`                                                                                                                     |
+| DB ORM     | Prisma 7                   | Client at `src/lib/db.ts` — static import + sync singleton; Turbopack compat via `serverExternalPackages`                                                |
+| DB         | Neon PostgreSQL            | pgvector enabled; `prisma migrate dev` (local), `prisma migrate deploy` (prod) — 7 migrations in `prisma/migrations/` (hand-written SQL — see gotcha #8) |
+| LLM        | Vercel AI SDK + OpenRouter | `ai` package v6; model list + fallbacks in `src/lib/ai/model-router.ts`                                                                                  |
+| Embeddings | Google Gemini              | `text-embedding-004`, 768 dims                                                                                                                           |
+| Payments   | Stripe                     | Checkout + webhook at `/api/stripe/`                                                                                                                     |
+| Email      | Resend                     | Falls back to console.log in dev when `RESEND_API_KEY` unset                                                                                             |
+| Testing    | Vitest 4                   | `pnpm test`; config in `vitest.config.ts` (node env, no jsdom → UI is untestable as configured)                                                          |
 
 ---
 
@@ -121,18 +121,17 @@ price: product.price,            // ❌ serializes as string "99.99"
 
 ### Environment Variables
 
-| Variable                       | Required                                | Notes                                                                           |
-| ------------------------------ | --------------------------------------- | ------------------------------------------------------------------------------- |
-| `DATABASE_URL`                 | Yes                                     | Neon connection string                                                          |
-| `AUTH_SECRET`                  | Yes                                     | `openssl rand -base64 32`                                                       |
-| `AUTH_URL` / `NEXTAUTH_URL`    | Yes                                     | Base URL                                                                        |
-| `NEXT_PUBLIC_APP_URL`          | Yes                                     | Used for widget iframe src                                                      |
-| `GOOGLE_GENERATIVE_AI_API_KEY` | Yes                                     | Gemini embeddings                                                               |
-| `OPENROUTER_API_KEY`           | Yes (this branch)                       | LLM via OpenRouter (all tiers → GLM; Claude auto-routing disabled — cost guard) |
-| `GROQ_API_KEY`                 | No (superseded on model-routing branch) | LLM (main branch)                                                               |
-| `RESEND_API_KEY`               | No                                      | Falls back to console log                                                       |
-| `STRIPE_SECRET_KEY`            | No                                      | Billing features disabled without it                                            |
-| `NEXT_PUBLIC_DEMO_API_KEY`     | No                                      | Enables live demo on landing page                                               |
+| Variable                       | Required | Notes                                                                           |
+| ------------------------------ | -------- | ------------------------------------------------------------------------------- |
+| `DATABASE_URL`                 | Yes      | Neon connection string                                                          |
+| `AUTH_SECRET`                  | Yes      | `openssl rand -base64 32`                                                       |
+| `AUTH_URL` / `NEXTAUTH_URL`    | Yes      | Base URL                                                                        |
+| `NEXT_PUBLIC_APP_URL`          | Yes      | Used for widget iframe src                                                      |
+| `GOOGLE_GENERATIVE_AI_API_KEY` | Yes      | Gemini embeddings                                                               |
+| `OPENROUTER_API_KEY`           | Yes      | LLM via OpenRouter (all tiers → GLM; Claude auto-routing disabled — cost guard) |
+| `RESEND_API_KEY`               | No       | Falls back to console log                                                       |
+| `STRIPE_SECRET_KEY`            | No       | Billing features disabled without it                                            |
+| `NEXT_PUBLIC_DEMO_API_KEY`     | No       | Enables live demo on landing page                                               |
 
 ---
 
@@ -141,7 +140,7 @@ price: product.price,            // ❌ serializes as string "99.99"
 ```bash
 pnpm dev           # Dev server (Turbopack)
 pnpm build         # Production build
-pnpm test          # 106 Vitest tests
+pnpm test          # Vitest suite
 pnpm lint          # ESLint
 pnpm type-check    # tsc --noEmit
 pnpm format        # Prettier --write
