@@ -26,7 +26,6 @@ const mockOrgFindUnique = vi.mocked(prisma.organization.findUnique);
 const mockDocumentCount = vi.mocked(prisma.document.count);
 const mockSessionCount = vi.mocked(prisma.chatSession.count);
 const mockProductCount = vi.mocked(prisma.product.count);
-const mockUserCount = vi.mocked(prisma.user.count); // kept for completeness; no longer used by checkTeamMemberLimit
 const mockUserOrgCount = vi.mocked(prisma.userOrganization.count);
 
 function mockPlan(plan: "free" | "pro") {

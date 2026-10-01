@@ -694,7 +694,7 @@ async function main() {
     }),
   ]);
 
-  const [headphones, keyboard, hub, mouse, mat, webcam, wirelessKeyboard, deskLamp] = products;
+  const [headphones, keyboard, hub, mouse, mat, webcam, wirelessKeyboard] = products;
 
   console.log(`Seeded ${products.length} products`);
 
