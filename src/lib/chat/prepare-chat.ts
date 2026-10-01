@@ -93,7 +93,7 @@ export async function prepareChat({
     // Verify the session belongs to this org before reading/writing messages.
     // Without this check, an attacker could supply a sessionId from another
     // org's conversation and append messages to it (cross-tenant injection).
-    const existingSession = await prisma.chatSession.findUnique({
+    const existingSession = await prisma.chatSession.findFirst({
       where: { id: resolvedSessionId, orgId },
       select: { id: true },
     });

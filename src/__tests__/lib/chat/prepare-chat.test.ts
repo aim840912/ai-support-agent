@@ -3,7 +3,7 @@ import { describe, it, expect, vi, beforeEach } from "vitest";
 // ── Mocks ──
 vi.mock("@/lib/db", () => ({
   prisma: {
-    chatSession: { create: vi.fn(), findUnique: vi.fn() },
+    chatSession: { create: vi.fn(), findFirst: vi.fn() },
   },
 }));
 
@@ -30,7 +30,7 @@ import { prepareChat } from "@/lib/chat/prepare-chat";
 import type { UIMessage } from "ai";
 
 const mockCreate = vi.mocked(prisma.chatSession.create);
-const mockFindUnique = vi.mocked(prisma.chatSession.findUnique);
+const mockFindFirst = vi.mocked(prisma.chatSession.findFirst);
 const mockConvLimit = vi.mocked(checkConversationLimit);
 const mockMsgLimit = vi.mocked(checkMessageLimit);
 const mockCreateAgent = vi.mocked(createSupportAgent);
@@ -98,7 +98,7 @@ describe("prepareChat", () => {
 
   it("returns SESSION_NOT_FOUND when the session belongs to another org", async () => {
     allowAll();
-    mockFindUnique.mockResolvedValue(null);
+    mockFindFirst.mockResolvedValue(null);
 
     const result = await prepareChat({ orgId: "org1", messages, sessionId: "other-org-session" });
 
@@ -107,14 +107,14 @@ describe("prepareChat", () => {
     expect(result.error.code).toBe("SESSION_NOT_FOUND");
     expect(result.error.status).toBe(404);
     // The org must be part of the lookup — without it this is cross-tenant injection.
-    expect(mockFindUnique).toHaveBeenCalledWith(
+    expect(mockFindFirst).toHaveBeenCalledWith(
       expect.objectContaining({ where: { id: "other-org-session", orgId: "org1" } })
     );
     expect(mockMsgLimit).not.toHaveBeenCalled();
   });
 
   it("returns MESSAGE_LIMIT with status 429 when the per-conversation limit is hit", async () => {
-    mockFindUnique.mockResolvedValue({ id: "s1" } as never);
+    mockFindFirst.mockResolvedValue({ id: "s1" } as never);
     mockMsgLimit.mockResolvedValue({
       allowed: false,
       reason: "Message limit per conversation reached",

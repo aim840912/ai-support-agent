@@ -46,8 +46,9 @@ export async function GET(_request: Request, context: { params: Promise<{ id: st
   const { id } = await context.params;
 
   try {
-    // findFirst with both id + orgId: prevents 404 vs 403 information leak and
-    // is safe in Prisma 7 where findUnique rejects non-unique compound filters.
+    // findFirst with both id + orgId: a session from another org returns the
+    // same 404 as a missing one, so ids can't be enumerated across tenants.
+    // Every tenant-scoped `{ id, orgId }` read in this codebase uses findFirst.
     const chatSession = await prisma.chatSession.findFirst({
       where: { id, orgId },
       include: {
