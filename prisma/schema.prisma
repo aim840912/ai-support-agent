@@ -107,6 +107,9 @@ model ChatSession {
   source    String       @default("widget") // widget | dashboard | api | telegram
   org       Organization @relation(fields: [orgId], references: [id])
   createdAt DateTime     @default(now())
+  // Set when a channel user explicitly ends the conversation (Telegram /reset).
+  // Channel session lookup skips closed sessions; null = still open.
+  closedAt  DateTime?
 
   messages ChatMessage[]
 

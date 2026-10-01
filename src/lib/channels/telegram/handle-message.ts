@@ -70,12 +70,28 @@ async function findActiveSession(orgId: string, visitorId: string): Promise<stri
       orgId,
       source: "telegram",
       visitorId,
+      closedAt: null,
       createdAt: { gte: new Date(Date.now() - SESSION_WINDOW_MS) },
     },
     orderBy: { createdAt: "desc" },
     select: { id: true },
   });
   return existing?.id;
+}
+
+/**
+ * Ends every open conversation for this chat so the next message starts fresh.
+ *
+ * Merely skipping the lookup for the /reset turn itself is not enough: the
+ * following message would find the same session again and restore its history.
+ * Closing is a write that the lookup above respects. The new session is still
+ * created by prepareChat, so the monthly conversation limit applies as usual.
+ */
+async function closeOpenSessions(orgId: string, visitorId: string): Promise<void> {
+  await prisma.chatSession.updateMany({
+    where: { orgId, source: "telegram", visitorId, closedAt: null },
+    data: { closedAt: new Date() },
+  });
 }
 
 /**
@@ -114,16 +130,15 @@ export async function handleTelegramMessage(
     }
 
     const visitorId = `telegram:${chatId}`;
-    const isReset = text.toLowerCase() === RESET_COMMAND;
-
-    // /reset doesn't delete anything — it just declines to reuse the current
-    // session, so the next turn starts a fresh one.
-    const sessionId = isReset ? undefined : await findActiveSession(channel.orgId, visitorId);
-
-    if (isReset) {
+    // /reset doesn't delete anything — it closes the current session, which
+    // stays visible in the dashboard but is never resumed.
+    if (text.toLowerCase() === RESET_COMMAND) {
+      await closeOpenSessions(channel.orgId, visitorId);
       await sendMessage(botToken, chatId, USER_FACING.resetDone);
       return;
     }
+
+    const sessionId = await findActiveSession(channel.orgId, visitorId);
 
     await sendChatAction(botToken, chatId);
 
