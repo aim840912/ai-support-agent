@@ -99,6 +99,7 @@ export default async function IntegrationsPage({
           createdAt: true,
           lastUsedAt: true,
           revokedAt: true,
+          expiresAt: true,
         },
       }),
     ]);
@@ -120,6 +121,7 @@ export default async function IntegrationsPage({
       createdAt: key.createdAt.toISOString(),
       lastUsedAt: key.lastUsedAt?.toISOString() ?? null,
       revokedAt: key.revokedAt?.toISOString() ?? null,
+      expiresAt: key.expiresAt?.toISOString() ?? null,
     }));
 
     const endpointViews: EndpointView[] = endpoints.map((endpoint) => ({

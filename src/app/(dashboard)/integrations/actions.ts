@@ -14,6 +14,11 @@ import { isDemoUser } from "@/lib/demo";
 import { generateWebhookSecret } from "@/lib/webhook-signature";
 import { deliverOnce, validateWebhookUrl, type DeliveryResult } from "@/lib/webhooks/dispatch";
 import { buildEvent, parseStoredEvent, WEBHOOK_EVENTS } from "@/lib/webhooks/events";
+import {
+  computeExpiresAt,
+  isKeyExpiryDays,
+  type KeyExpiryDays,
+} from "@/lib/integration-key-expiry";
 
 /**
  * Server actions are callable from the browser, so every one of these
@@ -459,16 +464,29 @@ export type CreateKeyResult = {
   key?: string;
 };
 
-export async function createIntegrationKey(input: { name: string }): Promise<CreateKeyResult> {
+export async function createIntegrationKey(input: {
+  name: string;
+  expiresInDays: KeyExpiryDays;
+}): Promise<CreateKeyResult> {
   const { orgId } = await requireOwner();
 
   const parsed = keyNameSchema.safeParse(input.name);
   if (!parsed.success) {
     return { ok: false, message: parsed.error.issues[0]?.message ?? "Invalid name" };
   }
+  if (!isKeyExpiryDays(input.expiresInDays)) {
+    return { ok: false, message: "Invalid input" };
+  }
 
   try {
-    const active = await prisma.integrationKey.count({ where: { orgId, revokedAt: null } });
+    // An expired key can no longer authenticate, so it must not use up a slot.
+    const active = await prisma.integrationKey.count({
+      where: {
+        orgId,
+        revokedAt: null,
+        OR: [{ expiresAt: null }, { expiresAt: { gt: new Date() } }],
+      },
+    });
     if (active >= MAX_KEYS_PER_ORG) {
       return {
         ok: false,
@@ -485,6 +503,7 @@ export async function createIntegrationKey(input: { name: string }): Promise<Cre
         name: parsed.data,
         keyHash: hashApiKey(raw),
         keyPrefix: raw.slice(0, 12),
+        expiresAt: computeExpiresAt(input.expiresInDays),
       },
     });
 

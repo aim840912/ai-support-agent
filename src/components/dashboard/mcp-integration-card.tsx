@@ -17,8 +17,16 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { toast } from "sonner";
 import { createIntegrationKey, revokeIntegrationKey } from "@/app/(dashboard)/integrations/actions";
+import { KEY_EXPIRY_OPTIONS, isKeyExpired, type KeyExpiryDays } from "@/lib/integration-key-expiry";
 
 export type IntegrationKeyView = {
   id: string;
@@ -27,6 +35,7 @@ export type IntegrationKeyView = {
   createdAt: string;
   lastUsedAt: string | null;
   revokedAt: string | null;
+  expiresAt: string | null;
 };
 
 export type PlanToolView = {
@@ -68,6 +77,13 @@ function CopyButton({ value, label }: { value: string; label: string }) {
   );
 }
 
+/** Select values must be strings; "never" stands in for a null expiry. */
+const NEVER = "never";
+
+function expiryLabel(days: KeyExpiryDays): string {
+  return days === null ? "Never expires" : `Expires in ${days} days`;
+}
+
 function formatDate(iso: string | null): string {
   if (!iso) return "Never";
   return new Intl.DateTimeFormat(undefined, {
@@ -79,6 +95,7 @@ function formatDate(iso: string | null): string {
 
 export function McpIntegrationCard({ serverUrl, keys, tools, plan, canIssueKeys }: Props) {
   const [name, setName] = useState("");
+  const [expiresInDays, setExpiresInDays] = useState<KeyExpiryDays>(KEY_EXPIRY_OPTIONS[0]);
   const [freshKey, setFreshKey] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
 
@@ -97,7 +114,7 @@ export function McpIntegrationCard({ serverUrl, keys, tools, plan, canIssueKeys 
 
   function handleCreate() {
     startTransition(async () => {
-      const result = await createIntegrationKey({ name: name.trim() });
+      const result = await createIntegrationKey({ name: name.trim(), expiresInDays });
       if (result.ok && result.key) {
         setFreshKey(result.key);
         setName("");
@@ -208,6 +225,27 @@ export function McpIntegrationCard({ serverUrl, keys, tools, plan, canIssueKeys 
                 disabled={isPending}
               />
             </div>
+            <div className="space-y-2">
+              <Label htmlFor="key-expiry">Expiry</Label>
+              <Select
+                value={expiresInDays === null ? NEVER : String(expiresInDays)}
+                onValueChange={(value) =>
+                  setExpiresInDays(value === NEVER ? null : (Number(value) as KeyExpiryDays))
+                }
+                disabled={isPending}
+              >
+                <SelectTrigger id="key-expiry" className="w-44">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {KEY_EXPIRY_OPTIONS.map((days) => (
+                    <SelectItem key={days ?? NEVER} value={days === null ? NEVER : String(days)}>
+                      {expiryLabel(days)}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
             <Button size="sm" onClick={handleCreate} disabled={isPending || !name.trim()}>
               <Plus className="h-4 w-4" aria-hidden="true" />
               Create key
@@ -226,6 +264,7 @@ export function McpIntegrationCard({ serverUrl, keys, tools, plan, canIssueKeys 
                   <th className="py-1 font-medium">Key</th>
                   <th className="py-1 font-medium">Created</th>
                   <th className="py-1 font-medium">Last used</th>
+                  <th className="py-1 font-medium">Expires</th>
                   <th className="py-1" />
                 </tr>
               </thead>
@@ -243,6 +282,15 @@ export function McpIntegrationCard({ serverUrl, keys, tools, plan, canIssueKeys 
                     </td>
                     <td className="py-2 text-muted-foreground">{formatDate(key.createdAt)}</td>
                     <td className="py-2 text-muted-foreground">{formatDate(key.lastUsedAt)}</td>
+                    <td className="py-2 text-muted-foreground">
+                      {key.expiresAt && isKeyExpired(new Date(key.expiresAt)) ? (
+                        <Badge variant="destructive">Expired</Badge>
+                      ) : key.expiresAt ? (
+                        formatDate(key.expiresAt)
+                      ) : (
+                        "Never"
+                      )}
+                    </td>
                     <td className="py-2 text-right">
                       <AlertDialog>
                         <AlertDialogTrigger asChild>
