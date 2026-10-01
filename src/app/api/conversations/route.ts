@@ -2,7 +2,7 @@ import { auth } from "@/auth";
 import { prisma } from "@/lib/db";
 import { NextRequest } from "next/server";
 import { logError } from "@/lib/error-logger";
-import { VALID_SOURCES, isValidSource, type ValidSource } from "@/lib/constants";
+import { isValidSource, type ValidSource } from "@/lib/constants";
 
 export async function GET(request: NextRequest) {
   const session = await auth();

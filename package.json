@@ -25,7 +25,6 @@
   },
   "dependencies": {
     "@ai-sdk/google": "^3.0.43",
-    "@ai-sdk/groq": "^3.0.29",
     "@ai-sdk/react": "^3.0.118",
     "@auth/prisma-adapter": "^2.11.1",
     "@modelcontextprotocol/server": "^2.0.0",
