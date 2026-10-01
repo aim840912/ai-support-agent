@@ -144,6 +144,7 @@ pnpm test          # Vitest suite
 pnpm lint          # ESLint
 pnpm type-check    # tsc --noEmit
 pnpm format        # Prettier --write
+pnpm check:models  # Live-call every free OpenRouter slug (spends ~2 free-quota requests)
 pnpm prisma studio        # DB GUI
 pnpm prisma migrate dev   # Create + apply migration (local dev)
 pnpm prisma migrate deploy # Apply pending migrations (production/CI)

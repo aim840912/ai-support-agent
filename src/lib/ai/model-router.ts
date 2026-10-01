@@ -52,8 +52,10 @@ export const MODEL_SLUGS = {
    * exactly what happened on 2026-09-20 with deepseek-v4-flash. Re-verify with
    * a direct call, not by reading the model list: presence in /api/v1/models
    * and `supported_parameters: ["tools"]` were both true for the dead slug.
+   * `pnpm check:models` makes that call for every free slug here (it caught
+   * inclusionai/ling-3.0-flash-vl losing its free tier on 2026-10-01).
    */
-  freeFallbacks: ["nvidia/nemotron-3-ultra-550b-a55b:free", "inclusionai/ling-3.0-flash-vl:free"],
+  freeFallbacks: ["nvidia/nemotron-3-ultra-550b-a55b:free"],
 } as const;
 
 /**

@@ -13,6 +13,7 @@
     "test:coverage": "vitest run --coverage",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
+    "check:models": "node --env-file=.env.local --disable-warning=MODULE_TYPELESS_PACKAGE_JSON scripts/check-model-slugs.mjs",
     "prepare": "husky"
   },
   "lint-staged": {
