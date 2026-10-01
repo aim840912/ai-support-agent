@@ -76,3 +76,50 @@ export function toTicketCreatedData(ticket: CreatedTicket): TicketCreatedData {
     dashboardUrl: `${getPublicBaseUrl()}/tickets/${ticket.id}`,
   };
 }
+
+/**
+ * Recovers the original event from a stored delivery so it can be resent.
+ *
+ * Returns null when the stored body is not a complete event — most often
+ * because it exceeded the storage limit and was truncated. Resending a
+ * truncated body would deliver broken JSON under a valid signature, so the
+ * caller must refuse rather than send what it has.
+ *
+ * The event id is kept as-is: a resend is the same event, and receivers
+ * deduplicate on it.
+ */
+export function parseStoredEvent(
+  requestBody: string | null,
+  expectedOrgId: string
+): WebhookEvent | null {
+  if (!requestBody) return null;
+
+  let parsed: unknown;
+  try {
+    parsed = JSON.parse(requestBody);
+  } catch {
+    return null;
+  }
+
+  if (typeof parsed !== "object" || parsed === null) return null;
+  const candidate = parsed as Record<string, unknown>;
+
+  if (
+    typeof candidate.id !== "string" ||
+    typeof candidate.createdAt !== "string" ||
+    typeof candidate.event !== "string" ||
+    !isWebhookEvent(candidate.event) ||
+    candidate.orgId !== expectedOrgId ||
+    !("data" in candidate)
+  ) {
+    return null;
+  }
+
+  return {
+    id: candidate.id,
+    event: candidate.event,
+    createdAt: candidate.createdAt,
+    orgId: candidate.orgId,
+    data: candidate.data,
+  };
+}

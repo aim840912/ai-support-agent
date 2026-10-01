@@ -1,8 +1,10 @@
 "use client";
 
-import { useState } from "react";
-import { ChevronDown, ChevronRight } from "lucide-react";
+import { useState, useTransition } from "react";
+import { ChevronDown, ChevronRight, RotateCw } from "lucide-react";
+import { toast } from "sonner";
 import { Badge } from "@/components/ui/badge";
+import { resendWebhookDelivery } from "@/app/(dashboard)/integrations/actions";
 
 export type DeliveryView = {
   id: string;
@@ -32,9 +34,29 @@ function formatTime(iso: string): string {
  * expanded table of successes on every page load is noise. Rows expand to the
  * error and response body, which is the only way to debug a field-mapping
  * problem in the receiving tool.
+ *
+ * Resend replays the stored event through the real delivery path; the result
+ * shows up as a new row once the page revalidates.
  */
 export function WebhookDeliveriesTable({ deliveries }: { deliveries: DeliveryView[] }) {
   const [expanded, setExpanded] = useState<string | null>(null);
+  const [resending, setResending] = useState<string | null>(null);
+  const [isPending, startTransition] = useTransition();
+
+  function handleResend(id: string) {
+    setResending(id);
+    startTransition(async () => {
+      try {
+        const result = await resendWebhookDelivery(id);
+        if (result.ok) toast.success(result.message);
+        else toast.error(result.message);
+      } catch (error) {
+        toast.error(error instanceof Error ? error.message : "Could not resend.");
+      } finally {
+        setResending(null);
+      }
+    });
+  }
 
   if (deliveries.length === 0) {
     return (
@@ -54,6 +76,9 @@ export function WebhookDeliveriesTable({ deliveries }: { deliveries: DeliveryVie
             <th className="py-1 font-medium">Event</th>
             <th className="py-1 font-medium">Result</th>
             <th className="py-1 text-right font-medium tabular-nums">Time</th>
+            <th className="py-1">
+              <span className="sr-only">Actions</span>
+            </th>
           </tr>
         </thead>
         <tbody>
@@ -100,6 +125,21 @@ export function WebhookDeliveriesTable({ deliveries }: { deliveries: DeliveryVie
                 </td>
                 <td className="py-1.5 text-right tabular-nums text-muted-foreground">
                   {delivery.durationMs}ms
+                </td>
+                <td className="py-1.5 pl-2 text-right">
+                  <button
+                    type="button"
+                    onClick={() => handleResend(delivery.id)}
+                    disabled={isPending}
+                    aria-label={`Resend ${delivery.event} from ${formatTime(delivery.createdAt)}`}
+                    className="inline-flex items-center gap-1 rounded px-1 text-muted-foreground hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring disabled:opacity-50"
+                  >
+                    <RotateCw
+                      className={`h-3 w-3 ${resending === delivery.id ? "animate-spin motion-reduce:animate-none" : ""}`}
+                      aria-hidden="true"
+                    />
+                    Resend
+                  </button>
                 </td>
               </tr>
             );

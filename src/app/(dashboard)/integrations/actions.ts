@@ -12,8 +12,8 @@ import { getMe, setWebhook, deleteWebhook } from "@/lib/channels/telegram/client
 import { getPublicBaseUrl, isPubliclyReachable } from "@/lib/public-url";
 import { isDemoUser } from "@/lib/demo";
 import { generateWebhookSecret } from "@/lib/webhook-signature";
-import { deliverOnce, validateWebhookUrl } from "@/lib/webhooks/dispatch";
-import { buildEvent, WEBHOOK_EVENTS } from "@/lib/webhooks/events";
+import { deliverOnce, validateWebhookUrl, type DeliveryResult } from "@/lib/webhooks/dispatch";
+import { buildEvent, parseStoredEvent, WEBHOOK_EVENTS } from "@/lib/webhooks/events";
 
 /**
  * Server actions are callable from the browser, so every one of these
@@ -362,6 +362,44 @@ export async function sendTestWebhook(id: string): Promise<TestDeliveryResult> {
   const result = await deliverOnce(endpoint, buildEvent("ticket.created", orgId, SAMPLE_TICKET));
   revalidatePath("/integrations");
 
+  return toDeliveryResult(result);
+}
+
+/**
+ * Re-sends the exact event a past delivery carried, e.g. after the receiver
+ * was fixed. Same event id, so a receiver that did process it the first time
+ * deduplicates; the signature timestamp is fresh, as it must be.
+ *
+ * Works on a disabled endpoint too, like the test button: proving the fix
+ * works is how someone decides to turn the endpoint back on.
+ */
+export async function resendWebhookDelivery(deliveryId: string): Promise<TestDeliveryResult> {
+  const { orgId } = await requireWriteAccess();
+
+  const delivery = await prisma.webhookDelivery.findFirst({
+    where: { id: deliveryId, orgId },
+    select: {
+      requestBody: true,
+      endpoint: { select: { id: true, url: true, secret: true, orgId: true } },
+    },
+  });
+  if (!delivery) return { ok: false, message: "Delivery not found." };
+
+  const event = parseStoredEvent(delivery.requestBody, orgId);
+  if (!event) {
+    return {
+      ok: false,
+      message: "This payload was too large to store in full, so it can't be resent.",
+    };
+  }
+
+  const result = await deliverOnce(delivery.endpoint, event);
+  revalidatePath("/integrations");
+
+  return toDeliveryResult(result);
+}
+
+function toDeliveryResult(result: DeliveryResult): TestDeliveryResult {
   return {
     ok: result.ok,
     statusCode: result.statusCode,
