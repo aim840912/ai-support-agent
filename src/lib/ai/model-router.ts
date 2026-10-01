@@ -54,8 +54,16 @@ export const MODEL_SLUGS = {
    * and `supported_parameters: ["tools"]` were both true for the dead slug.
    * `pnpm check:models` makes that call for every free slug here (it caught
    * inclusionai/ling-3.0-flash-vl losing its free tier on 2026-10-01).
+   *
+   * Both entries are NVIDIA, so a vendor-wide outage takes out both. A
+   * different vendor would be better, but qwen3.8-27b and gemma-4-31b were
+   * upstream-429 when the replacement was chosen and could not be verified;
+   * nemotron-3-super was the one that returned a correct tool call.
    */
-  freeFallbacks: ["nvidia/nemotron-3-ultra-550b-a55b:free"],
+  freeFallbacks: [
+    "nvidia/nemotron-3-ultra-550b-a55b:free",
+    "nvidia/nemotron-3-super-120b-a12b:free",
+  ],
 } as const;
 
 /**

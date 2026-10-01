@@ -15,7 +15,8 @@
  * quota (50/day, shared with every tenant and the landing demo). The paid
  * `complex` slug is skipped on purpose — the cost guard keeps it unused.
  *
- *   node --env-file=.env.local scripts/check-model-slugs.mjs
+ *   pnpm check:models                    # every free slug in MODEL_SLUGS
+ *   pnpm check:models <slug> [<slug>...] # candidates, before adding them
  *
  * Exit code 1 if any slug is dead; rate-limited slugs are reported but do not
  * fail the run, since a 429 says nothing about whether the slug still exists.
@@ -28,7 +29,8 @@ if (!apiKey) {
   process.exit(1);
 }
 
-const slugs = [MODEL_SLUGS.simple, ...MODEL_SLUGS.freeFallbacks];
+const candidates = process.argv.slice(2);
+const slugs = candidates.length ? candidates : [MODEL_SLUGS.simple, ...MODEL_SLUGS.freeFallbacks];
 
 // Same shape as a real agent tool, so a model that rejects tool calls fails here.
 const TOOLS = [
