@@ -10,7 +10,9 @@ interface SplitOptions {
   separators?: string[];
 }
 
-const DEFAULT_SEPARATORS = ["\n\n", "\n", ". ", " ", ""];
+// CJK sentence enders come before " ": Chinese text has no spaces, so without
+// them a long paragraph falls through to the hard character cut mid-sentence.
+const DEFAULT_SEPARATORS = ["\n\n", "\n", "。", "！", "？", ". ", " ", ""];
 
 export function splitText(
   text: string,

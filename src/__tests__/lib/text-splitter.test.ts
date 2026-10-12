@@ -49,6 +49,14 @@ describe("splitText", () => {
     expect(chunks).toHaveLength(0);
   });
 
+  it("splits Chinese text at sentence punctuation instead of mid-sentence", () => {
+    // 15 chars per sentence; no spaces or ". " — without CJK separators the
+    // splitter falls through to the hard character cut and breaks sentences.
+    const text = "這是一個測試句子用來驗證切塊。".repeat(20);
+    const chunks = splitText(text, { chunkSize: 100, chunkOverlap: 0 });
+    expect(chunks.every((c) => c.endsWith("。"))).toBe(true);
+  });
+
   it("uses custom separators when provided", () => {
     const text = "part1|part2|part3|part4|part5";
     const chunks = splitText(text, {
